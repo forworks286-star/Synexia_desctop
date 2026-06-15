@@ -17,7 +17,9 @@ jobs:
           channel: 'stable'
 
       - name: Enable Windows Desktop
-        run: flutter config --enable-windows-desktop
+        run: |
+          flutter config --enable-windows-desktop
+          flutter create --platforms=windows .
 
       - name: Get packages
         run: flutter pub get
@@ -52,7 +54,9 @@ jobs:
           channel: 'stable'
 
       - name: Enable Linux Desktop
-        run: flutter config --enable-linux-desktop
+        run: |
+          flutter config --enable-linux-desktop
+          flutter create --platforms=linux .
 
       - name: Get packages
         run: flutter pub get
