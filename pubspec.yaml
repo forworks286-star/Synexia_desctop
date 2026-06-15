@@ -1,0 +1,35 @@
+name: synexia_desktop
+description: Synexia.Dz - Warehouse Management System - Manager
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.7.0 <4.0.0"
+  flutter: ">=3.29.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  get: ^4.6.6
+  dio: ^5.7.0
+  shared_preferences: ^2.3.3
+  flutter_secure_storage: ^10.0.0
+  local_auth: ^2.3.0
+  fl_chart: ^0.69.0
+  intl: ^0.20.2
+  equatable: ^2.0.5
+  dartz: ^0.10.1
+  web_socket_channel: ^3.0.1
+  path_provider: ^2.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  generate: true
