@@ -29,8 +29,8 @@ jobs:
 
       - name: Zip Windows build
         run: |
-          cd build/windows/x64/runner/Release
-          7z a ../../../../../Synexia-Manager-Windows.zip .
+          7z a Synexia-Manager-Windows.zip "./build/windows/x64/runner/Release/*"
+
 
       - name: Upload Windows artifact
         uses: actions/upload-artifact@v4
