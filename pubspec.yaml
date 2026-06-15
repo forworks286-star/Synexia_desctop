@@ -17,7 +17,6 @@ dependencies:
   dio: ^5.7.0
   shared_preferences: ^2.3.3
   flutter_secure_storage: ^10.0.0
-  local_auth: ^2.3.0
   fl_chart: ^0.69.0
   intl: ^0.20.2
   equatable: ^2.0.5
