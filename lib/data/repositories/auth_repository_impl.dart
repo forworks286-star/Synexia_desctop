@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/config/app_config.dart';
@@ -15,7 +14,6 @@ class AuthRepositoryImpl implements AuthRepository {
   final _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
-  final _localAuth = LocalAuthentication();
 
   @override
   Future<Either<String, User>> login(String username, String password) async {
@@ -39,23 +37,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<String, User>> loginBiometric() async {
-    try {
-      final canCheck = await _localAuth.canCheckBiometrics;
-      final isDeviceSupported = await _localAuth.isDeviceSupported();
-      if (!canCheck && !isDeviceSupported) return const Left('error_auth');
-
-      final authenticated = await _localAuth.authenticate(
-        localizedReason: 'Synexia — Authentification requise',
-        options: const AuthenticationOptions(biometricOnly: false),
-      );
-      if (!authenticated) return const Left('error_auth');
-
-      final user = await getCurrentUser();
-      if (user == null) return const Left('error_auth');
-      return Right(user);
-    } catch (_) {
-      return const Left('error_auth');
-    }
+    return const Left('error_auth');
   }
 
   @override
@@ -93,7 +75,7 @@ class AuthRepositoryImpl implements AuthRepository {
     fullName: data['full_name'] as String,
     username: data['username'] as String,
     role: data['role'] == 'manager' ? UserRole.manager : UserRole.stockiste,
-    biometricEnabled: (data['biometric_enabled'] as bool?) ?? false,
+    biometricEnabled: false,
     lastLogin: data['last_login'] != null ? DateTime.parse(data['last_login'] as String) : null,
   );
 }
