@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
+import '../../../domain/models/models.dart';
+
 
 class RapportsScreen extends StatelessWidget {
   const RapportsScreen({super.key});
