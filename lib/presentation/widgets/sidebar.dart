@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../controllers/controllers.dart';
+import '../../domain/models/models.dart';
 
 class DesktopSidebar extends StatelessWidget {
   const DesktopSidebar({super.key});
