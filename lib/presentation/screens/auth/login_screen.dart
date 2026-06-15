@@ -1,9 +1,12 @@
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
+import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
