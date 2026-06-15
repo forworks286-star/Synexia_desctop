@@ -1,7 +1,7 @@
 class AppConfig {
   AppConfig._();
 
-  static const String _baseUrl = 'http://192.168.1.100:8000';
+  static const String _baseUrl = 'https://synexia-backend-production.up.railway.app';
 
   static const String apiBase = '$_baseUrl/api/v1';
 
