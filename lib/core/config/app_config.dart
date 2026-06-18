@@ -1,7 +1,7 @@
 class AppConfig {
   AppConfig._();
 
-  static const String _baseUrl = 'http://YOUR_LOCAL_IP:8000';
+  static const String _baseUrl = 'http://192.168.1.34:8000';
 
   static const String apiBase = '$_baseUrl/api/v1';
 
