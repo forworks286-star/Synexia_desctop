@@ -135,9 +135,15 @@ class _ConnectionCard extends StatelessWidget {
         children: [
           const SectionTitle(title: 'CONNEXION SERVEUR'),
           const SizedBox(height: 20),
-          _InfoRow(label: 'Adresse API', value: 'http://192.168.1.100:8000'),
-          const SizedBox(height: 12),
-          _InfoRow(label: 'WebSocket', value: 'ws://192.168.1.100:8000/ws'),
+          _InfoRow(
+              label: 'Adresse API',
+              value: AppConfig.baseUrl,
+            ),
+            const SizedBox(height: 12),
+            _InfoRow(
+              label: 'WebSocket',
+              value: AppConfig.wsUrl,
+            ),
           const SizedBox(height: 12),
           _InfoRow(label: 'Base de données', value: 'PostgreSQL — On-premise'),
           const SizedBox(height: 20),
@@ -150,8 +156,15 @@ class _ConnectionCard extends StatelessWidget {
               Text('Connecté au serveur local', style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600)),
             ]),
           ),
-          const SizedBox(height: 10),
-          const Text('Pour modifier l\'adresse, éditer\nlib/core/config/app_config.dart', style: TextStyle(fontSize: 10, color: AppColors.darkTextMuted)),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton(
+              onPressed: () =>
+                  Get.to(() => const ServerSetupScreen(allowBack: true)),
+              child: const Text('Modifier l\'adresse'),
+            ),
+          ),
         ],
       ),
     );
