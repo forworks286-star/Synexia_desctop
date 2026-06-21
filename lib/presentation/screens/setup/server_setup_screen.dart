@@ -1,31 +1,60 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:dio/dio.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../auth/login_screen.dart';
 
 class ServerSetupScreen extends StatefulWidget {
-  const ServerSetupScreen({super.key});
+  final bool allowBack;
+  const ServerSetupScreen({super.key, this.allowBack = false});
 
   @override
   State<ServerSetupScreen> createState() => _ServerSetupScreenState();
 }
 
 class _ServerSetupScreenState extends State<ServerSetupScreen> {
-  final _ipCtrl = TextEditingController(text: '192.168.1.');
-  final _portCtrl = TextEditingController(text: '8000');
+  late final TextEditingController _ipCtrl;
+  late final TextEditingController _portCtrl;
   bool _testing = false;
   String? _error;
 
+  @override
+  void initState() {
+    super.initState();
+    final currentUrl = AppConfig.baseUrl;
+    final uri = Uri.tryParse(currentUrl);
+    _ipCtrl = TextEditingController(text: uri?.host != 'localhost' ? (uri?.host ?? '192.168.1.') : '192.168.1.');
+    _portCtrl = TextEditingController(text: (uri?.port ?? 8000).toString());
+  }
+
   Future<void> _connect() async {
+    final ip = _ipCtrl.text.trim();
+    final port = _portCtrl.text.trim();
+
+    if (ip.isEmpty || port.isEmpty) {
+      setState(() => _error = 'Veuillez remplir tous les champs');
+      return;
+    }
+
     setState(() { _testing = true; _error = null; });
 
-    final url = 'http://${_ipCtrl.text.trim()}:${_portCtrl.text.trim()}';
-    await AppConfig.setServerUrl(url);
+    final url = 'http://$ip:$port';
 
-    setState(() => _testing = false);
-    Get.offAll(() => const LoginScreen());
+    try {
+      final testDio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 5), receiveTimeout: const Duration(seconds: 5)));
+      await testDio.get(url);
+
+      await AppConfig.setServerUrl(url);
+      if (!mounted) return;
+      Get.offAll(() => const LoginScreen());
+    } catch (_) {
+      setState(() {
+        _testing = false;
+        _error = 'Impossible de joindre le serveur. Vérifiez l\'adresse et que le serveur est démarré.';
+      });
+    }
   }
 
   @override
@@ -33,11 +62,20 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
     return Scaffold(
       body: Center(
         child: SizedBox(
-          width: 420,
+          width: 440,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (widget.allowBack)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: TextButton.icon(
+                    onPressed: () => Get.back(),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 14),
+                    label: const Text('Retour'),
+                  ),
+                ),
               Row(children: [
                 Container(
                   width: 48, height: 48,
@@ -73,8 +111,16 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
                 ),
               ]),
               if (_error != null) ...[
-                const SizedBox(height: 12),
-                Text(_error!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.danger.withOpacity(0.2))),
+                  child: Row(children: [
+                    const Icon(Icons.error_outline_rounded, size: 14, color: AppColors.danger),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(_error!, style: const TextStyle(color: AppColors.danger, fontSize: 12))),
+                  ]),
+                ),
               ],
               const SizedBox(height: 24),
               SizedBox(
