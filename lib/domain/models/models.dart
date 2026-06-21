@@ -5,6 +5,7 @@ class User extends Equatable {
   final String fullName;
   final String username;
   final UserRole role;
+  final List<String> permissions;
   final bool biometricEnabled;
   final DateTime? lastLogin;
 
@@ -13,6 +14,7 @@ class User extends Equatable {
     required this.fullName,
     required this.username,
     required this.role,
+    this.permissions = const [],
     this.biometricEnabled = false,
     this.lastLogin,
   });
@@ -21,30 +23,75 @@ class User extends Equatable {
   List<Object?> get props => [id, username, role];
 }
 
-enum UserRole { stockiste, manager }
+enum UserRole { admin, manager, stockiste, agentKiosk }
 
 class Product extends Equatable {
   final int id;
+  final String sku;
   final String name;
+  final String? categorie;
   final String qrReference;
-  final int stockQuantity;
+  final String? codeBarre;
+  final String uniteMesure;
+  final String? numeroSerie;
+  final String? photoUrl;
+  final String? paysOrigine;
+  final String statutProduit;
+
+  final int stockPhysique;
+  final int stockDisponible;
+  final int stockReserve;
   final int alertThreshold;
+  final int stockSecurite;
+  final int quantiteMinCommande;
+  final int? quantiteMaxStock;
+
+  final double prixAchat;
+  final double prixMoyenPondere;
+  final double prixVente;
+  final double tauxTva;
+  final String devise;
+  final double valeurStock;
+
   final String? supplierName;
   final int? supplierId;
+  final String? supplierSecondaireName;
+  final int? delaiLivraisonJours;
 
   const Product({
     required this.id,
+    required this.sku,
     required this.name,
+    this.categorie,
     required this.qrReference,
-    required this.stockQuantity,
+    this.codeBarre,
+    this.uniteMesure = 'piece',
+    this.numeroSerie,
+    this.photoUrl,
+    this.paysOrigine,
+    this.statutProduit = 'actif',
+    required this.stockPhysique,
+    required this.stockDisponible,
+    required this.stockReserve,
     required this.alertThreshold,
+    this.stockSecurite = 0,
+    this.quantiteMinCommande = 1,
+    this.quantiteMaxStock,
+    this.prixAchat = 0,
+    this.prixMoyenPondere = 0,
+    this.prixVente = 0,
+    this.tauxTva = 19,
+    this.devise = 'DZD',
+    this.valeurStock = 0,
     this.supplierName,
     this.supplierId,
+    this.supplierSecondaireName,
+    this.delaiLivraisonJours,
   });
 
   StockStatus get status {
-    if (stockQuantity <= 0) return StockStatus.critical;
-    if (stockQuantity <= alertThreshold) return StockStatus.low;
+    if (stockDisponible <= 0) return StockStatus.critical;
+    if (stockDisponible <= alertThreshold) return StockStatus.low;
     return StockStatus.normal;
   }
 
@@ -54,12 +101,39 @@ class Product extends Equatable {
 
 enum StockStatus { normal, low, critical }
 
+class Lot extends Equatable {
+  final int id;
+  final String? numeroLot;
+  final int quantitePhysique;
+  final int quantiteDisponible;
+  final String statut;
+  final DateTime? dateFabrication;
+  final DateTime? dateExpiration;
+  final String? emplacement;
+
+  const Lot({
+    required this.id,
+    this.numeroLot,
+    required this.quantitePhysique,
+    required this.quantiteDisponible,
+    this.statut = 'disponible',
+    this.dateFabrication,
+    this.dateExpiration,
+    this.emplacement,
+  });
+
+  @override
+  List<Object?> get props => [id];
+}
+
 class Movement extends Equatable {
   final int id;
   final int productId;
   final String productName;
   final MovementType type;
   final int quantity;
+  final String? numeroCommandeAchat;
+  final String? numeroBl;
   final DateTime date;
   final String? userName;
 
@@ -69,6 +143,8 @@ class Movement extends Equatable {
     required this.productName,
     required this.type,
     required this.quantity,
+    this.numeroCommandeAchat,
+    this.numeroBl,
     required this.date,
     this.userName,
   });
@@ -77,7 +153,7 @@ class Movement extends Equatable {
   List<Object?> get props => [id];
 }
 
-enum MovementType { entry, exit }
+enum MovementType { entry, exit, returnType }
 
 class Invoice extends Equatable {
   final int id;

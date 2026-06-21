@@ -30,7 +30,9 @@ class AuthRepositoryImpl implements AuthRepository {
       return Right(user);
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) return const Left('error_auth');
-      if (e.type == DioExceptionType.connectionTimeout) return const Left('error_network');
+      if (e.type == DioExceptionType.connectionTimeout || e.type == DioExceptionType.connectionError) {
+        return const Left('error_network');
+      }
       return const Left('error_server');
     }
   }
@@ -72,10 +74,20 @@ class AuthRepositoryImpl implements AuthRepository {
 
   User _parseUser(Map<String, dynamic> data) => User(
     id: data['id'] as int,
-    fullName: data['full_name'] as String,
-    username: data['username'] as String,
-    role: data['role'] == 'manager' ? UserRole.manager : UserRole.stockiste,
+    fullName: (data['full_name'] as String?) ?? '',
+    username: (data['username'] as String?) ?? '',
+    role: _parseRole(data['role'] as String?),
+    permissions: (data['permissions'] as List?)?.map((e) => e.toString()).toList() ?? [],
     biometricEnabled: false,
-    lastLogin: data['last_login'] != null ? DateTime.parse(data['last_login'] as String) : null,
+    lastLogin: data['last_login'] != null ? DateTime.tryParse(data['last_login'].toString()) : null,
   );
+
+  UserRole _parseRole(String? role) {
+    switch (role) {
+      case 'admin': return UserRole.admin;
+      case 'manager': return UserRole.manager;
+      case 'agent_kiosk': return UserRole.agentKiosk;
+      default: return UserRole.stockiste;
+    }
+  }
 }

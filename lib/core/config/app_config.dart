@@ -1,35 +1,47 @@
+import 'package:shared_preferences/shared_preferences.dart';
+
 class AppConfig {
   AppConfig._();
 
-  static const String _baseUrl = 'http://192.168.1.33:8000';
+  static String _baseUrl = 'http://localhost:8000';
+  static const int connectTimeout = 8000;
+  static const int receiveTimeout = 8000;
 
-  static const String apiBase = '$_baseUrl/api/v1';
+  static Future<void> loadSavedServerUrl() async {
+    final prefs = await SharedPreferences.getInstance();
+    _baseUrl = prefs.getString('server_url') ?? _baseUrl;
+  }
 
-  static const String authLogin = '$apiBase/auth/login';
-  static const String authRefresh = '$apiBase/auth/refresh';
-  static const String authLogout = '$apiBase/auth/logout';
+  static Future<void> setServerUrl(String url) async {
+    _baseUrl = url;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('server_url', url);
+  }
 
-  static const String stockProducts = '$apiBase/stock/produits';
-  static const String stockProduct = '$apiBase/stock/produits/{id}';
-  static const String stockMovements = '$apiBase/stock/mouvements';
-  static const String stockScanQr = '$apiBase/stock/scan';
+  static String get baseUrl => _baseUrl;
+  static bool get isConfigured => _baseUrl != 'http://localhost:8000';
 
-  static const String facturesAll = '$apiBase/factures';
-  static const String facturesGenerate = '$apiBase/factures/generate-pdf';
-  static const String facturesValidate = '$apiBase/factures/{id}/valider';
-  static const String ocrReceive = '$apiBase/ocr/receive';
+  static String get apiBase => '$_baseUrl/api/v1';
+  static String get wsUrl => _baseUrl.replaceFirst('http', 'ws');
 
-  static const String alertesRealtime = '$_baseUrl/ws/alertes';
-  static const String alertesHistory = '$apiBase/alertes';
+  static const String tokenKey = 'access_token';
+  static const String refreshTokenKey = 'refresh_token';
+  static const String userKey = 'current_user';
 
-  static const String dashboardStats = '$apiBase/dashboard/stats';
+  static String get authLogin => '$apiBase/auth/login';
+  static String get authRefresh => '$apiBase/auth/refresh';
+  static String get authLogout => '$apiBase/auth/logout';
 
-  static const int connectTimeout = 10000;
-  static const int receiveTimeout = 30000;
+  static String get stockProducts => '$apiBase/stock/produits';
+  static String get stockScanQr => '$apiBase/stock/scan';
+  static String get stockMovements => '$apiBase/stock/mouvements';
 
-  static const String tokenKey = 'synexia_token';
-  static const String refreshTokenKey = 'synexia_refresh';
-  static const String themeKey = 'synexia_theme';
-  static const String localeKey = 'synexia_locale';
-  static const String userKey = 'synexia_user';
+  static String get facturesAll => '$apiBase/factures';
+  static String get ocrReceive => '$apiBase/integrations/ocr-result';
+  static String get facturesValidate => '$apiBase/factures/{id}/valider';
+
+  static String get alertesHistory => '$apiBase/alertes';
+  static String get alertesRealtime => '$wsUrl/ws/alertes';
+
+  static String get dashboardStats => '$apiBase/dashboard/stats';
 }

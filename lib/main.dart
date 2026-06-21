@@ -4,16 +4,19 @@ import 'package:get/get.dart';
 
 import 'core/theme/app_theme.dart';
 import 'core/l10n/app_localizations.dart';
+import 'core/config/app_config.dart';
 import 'data/repositories/auth_repository_impl.dart';
 import 'data/repositories/stock_repository_impl.dart';
 import 'data/repositories/invoice_repository_impl.dart';
 import 'data/repositories/alert_repository_impl.dart';
 import 'presentation/controllers/controllers.dart';
+import 'presentation/screens/setup/server_setup_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/main_shell.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppConfig.loadSavedServerUrl();
 
   Get.put(AppSettingsController());
   Get.put(AuthController(AuthRepositoryImpl()));
@@ -45,8 +48,9 @@ class SynexiaDesktopApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      initialRoute: '/login',
+      initialRoute: AppConfig.isConfigured ? '/login' : '/setup',
       getPages: [
+        GetPage(name: '/setup', page: () => const ServerSetupScreen()),
         GetPage(name: '/login', page: () => const LoginScreen()),
         GetPage(name: '/dashboard', page: () => const MainShell()),
       ],

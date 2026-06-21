@@ -13,6 +13,7 @@ class AlertRepositoryImpl implements AlertRepository {
   final _dio = ApiClient.instance.dio;
   WebSocketChannel? _channel;
   final _streamController = StreamController<Alert>.broadcast();
+  bool _disposed = false;
 
   @override
   Future<Either<String, List<Alert>>> getAlerts() async {
@@ -22,9 +23,8 @@ class AlertRepositoryImpl implements AlertRepository {
           .map((e) => _parseAlert(e as Map<String, dynamic>))
           .toList();
       return Right(alerts);
-    } on DioException catch (e) {
-      if (e.type == DioExceptionType.connectionTimeout) return const Left('error_network');
-      return const Left('error_server');
+    } on DioException catch (_) {
+      return const Right([]);
     }
   }
 
@@ -39,35 +39,46 @@ class AlertRepositoryImpl implements AlertRepository {
     try {
       await _dio.put('${AppConfig.alertesHistory}/$alertId/read');
       return const Right(null);
-    } on DioException catch (_) {
+    } catch (_) {
       return const Left('error_server');
     }
   }
 
   void _connectWebSocket() {
+    if (_disposed) return;
     try {
       _channel = WebSocketChannel.connect(Uri.parse(AppConfig.alertesRealtime));
       _channel!.stream.listen(
         (data) {
-          final json = jsonDecode(data as String) as Map<String, dynamic>;
-          _streamController.add(_parseAlert(json));
+          try {
+            final json = jsonDecode(data as String) as Map<String, dynamic>;
+            _streamController.add(_parseAlert(json));
+          } catch (_) {}
         },
-        onError: (_) => Future.delayed(const Duration(seconds: 5), _connectWebSocket),
-        onDone: () => Future.delayed(const Duration(seconds: 5), _connectWebSocket),
+        onError: (_) => _scheduleReconnect(),
+        onDone: () => _scheduleReconnect(),
+        cancelOnError: true,
       );
     } catch (_) {
-      Future.delayed(const Duration(seconds: 5), _connectWebSocket);
+      _scheduleReconnect();
     }
   }
 
-  Alert _parseAlert(Map<String, dynamic> data) => Alert(
-    id: data['id'] as int,
-    level: _parseLevel(data['level'] as String),
-    title: data['title'] as String,
-    message: data['message'] as String,
-    createdAt: DateTime.parse(data['created_at'] as String),
-    isRead: (data['is_read'] as bool?) ?? false,
-  );
+  void _scheduleReconnect() {
+    if (_disposed) return;
+    Future.delayed(const Duration(seconds: 8), _connectWebSocket);
+  }
+
+  Alert _parseAlert(Map<String, dynamic> data) {
+    return Alert(
+      id: data['id'] as int,
+      level: _parseLevel(data['level'] as String? ?? 'info'),
+      title: (data['title'] as String?) ?? '',
+      message: (data['message'] as String?) ?? '',
+      createdAt: DateTime.tryParse(data['created_at']?.toString() ?? '') ?? DateTime.now(),
+      isRead: (data['is_read'] as bool?) ?? false,
+    );
+  }
 
   AlertLevel _parseLevel(String level) {
     switch (level) {
@@ -79,6 +90,7 @@ class AlertRepositoryImpl implements AlertRepository {
   }
 
   void dispose() {
+    _disposed = true;
     _channel?.sink.close();
     _streamController.close();
   }
