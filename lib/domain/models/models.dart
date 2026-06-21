@@ -89,6 +89,7 @@ class Product extends Equatable {
     this.delaiLivraisonJours,
   });
 
+  int get stockQuantity => stockDisponible;
   StockStatus get status {
     if (stockDisponible <= 0) return StockStatus.critical;
     if (stockDisponible <= alertThreshold) return StockStatus.low;

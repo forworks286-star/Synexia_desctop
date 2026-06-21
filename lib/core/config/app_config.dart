@@ -19,7 +19,10 @@ class AppConfig {
   }
 
   static String get baseUrl => _baseUrl;
-  static bool get isConfigured => _baseUrl != 'http://localhost:8000';
+ 
+  static bool get isConfigured {
+    return _baseUrl != 'http://localhost:8000';
+  }
 
   static String get apiBase => '$_baseUrl/api/v1';
   static String get wsUrl => _baseUrl.replaceFirst('http', 'ws');
@@ -27,6 +30,8 @@ class AppConfig {
   static const String tokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
   static const String userKey = 'current_user';
+  static const String themeKey = 'app_theme';
+  static const String localeKey = 'app_locale';
 
   static String get authLogin => '$apiBase/auth/login';
   static String get authRefresh => '$apiBase/auth/refresh';
