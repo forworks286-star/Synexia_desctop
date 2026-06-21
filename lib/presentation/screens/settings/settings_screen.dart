@@ -5,6 +5,8 @@ import '../../../core/theme/app_theme.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/models/models.dart';
+import '../setup/server_setup_screen.dart';
+import '../../../core/config/app_config.dart';
 
 
 class SettingsScreen extends StatelessWidget {
