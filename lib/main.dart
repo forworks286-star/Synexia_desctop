@@ -10,6 +10,7 @@ import 'data/repositories/stock_repository_impl.dart';
 import 'data/repositories/invoice_repository_impl.dart';
 import 'data/repositories/alert_repository_impl.dart';
 import 'presentation/controllers/controllers.dart';
+import 'presentation/screens/setup/connection_gate_screen.dart';
 import 'presentation/screens/setup/server_setup_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/main_shell.dart';
@@ -48,8 +49,9 @@ class SynexiaDesktopApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
-      initialRoute: AppConfig.isConfigured ? '/login' : '/setup',
+      initialRoute: '/gate',
       getPages: [
+        GetPage(name: '/gate', page: () => const ConnectionGateScreen()),
         GetPage(name: '/setup', page: () => const ServerSetupScreen()),
         GetPage(name: '/login', page: () => const LoginScreen()),
         GetPage(name: '/dashboard', page: () => const MainShell()),
