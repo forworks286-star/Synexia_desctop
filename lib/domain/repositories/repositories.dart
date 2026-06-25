@@ -41,8 +41,4 @@ abstract class InvoiceRepository {
   Future<Either<String, void>> rejectInvoice(int id);
 }
 
-abstract class AlertRepository {
-  Future<Either<String, List<Alert>>> getAlerts();
-  Stream<Alert> alertStream();
-  Future<Either<String, void>> markAsRead(int alertId);
-}
+
