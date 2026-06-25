@@ -55,7 +55,7 @@ class ApiClient {
       if (refresh == null) return false;
       final response = await _dio.post(
         AppConfig.authRefresh,
-        data: {'refresh': refresh},
+        data: {'refresh_token': refresh},
       );
       await _storage.write(
         key: AppConfig.tokenKey,

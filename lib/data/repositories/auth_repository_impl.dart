@@ -66,7 +66,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final refresh = await _storage.read(key: AppConfig.refreshTokenKey);
       if (refresh == null) return false;
-      final response = await _dio.post(AppConfig.authRefresh, data: {'refresh': refresh});
+      final response = await _dio.post(AppConfig.authRefresh, data: {'refresh_token': refresh});
       await _storage.write(key: AppConfig.tokenKey, value: response.data['access'] as String);
       return true;
     } catch (_) { return false; }
