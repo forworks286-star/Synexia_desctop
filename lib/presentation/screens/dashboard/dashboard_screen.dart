@@ -48,75 +48,105 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildKpis(DashboardStats? s, int alertCount, int pendingInvoices) {
-    return Row(
-      children: [
-        Expanded(child: KpiCard(value: s != null ? '${s.totalProducts}' : '--', label: 'Produits en stock', icon: Icons.inventory_2_outlined, trend: '+2.4%', trendUp: true)),
-        const SizedBox(width: 16),
-        Expanded(child: KpiCard(value: s != null ? '${s.todayEntries}' : '--', label: 'Entrées aujourd\'hui', icon: Icons.arrow_downward_rounded, valueColor: AppColors.success, trend: '+${s?.todayEntries ?? 0}', trendUp: true)),
-        const SizedBox(width: 16),
-        Expanded(child: KpiCard(value: s != null ? '${s.todayExits}' : '--', label: 'Sorties aujourd\'hui', icon: Icons.arrow_upward_rounded, valueColor: AppColors.danger)),
-        const SizedBox(width: 16),
-        Expanded(child: KpiCard(value: '$alertCount', label: 'Alertes actives', icon: Icons.notifications_outlined, valueColor: alertCount > 0 ? AppColors.warning : null, trend: alertCount > 0 ? '$alertCount actives' : null, trendUp: false)),
-        const SizedBox(width: 16),
-        Expanded(child: KpiCard(value: '$pendingInvoices', label: 'Factures en attente', icon: Icons.receipt_long_outlined, valueColor: pendingInvoices > 0 ? AppColors.warning : null)),
-      ],
-    );
+    final valeur = s != null
+        ? (s.valeurStockTotal >= 1000000
+            ? '${(s.valeurStockTotal / 1000000).toStringAsFixed(1)}M'
+            : s.valeurStockTotal >= 1000
+                ? '${(s.valeurStockTotal / 1000).toStringAsFixed(0)}K'
+                : s.valeurStockTotal.toStringAsFixed(0))
+        : '--';
+    return Row(children: [
+      Expanded(child: KpiCard(value: s != null ? '${s.totalProducts}' : '--', label: 'Produits', icon: Icons.inventory_2_outlined)),
+      const SizedBox(width: 14),
+      Expanded(child: KpiCard(value: s != null ? '${s.todayEntries}' : '--', label: 'Entrées / auj.', icon: Icons.arrow_downward_rounded, valueColor: AppColors.success)),
+      const SizedBox(width: 14),
+      Expanded(child: KpiCard(value: s != null ? '${s.todayExits}' : '--', label: 'Sorties / auj.', icon: Icons.arrow_upward_rounded, valueColor: AppColors.danger)),
+      const SizedBox(width: 14),
+      Expanded(child: KpiCard(value: '$alertCount', label: 'Alertes actives', icon: Icons.notifications_outlined, valueColor: alertCount > 0 ? AppColors.warning : null, trend: alertCount > 0 ? 'non lues' : null, trendUp: false)),
+      const SizedBox(width: 14),
+      Expanded(child: KpiCard(value: '$pendingInvoices', label: 'Factures en attente', icon: Icons.receipt_long_outlined, valueColor: pendingInvoices > 0 ? AppColors.warning : null)),
+      const SizedBox(width: 14),
+      Expanded(child: KpiCard(value: '$valeur DZD', label: 'Valeur stock total', icon: Icons.account_balance_wallet_outlined, valueColor: AppColors.info)),
+    ]);
   }
 
   Widget _buildMovementsChart(StockController stock) {
-    final barGroups = List.generate(7, (i) {
-      return BarChartGroupData(x: i, barRods: [
-        BarChartRodData(toY: (10 + i * 8 + (i % 3) * 5).toDouble(), color: AppColors.primary.withOpacity(0.7), width: 14, borderRadius: const BorderRadius.vertical(top: Radius.circular(4))),
-        BarChartRodData(toY: (5 + i * 4 + (i % 2) * 3).toDouble(), color: AppColors.success.withOpacity(0.6), width: 14, borderRadius: const BorderRadius.vertical(top: Radius.circular(4))),
-      ]);
-    });
+    return Obx(() {
+      final points = stock.chartPoints;
+      final barGroups = List.generate(points.length, (i) {
+        final p = points[i];
+        return BarChartGroupData(x: i, barRods: [
+          BarChartRodData(toY: p.entrees.toDouble(), color: AppColors.primary.withOpacity(0.8), width: 12,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(4))),
+          BarChartRodData(toY: p.sorties.toDouble(), color: AppColors.success.withOpacity(0.7), width: 12,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(4))),
+        ]);
+      });
+
+      final labels = points.map((p) {
+        final parts = p.date.split('-');
+        return parts.length == 3 ? '${parts[2]}/${parts[1]}' : p.date;
+      }).toList();
+
+      
 
     return SynCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(children: [
               const SectionTitle(title: 'MOUVEMENTS — 7 DERNIERS JOURS'),
               const SizedBox(width: 20),
               _Legend(color: AppColors.primary, label: 'Entrées'),
               const SizedBox(width: 12),
               _Legend(color: AppColors.success, label: 'Sorties'),
-            ],
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 200,
-            child: BarChart(
-              BarChartData(
-                barGroups: barGroups,
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  getDrawingHorizontalLine: (_) => FlLine(color: AppColors.darkBorder.withOpacity(0.5), strokeWidth: 0.5),
-                ),
-                borderData: FlBorderData(show: false),
-                titlesData: FlTitlesData(
-                  bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, _) {
-                    const days = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-                    return Text(days[v.toInt()], style: const TextStyle(fontSize: 10, color: AppColors.darkTextMuted));
-                  })),
-                  leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 30, getTitlesWidget: (v, _) => Text('${v.toInt()}', style: const TextStyle(fontSize: 9, color: AppColors.darkTextMuted)))),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                barTouchData: BarTouchData(
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (_) => AppColors.darkCard,
-                    getTooltipItem: (group, _, rod, __) => BarTooltipItem('${rod.toY.toInt()}', const TextStyle(color: Colors.white, fontSize: 11)),
-                  ),
-                ),
-              ),
+            ]),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 200,
+              child: points.isEmpty
+                  ? const Center(child: Text('Aucune donnée', style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)))
+                  : BarChart(BarChartData(
+                      barGroups: barGroups,
+                      gridData: FlGridData(
+                        show: true, drawVerticalLine: false,
+                        getDrawingHorizontalLine: (_) => FlLine(color: AppColors.darkBorder.withOpacity(0.4), strokeWidth: 0.5),
+                      ),
+                      borderData: FlBorderData(show: false),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (v, _) {
+                            final i = v.toInt();
+                            if (i < 0 || i >= labels.length) return const SizedBox.shrink();
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(labels[i], style: const TextStyle(fontSize: 9, color: AppColors.darkTextMuted)),
+                            );
+                          },
+                        )),
+                        leftTitles: AxisTitles(sideTitles: SideTitles(
+                          showTitles: true, reservedSize: 28,
+                          getTitlesWidget: (v, _) => Text('${v.toInt()}',
+                            style: const TextStyle(fontSize: 9, color: AppColors.darkTextMuted)),
+                        )),
+                        topTitles:   const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      barTouchData: BarTouchData(
+                        touchTooltipData: BarTouchTooltipData(
+                          getTooltipColor: (_) => AppColors.darkCard,
+                          getTooltipItem: (group, _, rod, rodIndex) => BarTooltipItem(
+                            '${rodIndex == 0 ? "Entrées" : "Sorties"}: ${rod.toY.toInt()}',
+                            const TextStyle(color: Colors.white, fontSize: 11)),
+                        ),
+                      ),
+                    )),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    });
   }
 
   Widget _buildAlertsPanel(AlertController alerts) {

@@ -57,6 +57,8 @@ class Product extends Equatable {
   final int? supplierId;
   final String? supplierSecondaireName;
   final int? delaiLivraisonJours;
+  final Map<String, dynamic> champsExtra;
+  final List<Lot> lots;
 
   const Product({
     required this.id,
@@ -87,6 +89,8 @@ class Product extends Equatable {
     this.supplierId,
     this.supplierSecondaireName,
     this.delaiLivraisonJours,
+    this.champsExtra = const {},
+    this.lots = const [],
   });
 
   int get stockQuantity => stockDisponible;
@@ -192,6 +196,7 @@ class Alert extends Equatable {
   final String message;
   final DateTime createdAt;
   final bool isRead;
+  final String? sourceModule;
 
   const Alert({
     required this.id,
@@ -200,8 +205,8 @@ class Alert extends Equatable {
     required this.message,
     required this.createdAt,
     this.isRead = false,
+    this.sourceModule,
   });
-
   @override
   List<Object?> get props => [id];
 }
@@ -215,6 +220,7 @@ class DashboardStats extends Equatable {
   final int activeAlerts;
   final int pendingInvoices;
   final double availability;
+  final double valeurStockTotal;
 
   const DashboardStats({
     required this.totalProducts,
@@ -223,8 +229,41 @@ class DashboardStats extends Equatable {
     required this.activeAlerts,
     required this.pendingInvoices,
     required this.availability,
+    this.valeurStockTotal = 0,
   });
 
   @override
   List<Object?> get props => [totalProducts, activeAlerts];
+}
+
+class ChartPoint extends Equatable {
+  final String date;
+  final int entrees;
+  final int sorties;
+  const ChartPoint({required this.date, required this.entrees, required this.sorties});
+  @override
+  List<Object?> get props => [date];
+}
+
+class CommandeAuto extends Equatable {
+  final int id;
+  final String sku;
+  final String designation;
+  final int quantiteSuggeree;
+  final String fournisseurNom;
+  final double dernierPrixAchat;
+  final DateTime timestamp;
+
+  const CommandeAuto({
+    required this.id,
+    required this.sku,
+    required this.designation,
+    required this.quantiteSuggeree,
+    required this.fournisseurNom,
+    required this.dernierPrixAchat,
+    required this.timestamp,
+  });
+
+  @override
+  List<Object?> get props => [id];
 }

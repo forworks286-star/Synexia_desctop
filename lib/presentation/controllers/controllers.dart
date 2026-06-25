@@ -37,7 +37,9 @@ class AuthController extends GetxController {
     await _repo.logout(); user.value = null; Get.offAllNamed('/login');
   }
 
-  bool get isManager => user.value?.role == UserRole.manager;
+  bool get isAdmin   => user.value?.role == UserRole.admin;
+  bool get isManager => user.value?.role == UserRole.manager || isAdmin;
+  bool get canEdit   => isManager;
 }
 
 class StockController extends GetxController {
@@ -46,19 +48,48 @@ class StockController extends GetxController {
 
   final RxList<Product> products = <Product>[].obs;
   final RxList<Movement> movements = <Movement>[].obs;
+  final RxList<ChartPoint> chartPoints = <ChartPoint>[].obs;
+  final RxList<CommandeAuto> commandesAuto = <CommandeAuto>[].obs;
   final Rx<DashboardStats?> stats = Rx<DashboardStats?>(null);
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
   final RxString searchQuery = ''.obs;
   final Rx<StockStatus?> statusFilter = Rx<StockStatus?>(null);
+  final RxString categorieFilter = ''.obs;
 
   @override
   void onInit() { super.onInit(); loadAll(); }
 
   Future<void> loadAll() async {
     isLoading.value = true;
-    await Future.wait([loadProducts(), loadMovements(), loadStats()]);
+    await Future.wait([loadProducts(), loadMovements(), loadStats(), loadChart(), loadCommandesAuto()]);
     isLoading.value = false;
+  }
+
+  Future<void> loadChart() async {
+    final r = await _repo.getMovementsChart();
+    r.fold((_) {}, (p) => chartPoints.assignAll(p));
+  }
+
+  Future<void> loadCommandesAuto() async {
+    final r = await _repo.getCommandesAuto();
+    r.fold((_) {}, (c) => commandesAuto.assignAll(c));
+  }
+
+  Future<bool> validerCommande(int id) async {
+    final r = await _repo.validerCommande(id);
+    return r.fold((_) => false, (_) { loadCommandesAuto(); return true; });
+  }
+
+  Future<bool> rejeterCommande(int id) async {
+    final r = await _repo.rejeterCommande(id);
+    return r.fold((_) => false, (_) { loadCommandesAuto(); return true; });
+  }
+
+  List<String> get categories {
+    final cats = products.map((p) => p.categorie ?? '').where((c) => c.isNotEmpty).toSet().toList();
+    cats.sort();
+    return cats;
   }
 
   Future<void> loadProducts() async {
@@ -79,9 +110,13 @@ class StockController extends GetxController {
   List<Product> get filteredProducts {
     return products.where((p) {
       final q = searchQuery.value.toLowerCase();
-      final matchSearch = q.isEmpty || p.name.toLowerCase().contains(q) || p.qrReference.toLowerCase().contains(q);
-      final matchFilter = statusFilter.value == null || p.status == statusFilter.value;
-      return matchSearch && matchFilter;
+      final matchSearch = q.isEmpty ||
+          p.name.toLowerCase().contains(q) ||
+          p.sku.toLowerCase().contains(q) ||
+          p.qrReference.toLowerCase().contains(q);
+      final matchStatus   = statusFilter.value == null || p.status == statusFilter.value;
+      final matchCategorie = categorieFilter.value.isEmpty || p.categorie == categorieFilter.value;
+      return matchSearch && matchStatus && matchCategorie;
     }).toList();
   }
 }
@@ -147,9 +182,20 @@ class AlertController extends GetxController {
     await _repo.markAsRead(id);
     final i = alerts.indexWhere((a) => a.id == id);
     if (i != -1) {
-      alerts[i] = Alert(id: alerts[i].id, level: alerts[i].level, title: alerts[i].title, message: alerts[i].message, createdAt: alerts[i].createdAt, isRead: true);
+      final a = alerts[i];
+      alerts[i] = Alert(id: a.id, level: a.level, title: a.title, message: a.message,
+                        createdAt: a.createdAt, isRead: true, sourceModule: a.sourceModule);
       _updateUnread();
     }
+  }
+
+  Future<void> markAllRead() async {
+    await _repo.markAllRead();
+    alerts.assignAll(alerts.map((a) => Alert(
+      id: a.id, level: a.level, title: a.title, message: a.message,
+      createdAt: a.createdAt, isRead: true, sourceModule: a.sourceModule,
+    )).toList());
+    _updateUnread();
   }
 }
 

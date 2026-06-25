@@ -44,6 +44,16 @@ class AlertRepositoryImpl implements AlertRepository {
     }
   }
 
+  @override
+  Future<Either<String, void>> markAllRead() async {
+    try {
+      await _dio.put('${AppConfig.alertesHistory}/read-all');
+      return const Right(null);
+    } catch (_) {
+      return const Left('error_server');
+    }
+  }
+
   void _connectWebSocket() {
     if (_disposed) return;
     try {
@@ -71,15 +81,15 @@ class AlertRepositoryImpl implements AlertRepository {
 
   Alert _parseAlert(Map<String, dynamic> data) {
     return Alert(
-      id: data['id'] as int,
-      level: _parseLevel(data['level'] as String? ?? 'info'),
-      title: (data['title'] as String?) ?? '',
-      message: (data['message'] as String?) ?? '',
-      createdAt: DateTime.tryParse(data['created_at']?.toString() ?? '') ?? DateTime.now(),
-      isRead: (data['is_read'] as bool?) ?? false,
+      id:           data['id'] as int,
+      level:        _parseLevel(data['level'] as String? ?? 'info'),
+      title:        (data['title'] as String?) ?? '',
+      message:      (data['message'] as String?) ?? '',
+      createdAt:    DateTime.tryParse(data['created_at']?.toString() ?? '') ?? DateTime.now(),
+      isRead:       (data['is_read'] as bool?) ?? false,
+      sourceModule: data['source_module'] as String?,
     );
   }
-
   AlertLevel _parseLevel(String level) {
     switch (level) {
       case 'danger': return AlertLevel.danger;

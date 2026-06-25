@@ -12,13 +12,25 @@ abstract class AuthRepository {
 abstract class StockRepository {
   Future<Either<String, List<Product>>> getProducts();
   Future<Either<String, Product>> getProductByQr(String qrCode);
-  Future<Either<String, Movement>> registerMovement({
-    required int productId,
+  Future<Either<String, void>> registerMovement({
+    required int produitId,
+    required int lotId,
     required MovementType type,
-    required int quantity,
+    required int quantite,
   });
   Future<Either<String, List<Movement>>> getMovements({int? limit});
   Future<Either<String, DashboardStats>> getDashboardStats();
+  Future<Either<String, List<ChartPoint>>> getMovementsChart({int days = 7});
+  Future<Either<String, List<CommandeAuto>>> getCommandesAuto();
+  Future<Either<String, void>> validerCommande(int id);
+  Future<Either<String, void>> rejeterCommande(int id);
+}
+
+abstract class AlertRepository {
+  Future<Either<String, List<Alert>>> getAlerts();
+  Stream<Alert> alertStream();
+  Future<Either<String, void>> markAsRead(int alertId);
+  Future<Either<String, void>> markAllRead();
 }
 
 abstract class InvoiceRepository {

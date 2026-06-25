@@ -11,100 +11,111 @@ class DesktopSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final settings = Get.find<AppSettingsController>();
-    final auth = Get.find<AuthController>();
+    final auth     = Get.find<AuthController>();
+    final alerts   = Get.find<AlertController>();
 
     final items = [
-      _NavItem(icon: Icons.grid_view_rounded, label: 'Dashboard', index: 0),
-      _NavItem(icon: Icons.inventory_2_outlined, label: 'Produits', index: 1),
-      _NavItem(icon: Icons.receipt_long_outlined, label: 'Factures', index: 2),
-      _NavItem(icon: Icons.notifications_outlined, label: 'Alertes', index: 3),
-      _NavItem(icon: Icons.bar_chart_rounded, label: 'Rapports', index: 4),
-      _NavItem(icon: Icons.settings_outlined, label: 'Paramètres', index: 5),
+      _NavItem(icon: Icons.grid_view_rounded,       label: 'Dashboard',   index: 0),
+      _NavItem(icon: Icons.inventory_2_outlined,    label: 'Produits',    index: 1),
+      _NavItem(icon: Icons.receipt_long_outlined,   label: 'Factures',    index: 2),
+      _NavItem(icon: Icons.notifications_outlined,  label: 'Alertes',     index: 3),
+      _NavItem(icon: Icons.bar_chart_rounded,       label: 'Rapports',    index: 4),
+      _NavItem(icon: Icons.settings_outlined,       label: 'Paramètres',  index: 5),
     ];
 
     return Container(
-      width: 220,
+      width: 200,
       color: AppColors.darkSidebar,
       child: Column(
         children: [
-          const SizedBox(height: 28),
+          const SizedBox(height: 20),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [AppColors.primary, AppColors.secondary], begin: Alignment.topLeft, end: Alignment.bottomRight),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(child: Text('S', style: TextStyle(color: Colors.white, fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 14))),
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(children: [
+              Container(
+                width: 28, height: 28,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [AppColors.primary, AppColors.secondary],
+                    begin: Alignment.topLeft, end: Alignment.bottomRight),
+                  borderRadius: BorderRadius.circular(7),
                 ),
-                const SizedBox(width: 10),
-                RichText(
-                  text: const TextSpan(
-                    style: TextStyle(fontFamily: 'Syne', fontSize: 16, fontWeight: FontWeight.w800),
-                    children: [
-                      TextSpan(text: 'Synexia', style: TextStyle(color: Colors.white)),
-                      TextSpan(text: '.Dz', style: TextStyle(color: AppColors.primary)),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+                child: const Center(child: Text('S',
+                  style: TextStyle(color: Colors.white, fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 13))),
+              ),
+              const SizedBox(width: 9),
+              RichText(text: const TextSpan(
+                style: TextStyle(fontFamily: 'Syne', fontSize: 14, fontWeight: FontWeight.w800),
+                children: [
+                  TextSpan(text: 'Synexia', style: TextStyle(color: Colors.white)),
+                  TextSpan(text: '.Dz',     style: TextStyle(color: AppColors.primary)),
+                ],
+              )),
+            ]),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 28),
           Expanded(
             child: Obx(() => Column(
-              children: items.map((item) => _SidebarItem(
-                item: item,
-                selected: settings.selectedNavIndex.value == item.index,
-                onTap: () => settings.setNav(item.index),
-              )).toList(),
+              children: items.map((item) {
+                final badge = item.index == 3 ? alerts.unreadCount.value : 0;
+                return _SidebarItem(
+                  item:     item,
+                  selected: settings.selectedNavIndex.value == item.index,
+                  badge:    badge,
+                  onTap:    () => settings.setNav(item.index),
+                );
+              }).toList(),
             )),
           ),
           const Divider(color: AppColors.darkBorder, height: 1),
           Obx(() => Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [AppColors.primary, AppColors.secondary]),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Center(
-                    child: Text(
-                      auth.user.value?.fullName.isNotEmpty == true ? auth.user.value!.fullName[0].toUpperCase() : 'U',
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13),
-                    ),
-                  ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+            child: Row(children: [
+              Container(
+                width: 30, height: 30,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(8),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(auth.user.value?.fullName ?? '', style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis),
-                      Text(auth.user.value?.role == UserRole.manager ? 'Manager' : 'Stockiste', style: const TextStyle(color: AppColors.darkTextMuted, fontSize: 10)),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.logout_rounded, size: 16, color: AppColors.darkTextMuted),
-                  onPressed: auth.logout,
-                  tooltip: 'Déconnexion',
-                ),
-              ],
-            ),
+                child: Center(child: Text(
+                  auth.user.value?.fullName.isNotEmpty == true
+                      ? auth.user.value!.fullName[0].toUpperCase() : 'U',
+                  style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700, fontSize: 12),
+                )),
+              ),
+              const SizedBox(width: 9),
+              Expanded(child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(auth.user.value?.fullName ?? '',
+                    style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
+                    overflow: TextOverflow.ellipsis),
+                  Text(_roleLabel(auth.user.value?.role),
+                    style: const TextStyle(color: AppColors.darkTextMuted, fontSize: 9, letterSpacing: 0.1)),
+                ],
+              )),
+              IconButton(
+                icon: const Icon(Icons.logout_rounded, size: 14, color: AppColors.darkTextMuted),
+                onPressed: auth.logout,
+                tooltip: 'Déconnexion',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+              ),
+            ]),
           )),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
         ],
       ),
     );
+  }
+
+  String _roleLabel(UserRole? role) {
+    switch (role) {
+      case UserRole.admin:      return 'Administrateur';
+      case UserRole.manager:    return 'Manager';
+      case UserRole.stockiste:  return 'Stockiste';
+      case UserRole.agentKiosk: return 'Agent Kiosk';
+      default:                  return '';
+    }
   }
 }
 
@@ -118,38 +129,47 @@ class _NavItem {
 class _SidebarItem extends StatelessWidget {
   final _NavItem item;
   final bool selected;
+  final int badge;
   final VoidCallback onTap;
 
-  const _SidebarItem({required this.item, required this.selected, required this.onTap});
+  const _SidebarItem({required this.item, required this.selected, required this.badge, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        duration: const Duration(milliseconds: 130),
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withOpacity(0.15) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: selected ? AppColors.primary.withOpacity(0.3) : Colors.transparent),
+          color: selected ? AppColors.primary.withOpacity(0.14) : Colors.transparent,
+          borderRadius: BorderRadius.circular(7),
+          border: Border.all(
+            color: selected ? AppColors.primary.withOpacity(0.35) : Colors.transparent),
         ),
-        child: Row(
-          children: [
-            Icon(item.icon, size: 17, color: selected ? AppColors.primary : AppColors.darkTextMuted),
-            const SizedBox(width: 10),
-            Text(
-              item.label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-                color: selected ? Colors.white : AppColors.darkTextMuted,
-                fontFamily: selected ? 'Syne' : null,
-              ),
+        child: Row(children: [
+          Icon(item.icon, size: 16,
+            color: selected ? AppColors.primary : AppColors.darkTextMuted),
+          const SizedBox(width: 9),
+          Expanded(child: Text(item.label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              color:      selected ? Colors.white : AppColors.darkTextMuted,
             ),
-          ],
-        ),
+          )),
+          if (badge > 0)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+              decoration: BoxDecoration(
+                color: AppColors.danger,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text('$badge',
+                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: Colors.white)),
+            ),
+        ]),
       ),
     );
   }

@@ -48,5 +48,8 @@ class AppConfig {
   static String get alertesHistory => '$apiBase/alertes';
   static String get alertesRealtime => '$wsUrl/ws/alertes';
 
-  static String get dashboardStats => '$apiBase/dashboard/stats';
+  static String get dashboardStats           => '$apiBase/dashboard/stats';
+  static String get dashboardMovementsChart  => '$apiBase/dashboard/movements-chart';
+  static String get stockCommandesAuto       => '$apiBase/stock/commandes-auto';
+  static String get stockAlertesStock        => '$apiBase/stock/alertes-stock';
 }

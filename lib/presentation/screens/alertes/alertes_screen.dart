@@ -21,13 +21,16 @@ class AlertesScreen extends StatelessWidget {
           Obx(() => PageHeader(
             title: 'Alertes',
             actions: [
-              if (ctrl.unreadCount.value > 0)
+              if (ctrl.unreadCount.value > 0) ...[
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.12), borderRadius: BorderRadius.circular(6)),
                   child: Text('${ctrl.unreadCount.value} non lues', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.danger)),
                 ),
-              const SizedBox(width: 12),
+                const SizedBox(width: 10),
+                SynButton(label: 'Tout marquer lu', icon: Icons.done_all_rounded, onTap: ctrl.markAllRead, outline: true),
+              ],
+              const SizedBox(width: 10),
               SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, onTap: ctrl.loadAlerts, outline: true),
             ],
           )),

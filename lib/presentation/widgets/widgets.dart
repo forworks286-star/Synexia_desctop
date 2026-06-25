@@ -50,31 +50,37 @@ class KpiCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final vc = valueColor ?? theme.textTheme.displayMedium?.color;
     return SynCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(icon, size: 16, color: AppColors.darkTextMuted),
-              const Spacer(),
-              if (trend != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    color: (trendUp ? AppColors.success : AppColors.danger).withOpacity(0.12),
-                    borderRadius: BorderRadius.circular(4),
-                  ),
-                  child: Text(
-                    trend!,
-                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: trendUp ? AppColors.success : AppColors.danger),
-                  ),
+          Row(children: [
+            Container(
+              width: 32, height: 32,
+              decoration: BoxDecoration(
+                color: (vc ?? AppColors.primary).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, size: 16, color: vc ?? AppColors.primary),
+            ),
+            const Spacer(),
+            if (trend != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(
+                  color: (trendUp ? AppColors.success : AppColors.danger).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(5),
                 ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(value, style: theme.textTheme.displayMedium?.copyWith(color: valueColor, fontSize: 26)),
-          const SizedBox(height: 4),
+                child: Text(trend!,
+                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600,
+                    color: trendUp ? AppColors.success : AppColors.danger)),
+              ),
+          ]),
+          const SizedBox(height: 14),
+          Text(value,
+            style: theme.textTheme.displayMedium?.copyWith(color: vc, fontSize: 24, letterSpacing: -0.5)),
+          const SizedBox(height: 3),
           Text(label, style: theme.textTheme.labelSmall),
         ],
       ),

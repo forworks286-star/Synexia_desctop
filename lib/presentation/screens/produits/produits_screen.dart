@@ -21,10 +21,18 @@ class ProduitsScreen extends StatelessWidget {
           PageHeader(
             title: 'Produits',
             actions: [
-              SearchField(hint: 'Rechercher un produit...', onChanged: (v) => stock.searchQuery.value = v),
-              const SizedBox(width: 12),
+              SearchField(hint: 'SKU, nom, référence...', onChanged: (v) => stock.searchQuery.value = v),
+              const SizedBox(width: 10),
               _FilterDropdown(stock: stock),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
+              _CategorieDropdown(stock: stock),
+              const SizedBox(width: 10),
+              Obx(() {
+                final auth = Get.find<AuthController>();
+                if (!auth.canEdit) return const SizedBox.shrink();
+                return SynButton(label: 'Ajouter', icon: Icons.add_rounded, onTap: () {});
+              }),
+              const SizedBox(width: 10),
               SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, onTap: stock.loadProducts, outline: true),
             ],
           ),
@@ -69,10 +77,11 @@ class _TableHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(children: [
         const SizedBox(width: 16),
-        _TH(label: 'PRODUIT', flex: 4),
-        _TH(label: 'RÉFÉRENCE QR', flex: 3),
-        _TH(label: 'STOCK', flex: 1),
-        _TH(label: 'SEUIL', flex: 1),
+        _TH(label: 'PRODUIT', flex: 3),
+        _TH(label: 'SKU', flex: 2),
+        _TH(label: 'CATÉGORIE', flex: 2),
+        _TH(label: 'STOCK DISPO', flex: 1),
+        _TH(label: 'VALEUR', flex: 2),
         _TH(label: 'FOURNISSEUR', flex: 2),
         _TH(label: 'STATUT', flex: 1),
       ]),
@@ -113,20 +122,32 @@ class _ProductRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      child: Row(children: [
-        Container(width: 6, height: 6, decoration: BoxDecoration(color: _dotColor, shape: BoxShape.circle), margin: const EdgeInsets.only(right: 10)),
-        Expanded(flex: 4, child: Text(product.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500))),
-        Expanded(flex: 3, child: Text(product.qrReference, style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: AppColors.darkTextMuted))),
-        Expanded(flex: 1, child: Text(
-          '${product.stockQuantity}',
-          style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: product.status == StockStatus.critical ? AppColors.danger : product.status == StockStatus.low ? AppColors.warning : null),
-        )),
-        Expanded(flex: 1, child: Text('${product.alertThreshold}', style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted))),
-        Expanded(flex: 2, child: Text(product.supplierName ?? '—', style: const TextStyle(fontSize: 12))),
-        Expanded(flex: 1, child: StatusChip(status: product.status, label: _statusLabel)),
-      ]),
+    return InkWell(
+      onTap: () => _showDetail(product),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
+        child: Row(children: [
+          Container(width: 5, height: 5, decoration: BoxDecoration(color: _dotColor, shape: BoxShape.circle), margin: const EdgeInsets.only(right: 10)),
+          Expanded(flex: 3, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(product.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+            Text(product.qrReference, style: const TextStyle(fontSize: 10, fontFamily: 'monospace', color: AppColors.darkTextMuted)),
+          ])),
+          Expanded(flex: 2, child: Text(product.sku, style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: AppColors.darkTextMuted))),
+          Expanded(flex: 2, child: Text(product.categorie ?? '—', style: const TextStyle(fontSize: 12))),
+          Expanded(flex: 1, child: Text(
+            '${product.stockDisponible}',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+              color: product.status == StockStatus.critical ? AppColors.danger
+                   : product.status == StockStatus.low ? AppColors.warning : null),
+          )),
+          Expanded(flex: 2, child: Text(
+            '${product.valeurStock.toStringAsFixed(0)} ${product.devise}',
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          )),
+          Expanded(flex: 2, child: Text(product.supplierName ?? '—', style: const TextStyle(fontSize: 12))),
+          Expanded(flex: 1, child: StatusChip(status: product.status, label: _statusLabel)),
+        ]),
+      ),
     );
   }
 }
@@ -154,3 +175,145 @@ class _FilterDropdown extends StatelessWidget {
     ));
   }
 }
+
+
+class _CategorieDropdown extends StatelessWidget {
+  final StockController stock;
+  const _CategorieDropdown({required this.stock});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      final cats = stock.categories;
+      if (cats.isEmpty) return const SizedBox.shrink();
+      return DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          value: stock.categorieFilter.value.isEmpty ? null : stock.categorieFilter.value,
+          hint: const Text('Catégorie', style: TextStyle(fontSize: 12)),
+          style: const TextStyle(fontSize: 12),
+          dropdownColor: AppColors.darkCard,
+          items: [
+            const DropdownMenuItem(value: null, child: Text('Toutes catégories')),
+            ...cats.map((c) => DropdownMenuItem(value: c, child: Text(c))),
+          ],
+          onChanged: (v) => stock.categorieFilter.value = v ?? '',
+        ),
+      );
+    });
+  }
+}
+
+
+class _DetailGrid extends StatelessWidget {
+  final Product product;
+  const _DetailGrid({required this.product});
+
+  @override
+  Widget build(BuildContext context) {
+    final items = [
+      ('Stock physique',    '${product.stockPhysique} ${product.uniteMesure}'),
+      ('Stock disponible',  '${product.stockDisponible} ${product.uniteMesure}'),
+      ('Stock réservé',     '${product.stockReserve} ${product.uniteMesure}'),
+      ('Seuil critique',    '${product.alertThreshold}'),
+      ('Prix achat',        '${product.prixAchat.toStringAsFixed(2)} ${product.devise}'),
+      ('Prix vente',        '${product.prixVente.toStringAsFixed(2)} ${product.devise}'),
+      ('PMP',               '${product.prixMoyenPondere.toStringAsFixed(2)} ${product.devise}'),
+      ('Valeur stock',      '${product.valeurStock.toStringAsFixed(2)} ${product.devise}'),
+      ('TVA',               '${product.tauxTva}%'),
+      ('Catégorie',         product.categorie ?? '—'),
+      ('Pays origine',      product.paysOrigine ?? '—'),
+      ('Fournisseur',       product.supplierName ?? '—'),
+    ];
+
+    return Wrap(
+      spacing: 16,
+      runSpacing: 12,
+      children: items.map((item) => SizedBox(
+        width: 210,
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(item.$1, style: const TextStyle(fontSize: 10, color: AppColors.darkTextMuted,
+            fontWeight: FontWeight.w600, letterSpacing: 0.08)),
+          const SizedBox(height: 3),
+          Text(item.$2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+        ]),
+      )).toList(),
+    );
+  }
+}
+
+void _showDetail(Product product) {
+    Get.dialog(
+      Dialog(
+        child: Container(
+          width: 520,
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(children: [
+                Expanded(child: Text(product.name,
+                  style: const TextStyle(fontFamily: 'Syne', fontSize: 16, fontWeight: FontWeight.w700))),
+                StatusChip(status: product.status, label: product.statutProduit),
+                const SizedBox(width: 8),
+                IconButton(onPressed: Get.back, icon: const Icon(Icons.close_rounded, size: 18)),
+              ]),
+              const SizedBox(height: 4),
+              Text('SKU: ${product.sku}  ·  QR: ${product.qrReference}',
+                style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: AppColors.darkTextMuted)),
+              const SizedBox(height: 20),
+              const Divider(),
+              const SizedBox(height: 16),
+              _DetailGrid(product: product),
+              if (product.lots.isNotEmpty) ...[
+                const SizedBox(height: 20),
+                const Text('LOTS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+                  color: AppColors.darkTextMuted, letterSpacing: 0.12)),
+                const SizedBox(height: 8),
+                ...product.lots.map((l) => Container(
+                  margin: const EdgeInsets.only(bottom: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: AppColors.darkSurface,
+                    borderRadius: BorderRadius.circular(7),
+                    border: Border.all(color: AppColors.darkBorder),
+                  ),
+                  child: Row(children: [
+                    Expanded(child: Text(l.numeroLot ?? 'N/A', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
+                    Text('${l.quantiteDisponible} dispo', style: const TextStyle(fontSize: 12)),
+                    const SizedBox(width: 16),
+                    if (l.emplacement != null)
+                      Text('📍 ${l.emplacement}', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+                    if (l.dateExpiration != null) ...[
+                      const SizedBox(width: 16),
+                      Text('Exp: ${_fmtDate(l.dateExpiration!)}',
+                        style: TextStyle(fontSize: 11,
+                          color: l.dateExpiration!.isBefore(DateTime.now().add(const Duration(days: 30)))
+                            ? AppColors.danger : AppColors.darkTextMuted)),
+                    ],
+                  ]),
+                )).toList(),
+              ],
+              if (product.champsExtra.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                const Text('CHAMPS EXTRA', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+                  color: AppColors.darkTextMuted, letterSpacing: 0.12)),
+                const SizedBox(height: 8),
+                ...product.champsExtra.entries.map((e) => Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(children: [
+                    Text('${e.key}:', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+                    const SizedBox(width: 8),
+                    Text('${e.value}', style: const TextStyle(fontSize: 11)),
+                  ]),
+                )).toList(),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _fmtDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
