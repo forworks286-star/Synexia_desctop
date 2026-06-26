@@ -13,6 +13,8 @@ import 'presentation/controllers/controllers.dart';
 import 'presentation/screens/setup/connection_gate_screen.dart';
 import 'presentation/screens/setup/server_setup_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
+import 'presentation/screens/setup/admin_setup_screen.dart';
+import 'presentation/screens/super_admin/super_admin_screen.dart';
 import 'presentation/screens/main_shell.dart';
 
 void main() async {
@@ -54,6 +56,8 @@ class SynexiaDesktopApp extends StatelessWidget {
         GetPage(name: '/gate', page: () => const ConnectionGateScreen()),
         GetPage(name: '/setup', page: () => const ServerSetupScreen()),
         GetPage(name: '/login', page: () => const LoginScreen()),
+        GetPage(name: '/admin-setup', page: () => const AdminSetupScreen()),
+        GetPage(name: '/super-admin', page: () => const SuperAdminScreen()),
         GetPage(name: '/dashboard', page: () => const MainShell()),
       ],
     ));

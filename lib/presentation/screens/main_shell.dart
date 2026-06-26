@@ -9,6 +9,8 @@ import '../screens/factures/factures_screen.dart';
 import '../screens/alertes/alertes_screen.dart';
 import '../screens/rapports/rapports_screen.dart';
 import '../screens/settings/settings_screen.dart';
+import '../screens/super_admin/super_admin_screen.dart';
+import '../../domain/models/models.dart';
 
 class MainShell extends StatelessWidget {
   const MainShell({super.key});
@@ -17,13 +19,24 @@ class MainShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = Get.find<AppSettingsController>();
 
+    final auth = Get.find<AuthController>();
+    final role = auth.user.value?.role;
+
     final screens = [
       const DashboardScreen(),
       const ProduitsScreen(),
-      const FacturesScreen(),
+      if (role == UserRole.admin || role == UserRole.manager)
+        const FacturesScreen()
+      else
+        const ProduitsScreen(),
       const AlertesScreen(),
-      const RapportsScreen(),
+      if (role == UserRole.admin || role == UserRole.manager)
+        const RapportsScreen()
+      else
+        const AlertesScreen(),
       const SettingsScreen(),
+      if (role == UserRole.admin)
+        const SuperAdminScreen(),
     ];
 
     return Scaffold(

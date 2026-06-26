@@ -14,13 +14,20 @@ class DesktopSidebar extends StatelessWidget {
     final auth     = Get.find<AuthController>();
     final alerts   = Get.find<AlertController>();
 
+    final auth = Get.find<AuthController>();
+    final role = auth.user.value?.role;
+
     final items = [
       _NavItem(icon: Icons.grid_view_rounded,       label: 'Dashboard',   index: 0),
       _NavItem(icon: Icons.inventory_2_outlined,    label: 'Produits',    index: 1),
-      _NavItem(icon: Icons.receipt_long_outlined,   label: 'Factures',    index: 2),
+      if (role == UserRole.admin || role == UserRole.manager)
+        _NavItem(icon: Icons.receipt_long_outlined, label: 'Factures',    index: 2),
       _NavItem(icon: Icons.notifications_outlined,  label: 'Alertes',     index: 3),
-      _NavItem(icon: Icons.bar_chart_rounded,       label: 'Rapports',    index: 4),
+      if (role == UserRole.admin || role == UserRole.manager)
+        _NavItem(icon: Icons.bar_chart_rounded,     label: 'Rapports',    index: 4),
       _NavItem(icon: Icons.settings_outlined,       label: 'Paramètres',  index: 5),
+      if (role == UserRole.admin)
+        _NavItem(icon: Icons.admin_panel_settings_outlined, label: 'Admin', index: 6),
     ];
 
     return Container(

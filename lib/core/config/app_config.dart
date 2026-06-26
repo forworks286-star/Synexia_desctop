@@ -52,4 +52,9 @@ class AppConfig {
   static String get dashboardMovementsChart  => '$apiBase/dashboard/movements-chart';
   static String get stockCommandesAuto       => '$apiBase/stock/commandes-auto';
   static String get stockAlertesStock        => '$apiBase/stock/alertes-stock';
+  static String get usersSetupStatus => '$apiBase/users/setup/status';
+  static String get usersSetup       => '$apiBase/users/setup';
+  static String get usersAll         => '$apiBase/users';
+  static String get superAdminVerify => '$apiBase/users/super-admin/verify';
+  static const String superAdminUser = 'synexia_root';
 }

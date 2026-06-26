@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../auth/login_screen.dart';
+import 'admin_setup_screen.dart';
 
 class ServerSetupScreen extends StatefulWidget {
   final bool allowBack;
@@ -48,7 +49,19 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
 
       await AppConfig.setServerUrl(url);
       if (!mounted) return;
-      Get.offAll(() => const LoginScreen());
+      try {
+        final setupDio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 5)));
+        final setupResp = await setupDio.get(AppConfig.usersSetupStatus);
+        final setupDone = setupResp.data['setup_done'] as bool? ?? false;
+        if (!mounted) return;
+        if (setupDone) {
+          Get.offAll(() => const LoginScreen());
+        } else {
+          Get.offAll(() => const AdminSetupScreen());
+        }
+      } catch (_) {
+        Get.offAll(() => const LoginScreen());
+      }
     } catch (_) {
       setState(() {
         _testing = false;
