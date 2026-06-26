@@ -13,8 +13,6 @@ class DesktopSidebar extends StatelessWidget {
     final settings = Get.find<AppSettingsController>();
     final auth     = Get.find<AuthController>();
     final alerts   = Get.find<AlertController>();
-
-    final auth = Get.find<AuthController>();
     final role = auth.user.value?.role;
 
     final items = [
