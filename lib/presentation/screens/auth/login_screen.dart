@@ -6,7 +6,7 @@ import '../../../core/l10n/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
-
+import '../super_admin/super_admin_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -125,6 +125,16 @@ class _LoginScreenState extends State<LoginScreen> {
                     SizedBox(
                       width: double.infinity,
                       child: Obx(() => SynButton(label: 'Se connecter', isLoading: auth.isLoading.value, onTap: () => _submit(auth))),
+                    ),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: TextButton(
+                        onPressed: () => Get.to(() => const SuperAdminScreen()),
+                        child: const Text(
+                          'Accès administrateur système',
+                          style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted),
+                        ),
+                      ),
                     ),
                   ],
                 ),
