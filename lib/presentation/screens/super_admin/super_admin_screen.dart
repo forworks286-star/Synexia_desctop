@@ -20,16 +20,18 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
   bool _obscure = true;
   bool _verified = false;
   String? _error;
+  String? _adminToken;
 
   Future<void> _verify() async {
     setState(() { _loading = true; _error = null; });
     try {
       final dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 5)));
-      await dio.post(AppConfig.superAdminVerify, data: {
+      final response = await dio.post(AppConfig.superAdminLogin, data: {
         'username': AppConfig.superAdminUser,
         'password': _passCtrl.text,
       });
-      setState(() { _verified = true; _loading = false; });
+      final token = response.data['access'] as String;
+      setState(() { _verified = true; _loading = false; _adminToken = token; });
     } on DioException catch (_) {
       setState(() { _loading = false; _error = 'Mot de passe incorrect'; });
     }
@@ -38,7 +40,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_verified) return _buildLoginView();
-    return const SuperAdminPanelScreen();
+    return SuperAdminPanelScreen(adminToken: _adminToken!);
   }
 
   Widget _buildLoginView() {
@@ -129,18 +131,30 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
 
 
 class SuperAdminPanelScreen extends StatefulWidget {
-  const SuperAdminPanelScreen({super.key});
+  final String adminToken;
+  const SuperAdminPanelScreen({super.key, required this.adminToken});
   @override
   State<SuperAdminPanelScreen> createState() => _SuperAdminPanelScreenState();
 }
 
 class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
-  final _dio = ApiClient.instance.dio;
+  late final Dio _dio;
   List<Map<String, dynamic>> _users = [];
   bool _loading = true;
 
   @override
-  void initState() { super.initState(); _load(); }
+  void initState() {
+    super.initState();
+    _dio = Dio(BaseOptions(
+      connectTimeout: const Duration(seconds: 8),
+      receiveTimeout: const Duration(seconds: 8),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ${widget.adminToken}',
+      },
+    ));
+    _load();
+  }
 
   Future<void> _load() async {
     try {
