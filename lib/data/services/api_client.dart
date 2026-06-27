@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../../core/config/app_config.dart';
@@ -35,6 +36,9 @@ class ApiClient {
               final response = await _dio.fetch(error.requestOptions);
               return handler.resolve(response);
             } catch (_) {}
+          } else {
+            await _storage.deleteAll();
+            Get.offAllNamed('/login');
           }
         }
         return handler.next(error);
