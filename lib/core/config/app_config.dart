@@ -58,6 +58,7 @@ class AppConfig {
   static String get superAdminVerify => '$apiBase/users/super-admin/verify';
   static String get superAdminLogin   => '$apiBase/users/super-admin/login';
   static String get stockProduitsCreate => '$apiBase/stock/produits';
+  static String get stockLots => '$apiBase/stock/lots';
   static const String superAdminUser = 'synexia_root';
 
 }

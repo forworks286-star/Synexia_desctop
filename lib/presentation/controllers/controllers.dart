@@ -23,9 +23,16 @@ class AuthController extends GetxController {
 
   Future<void> _checkSession() async {
     final u = await _repo.getCurrentUser();
-    if (u != null) { user.value = u; Get.offAllNamed('/dashboard'); }
+    if (u != null) {
+      user.value = u;
+      Get.offAllNamed('/dashboard');
+      Future.delayed(const Duration(milliseconds: 300), () {
+        if (Get.isRegistered<StockController>())   Get.find<StockController>().loadAll();
+        if (Get.isRegistered<InvoiceController>()) Get.find<InvoiceController>().loadInvoices();
+        if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
+      });
+    }
   }
-
   Future<void> login(String username, String password) async {
     isLoading.value = true; error.value = '';
     final result = await _repo.login(username, password);
@@ -39,7 +46,7 @@ class AuthController extends GetxController {
 
   bool get isAdmin   => user.value?.role == UserRole.admin;
   bool get isManager => user.value?.role == UserRole.manager || isAdmin;
-  bool get canEdit   => isManager;
+  bool get canEdit   => isAdmin;
   bool get isSuperAdmin => user.value?.role == UserRole.admin;
   bool get canManageUsers => isSuperAdmin;
 }

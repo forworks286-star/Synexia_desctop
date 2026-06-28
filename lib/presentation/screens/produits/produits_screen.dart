@@ -328,6 +328,8 @@ void _showAddProduit(StockController stock) {
   final prixAchatCtrl = TextEditingController(text: '0');
   final prixVenteCtrl = TextEditingController(text: '0');
   final seuilCtrl     = TextEditingController(text: '10');
+  final stockInitialCtrl = TextEditingController(text: '0');
+  final emplacementCtrl  = TextEditingController();
   String? errorMsg;
 
   Get.dialog(StatefulBuilder(builder: (context, setState) => Dialog(
@@ -357,6 +359,11 @@ void _showAddProduit(StockController stock) {
           const SizedBox(height: 12),
           TextField(controller: categorieCtrl,
             decoration: const InputDecoration(labelText: 'Catégorie')),
+          
+          const SizedBox(height: 12),
+          TextField(controller: emplacementCtrl,
+            decoration: const InputDecoration(labelText: 'Emplacement (ex: Allée 1, Rack A)')),
+
           const SizedBox(height: 12),
           Row(children: [
             Expanded(child: TextField(controller: prixAchatCtrl,
@@ -369,6 +376,11 @@ void _showAddProduit(StockController stock) {
             const SizedBox(width: 12),
             Expanded(child: TextField(controller: seuilCtrl,
               decoration: const InputDecoration(labelText: 'Seuil critique'),
+              keyboardType: TextInputType.number)),
+            
+            const SizedBox(width: 12),
+            Expanded(child: TextField(controller: stockInitialCtrl,
+              decoration: const InputDecoration(labelText: 'Stock initial'),
               keyboardType: TextInputType.number)),
           ]),
           if (errorMsg != null) ...[
@@ -407,6 +419,25 @@ void _showAddProduit(StockController stock) {
                     'devise': 'DZD',
                     'taux_tva': 19.0,
                   });
+                
+                  final resp = await dio.get(AppConfig.stockProducts);
+                  final allProducts = resp.data['results'] as List;
+                  final newProd = allProducts.lastWhere(
+                    (p) => p['sku'] == skuCtrl.text.trim(), orElse: () => null);
+
+                  
+                  final stockInitial = int.tryParse(stockInitialCtrl.text) ?? 0;
+                  if (newProd != null) {
+                    await dio.post(AppConfig.stockLots, data: {
+                      'produit_id': newProd['id'],
+                      'numero_lot': 'LOT-INIT-${skuCtrl.text.trim()}',
+                      'quantite_physique': stockInitial,
+                      'quantite_reservee': 0,
+                      'statut': 'disponible',
+                      'emplacement': emplacementCtrl.text.trim().isEmpty
+                          ? null : emplacementCtrl.text.trim(),
+                    });
+                  }
                   Get.back();
                   await stock.loadProducts();
                   Get.snackbar('Succès', 'Produit ajouté avec succès',
