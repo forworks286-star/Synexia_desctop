@@ -6,6 +6,7 @@ import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../data/services/api_client.dart';
+import '../../../core/config/app_config.dart';
 
 class ProduitsScreen extends StatelessWidget {
   const ProduitsScreen({super.key});
