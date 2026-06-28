@@ -110,13 +110,15 @@ class _InvoiceRow extends StatelessWidget {
           _AuthDot(detected: invoice.signatureDetected, label: 'Sign.'),
         ])),
         Expanded(flex: 2, child: InvoiceChip(status: invoice.status, label: _statusLabel(invoice.status))),
-        Expanded(flex: 2, child: invoice.status == InvoiceStatus.pending
-            ? Row(children: [
-                SynButton(label: 'Valider', color: AppColors.success, onTap: () => ctrl.validateInvoice(invoice.id)),
-                const SizedBox(width: 8),
-                SynButton(label: 'Rejeter', outline: true, color: AppColors.danger, onTap: () => ctrl.rejectInvoice(invoice.id)),
-              ])
-            : const SizedBox.shrink()),
+        Expanded(flex: 2, child: Builder(builder: (_) {
+          if (!Get.find<AuthController>().isManager) return const SizedBox.shrink();
+          if (invoice.status != InvoiceStatus.pending) return const SizedBox.shrink();
+          return Row(children: [
+            SynButton(label: 'Valider', color: AppColors.success, onTap: () => ctrl.validateInvoice(invoice.id)),
+            const SizedBox(width: 8),
+            SynButton(label: 'Rejeter', outline: true, color: AppColors.danger, onTap: () => ctrl.rejectInvoice(invoice.id)),
+          ]);
+        })),
       ]),
     );
   }

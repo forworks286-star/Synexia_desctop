@@ -5,6 +5,10 @@ import '../../../core/theme/app_theme.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/models/models.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:intl/intl.dart';
 
 
 class RapportsScreen extends StatelessWidget {
@@ -30,7 +34,7 @@ class RapportsScreen extends StatelessWidget {
                 description: 'État complet de l\'inventaire avec niveaux critiques et historique des mouvements.',
                 icon: Icons.inventory_2_outlined,
                 color: AppColors.primary,
-                onGenerate: () {},
+                onGenerate: () => _generateStockPdf(stock),
               )),
               const SizedBox(width: 20),
               Expanded(child: _ReportCard(
@@ -38,7 +42,7 @@ class RapportsScreen extends StatelessWidget {
                 description: 'Synthèse des factures validées, rejetées et en attente sur la période sélectionnée.',
                 icon: Icons.receipt_long_outlined,
                 color: AppColors.success,
-                onGenerate: () {},
+                onGenerate: () => _generateFacturesPdf(invoices),
               )),
               const SizedBox(width: 20),
               Expanded(child: _ReportCard(
@@ -46,7 +50,7 @@ class RapportsScreen extends StatelessWidget {
                 description: 'Journal complet des alertes système, stocks critiques et anomalies détectées.',
                 icon: Icons.notifications_outlined,
                 color: AppColors.warning,
-                onGenerate: () {},
+                onGenerate: () => _generateAlertesPdf(),
               )),
             ],
           ),
@@ -137,4 +141,143 @@ class _Divider extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(width: 1, height: 60, color: AppColors.darkBorder, margin: const EdgeInsets.symmetric(horizontal: 20));
   }
+}
+
+Future<void> _generateStockPdf(StockController stock) async {
+  final pdf = pw.Document();
+  final now = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+
+  pdf.addPage(pw.MultiPage(
+    pageFormat: PdfPageFormat.a4,
+    margin: const pw.EdgeInsets.all(32),
+    build: (context) => [
+      pw.Header(level: 0, child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('SYNEXIA — Rapport de Stock',
+            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+          pw.Text('Généré le $now', style: const pw.TextStyle(fontSize: 10)),
+        ],
+      )),
+      pw.SizedBox(height: 20),
+      pw.Table.fromTextArray(
+        headers: ['Produit', 'SKU', 'Catégorie', 'Stock dispo', 'Valeur (DZD)', 'Statut'],
+        data: stock.products.map((p) => [
+          p.name,
+          p.sku,
+          p.categorie ?? '—',
+          '${p.stockDisponible}',
+          p.valeurStock.toStringAsFixed(0),
+          p.status == StockStatus.critical ? 'Critique'
+              : p.status == StockStatus.low ? 'Bas' : 'Normal',
+        ]).toList(),
+        headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+        cellStyle: const pw.TextStyle(fontSize: 9),
+        headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey100),
+        cellAlignments: {
+          3: pw.Alignment.center,
+          4: pw.Alignment.centerRight,
+          5: pw.Alignment.center,
+        },
+      ),
+      pw.SizedBox(height: 20),
+      pw.Text(
+        'Total valeur stock: ${stock.products.fold<double>(0, (s, p) => s + p.valeurStock).toStringAsFixed(0)} DZD',
+        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
+      ),
+    ],
+  ));
+
+  await Printing.layoutPdf(onLayout: (format) => pdf.save());
+}
+
+Future<void> _generateFacturesPdf(InvoiceController invoices) async {
+  final pdf = pw.Document();
+  final now = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+
+  pdf.addPage(pw.MultiPage(
+    pageFormat: PdfPageFormat.a4,
+    margin: const pw.EdgeInsets.all(32),
+    build: (context) => [
+      pw.Header(level: 0, child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('SYNEXIA — Rapport des Factures',
+            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+          pw.Text('Généré le $now', style: const pw.TextStyle(fontSize: 10)),
+        ],
+      )),
+      pw.SizedBox(height: 20),
+      pw.Table.fromTextArray(
+        headers: ['Fournisseur', 'Date', 'Montant HT', 'Montant TTC', 'Statut'],
+        data: invoices.invoices.map((f) => [
+          f.supplierName,
+          DateFormat('dd/MM/yyyy').format(f.date),
+          '${f.amountHt.toStringAsFixed(0)} DA',
+          '${f.amountTtc.toStringAsFixed(0)} DA',
+          f.status == InvoiceStatus.validated ? 'Validée'
+              : f.status == InvoiceStatus.rejected ? 'Rejetée' : 'En attente',
+        ]).toList(),
+        headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+        cellStyle: const pw.TextStyle(fontSize: 9),
+        headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey100),
+      ),
+      pw.SizedBox(height: 20),
+      pw.Row(children: [
+        pw.Expanded(child: pw.Text(
+          'Validées: ${invoices.invoices.where((f) => f.status == InvoiceStatus.validated).length}',
+          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
+        )),
+        pw.Expanded(child: pw.Text(
+          'En attente: ${invoices.invoices.where((f) => f.status == InvoiceStatus.pending).length}',
+          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
+        )),
+        pw.Expanded(child: pw.Text(
+          'Rejetées: ${invoices.invoices.where((f) => f.status == InvoiceStatus.rejected).length}',
+          style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
+        )),
+      ]),
+    ],
+  ));
+
+  await Printing.layoutPdf(onLayout: (format) => pdf.save());
+}
+
+Future<void> _generateAlertesPdf() async {
+  final alerts = Get.find<AlertController>().alerts;
+  final pdf = pw.Document();
+  final now = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
+
+  pdf.addPage(pw.MultiPage(
+    pageFormat: PdfPageFormat.a4,
+    margin: const pw.EdgeInsets.all(32),
+    build: (context) => [
+      pw.Header(level: 0, child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text('SYNEXIA — Rapport des Alertes',
+            style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
+          pw.Text('Généré le $now', style: const pw.TextStyle(fontSize: 10)),
+        ],
+      )),
+      pw.SizedBox(height: 20),
+      pw.Table.fromTextArray(
+        headers: ['Titre', 'Message', 'Niveau', 'Date', 'Statut'],
+        data: alerts.map((a) => [
+          a.title,
+          a.message,
+          a.level == AlertLevel.danger ? 'Critique'
+              : a.level == AlertLevel.warning ? 'Avertissement'
+              : a.level == AlertLevel.success ? 'Succès' : 'Info',
+          DateFormat('dd/MM/yyyy HH:mm').format(a.createdAt),
+          a.isRead ? 'Lu' : 'Non lu',
+        ]).toList(),
+        headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
+        cellStyle: const pw.TextStyle(fontSize: 9),
+        headerDecoration: const pw.BoxDecoration(color: PdfColors.blueGrey100),
+      ),
+    ],
+  ));
+
+  await Printing.layoutPdf(onLayout: (format) => pdf.save());
 }

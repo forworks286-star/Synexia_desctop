@@ -109,7 +109,7 @@ class _AccountCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.12), borderRadius: BorderRadius.circular(4)),
-                      child: Text(user.role == UserRole.manager ? 'Manager' : 'Stockiste', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                      child: Text(_roleLabel(user.role), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primary)),
                     ),
                   ]),
                 ]),
@@ -237,5 +237,14 @@ class _LangOption extends StatelessWidget {
         child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: selected ? Colors.white : AppColors.darkTextMuted)),
       ),
     );
+  }
+}
+
+String _roleLabel(UserRole role) {
+  switch (role) {
+    case UserRole.admin:      return 'Administrateur';
+    case UserRole.manager:    return 'Manager';
+    case UserRole.stockiste:  return 'Stockiste';
+    case UserRole.agentKiosk: return 'Agent Kiosk';
   }
 }

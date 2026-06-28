@@ -28,7 +28,8 @@ class AlertesScreen extends StatelessWidget {
                   child: Text('${ctrl.unreadCount.value} non lues', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.danger)),
                 ),
                 const SizedBox(width: 10),
-                SynButton(label: 'Tout marquer lu', icon: Icons.done_all_rounded, onTap: ctrl.markAllRead, outline: true),
+                if (Get.find<AuthController>().isAdmin)
+                  SynButton(label: 'Tout marquer lu', icon: Icons.done_all_rounded, onTap: ctrl.markAllRead, outline: true),
               ],
               const SizedBox(width: 10),
               SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, onTap: ctrl.loadAlerts, outline: true),
