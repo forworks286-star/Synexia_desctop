@@ -21,7 +21,19 @@ class DashboardScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const PageHeader(title: 'Dashboard'),
+          Row(children: [
+            const Expanded(child: PageHeader(title: 'Dashboard')),
+            SynButton(
+              label: 'Actualiser',
+              icon: Icons.refresh_rounded,
+              outline: true,
+              onTap: () {
+                Get.find<StockController>().loadAll();
+                Get.find<InvoiceController>().loadInvoices();
+                Get.find<AlertController>().loadAlerts();
+              },
+            ),
+          ]),
           const SizedBox(height: 24),
           Obx(() => _buildKpis(stock.stats.value, alerts.unreadCount.value, invoices.invoices.where((i) => i.status == InvoiceStatus.pending).length)),
           const SizedBox(height: 24),

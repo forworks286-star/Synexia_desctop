@@ -26,11 +26,12 @@ class AuthController extends GetxController {
     if (u != null) {
       user.value = u;
       Get.offAllNamed('/dashboard');
-      Future.delayed(const Duration(milliseconds: 300), () {
+      await Future.delayed(const Duration(milliseconds: 800));
+      try {
         if (Get.isRegistered<StockController>())   Get.find<StockController>().loadAll();
         if (Get.isRegistered<InvoiceController>()) Get.find<InvoiceController>().loadInvoices();
         if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
-      });
+      } catch (_) {}
     }
   }
   Future<void> login(String username, String password) async {
