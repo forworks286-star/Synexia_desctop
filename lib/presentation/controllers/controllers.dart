@@ -152,6 +152,8 @@ class InvoiceController extends GetxController {
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
   final Rx<InvoiceStatus?> statusFilter = Rx<InvoiceStatus?>(null);
+  final Rx<String?> typeFilter = Rx<String?>(null);
+
 
   @override
   void onInit() { super.onInit(); loadInvoices(); }
@@ -173,11 +175,14 @@ class InvoiceController extends GetxController {
     return r.fold((_) => false, (_) { loadInvoices(); return true; });
   }
 
-  List<Invoice> get filteredInvoices {
-    return statusFilter.value == null
-        ? invoices
-        : invoices.where((i) => i.status == statusFilter.value).toList();
+    List<Invoice> get filteredInvoices {
+    return invoices.where((i) {
+      final matchStatus = statusFilter.value == null || i.status == statusFilter.value;
+      final matchType   = typeFilter.value == null   || i.typeFacture == typeFilter.value;
+      return matchStatus && matchType;
+    }).toList();
   }
+
 }
 
 class AlertController extends GetxController {
@@ -206,8 +211,8 @@ class AlertController extends GetxController {
     final i = alerts.indexWhere((a) => a.id == id);
     if (i != -1) {
       final a = alerts[i];
-      alerts[i] = Alert(id: a.id, level: a.level, title: a.title, message: a.message,
-                        createdAt: a.createdAt, isRead: true, sourceModule: a.sourceModule);
+            alerts[i] = Alert(id: a.id, level: a.level, title: a.title, message: a.message,
+                        createdAt: a.createdAt, isRead: true, sourceModule: a.sourceModule, type: a.type);
       _updateUnread();
     }
   }
@@ -216,7 +221,7 @@ class AlertController extends GetxController {
     await _repo.markAllRead();
     alerts.assignAll(alerts.map((a) => Alert(
       id: a.id, level: a.level, title: a.title, message: a.message,
-      createdAt: a.createdAt, isRead: true, sourceModule: a.sourceModule,
+      createdAt: a.createdAt, isRead: true, sourceModule: a.sourceModule, type: a.type,
     )).toList());
     _updateUnread();
   }

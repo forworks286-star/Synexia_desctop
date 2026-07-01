@@ -170,6 +170,7 @@ class Alert extends Equatable {
   final DateTime createdAt;
   final bool isRead;
   final String? sourceModule;
+  final String? type;
 
   const Alert({
     required this.id,
@@ -179,7 +180,9 @@ class Alert extends Equatable {
     required this.createdAt,
     this.isRead = false,
     this.sourceModule,
+    this.type,
   });
+
   @override
   List<Object?> get props => [id];
 }
