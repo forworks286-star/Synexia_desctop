@@ -24,6 +24,10 @@ class DesktopSidebar extends StatelessWidget {
       if (role == UserRole.admin || role == UserRole.manager)
         _NavItem(icon: Icons.bar_chart_rounded,     label: 'Rapports',    index: 4),
       _NavItem(icon: Icons.settings_outlined,       label: 'Paramètres',  index: 5),
+      if (role == UserRole.admin || role == UserRole.manager) ...[
+        _NavItem(icon: Icons.sensors_rounded, label: 'IoT', index: 7),
+        _NavItem(icon: Icons.security_rounded, label: 'Sécurité', index: 8),
+      ],
       if (role == UserRole.admin)
         _NavItem(icon: Icons.admin_panel_settings_outlined, label: 'Admin', index: 6),
     ];

@@ -60,6 +60,9 @@ class AppConfig {
   static String get stockProduitsCreate => '$apiBase/stock/produits';
   static String get stockLots => '$apiBase/stock/lots';
   static String get stockFournisseurs => '$apiBase/stock/fournisseurs';
+  static String get dashboardIot         => '$apiBase/dashboard/iot';
+  static String get integrationsAuto     => '$apiBase/integrations/automation-events/latest';
+  static String get integrationsFaceEvents => '$apiBase/integrations/face-events';
   static const String superAdminUser = 'synexia_root';
 
 }

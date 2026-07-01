@@ -69,10 +69,11 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     date: DateTime.parse(data['date'] as String),
     amountHt: (data['amount_ht'] as num).toDouble(),
     amountTtc: (data['amount_ttc'] as num).toDouble(),
-    stampDetected: (data['stamp_detected'] as bool?) ?? false,
-    signatureDetected: (data['signature_detected'] as bool?) ?? false,
-    status: _parseStatus(data['status'] as String),
-    photoUrl: data['photo_url'] as String?,
+    stampDetected:      (data['stamp_detected'] as bool?) ?? true,
+    signatureDetected:  (data['signature_detected'] as bool?) ?? true,
+    status:             _parseStatus(data['status'] as String? ?? 'pending'),
+    photoUrl:           data['photo_url'] as String?,
+    typeFacture:        (data['type_facture'] as String?) ?? 'achat',
   );
 
   InvoiceStatus _parseStatus(String status) {

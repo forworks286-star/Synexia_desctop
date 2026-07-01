@@ -160,33 +160,6 @@ class Movement extends Equatable {
 
 enum MovementType { entry, exit, returnType }
 
-class Invoice extends Equatable {
-  final int id;
-  final String supplierName;
-  final DateTime date;
-  final double amountHt;
-  final double amountTtc;
-  final bool stampDetected;
-  final bool signatureDetected;
-  final InvoiceStatus status;
-  final String? photoUrl;
-
-  const Invoice({
-    required this.id,
-    required this.supplierName,
-    required this.date,
-    required this.amountHt,
-    required this.amountTtc,
-    required this.stampDetected,
-    required this.signatureDetected,
-    required this.status,
-    this.photoUrl,
-  });
-
-  @override
-  List<Object?> get props => [id];
-}
-
 enum InvoiceStatus { pending, validated, rejected }
 
 class Alert extends Equatable {
@@ -262,6 +235,98 @@ class CommandeAuto extends Equatable {
     required this.fournisseurNom,
     required this.dernierPrixAchat,
     required this.timestamp,
+  });
+
+  @override
+  List<Object?> get props => [id];
+}
+
+
+class IoTZone extends Equatable {
+  final String deviceId;
+  final String module;
+  final String zoneId;
+  final bool hasAlarm;
+  final DateTime timestamp;
+  final Map<String, dynamic> inputs;
+  final Map<String, dynamic> outputs;
+  final Map<String, dynamic> states;
+  final Map<String, dynamic> lighting;
+  final Map<String, dynamic> hvac;
+  final Map<String, dynamic> energy;
+  final Map<String, dynamic> alarms;
+  final Map<String, dynamic> diagnostic;
+  final Map<String, dynamic> maintenance;
+
+  const IoTZone({
+    required this.deviceId,
+    required this.module,
+    required this.zoneId,
+    required this.hasAlarm,
+    required this.timestamp,
+    this.inputs = const {},
+    this.outputs = const {},
+    this.states = const {},
+    this.lighting = const {},
+    this.hvac = const {},
+    this.energy = const {},
+    this.alarms = const {},
+    this.diagnostic = const {},
+    this.maintenance = const {},
+  });
+
+  @override
+  List<Object?> get props => [deviceId, zoneId];
+}
+
+class FaceEvent extends Equatable {
+  final int id;
+  final String? personneId;
+  final String? nom;
+  final bool reconnu;
+  final String? confiance;
+  final String? zone;
+  final bool autorise;
+  final DateTime timestamp;
+
+  const FaceEvent({
+    required this.id,
+    this.personneId,
+    this.nom,
+    required this.reconnu,
+    this.confiance,
+    this.zone,
+    required this.autorise,
+    required this.timestamp,
+  });
+
+  @override
+  List<Object?> get props => [id];
+}
+
+class Invoice extends Equatable {
+  final int id;
+  final String supplierName;
+  final DateTime date;
+  final double amountHt;
+  final double amountTtc;
+  final bool stampDetected;
+  final bool signatureDetected;
+  final InvoiceStatus status;
+  final String? photoUrl;
+  final String typeFacture;
+
+  const Invoice({
+    required this.id,
+    required this.supplierName,
+    required this.date,
+    required this.amountHt,
+    required this.amountTtc,
+    required this.stampDetected,
+    required this.signatureDetected,
+    required this.status,
+    this.photoUrl,
+    this.typeFacture = 'achat',
   });
 
   @override

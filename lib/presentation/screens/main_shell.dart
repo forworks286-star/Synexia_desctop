@@ -10,6 +10,8 @@ import '../screens/alertes/alertes_screen.dart';
 import '../screens/rapports/rapports_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/super_admin/super_admin_screen.dart';
+import '../screens/iot/iot_screen.dart';
+import '../screens/securite/securite_screen.dart';
 import '../../domain/models/models.dart';
 
 class MainShell extends StatelessWidget {
@@ -35,6 +37,8 @@ class MainShell extends StatelessWidget {
                 1: const ProduitsScreen(),
                 3: const AlertesScreen(),
                 5: const SettingsScreen(),
+                7: const IoTScreen(),
+                8: const SecuriteScreen(),
               };
 
               if (role == UserRole.admin || role == UserRole.manager) {

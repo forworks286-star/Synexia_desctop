@@ -146,6 +146,56 @@ class StockRepositoryImpl implements StockRepository {
     }
   }
 
+  @override
+  Future<Either<String, List<IoTZone>>> getIoTDashboard() async {
+    try {
+      final response = await _dio.get(AppConfig.dashboardIot);
+      final zones = (response.data['zones'] as List)
+          .map((e) => IoTZone(
+                deviceId:    e['device_id'] as String? ?? '',
+                module:      e['module'] as String? ?? '',
+                zoneId:      e['zone_id'] as String? ?? '',
+                hasAlarm:    e['has_alarm'] as bool? ?? false,
+                timestamp:   DateTime.tryParse(e['timestamp']?.toString() ?? '') ?? DateTime.now(),
+                inputs:      Map<String, dynamic>.from(e['inputs'] as Map? ?? {}),
+                outputs:     Map<String, dynamic>.from(e['outputs'] as Map? ?? {}),
+                states:      Map<String, dynamic>.from(e['states'] as Map? ?? {}),
+                lighting:    Map<String, dynamic>.from(e['lighting'] as Map? ?? {}),
+                hvac:        Map<String, dynamic>.from(e['hvac'] as Map? ?? {}),
+                energy:      Map<String, dynamic>.from(e['energy'] as Map? ?? {}),
+                alarms:      Map<String, dynamic>.from(e['alarms'] as Map? ?? {}),
+                diagnostic:  Map<String, dynamic>.from(e['diagnostic'] as Map? ?? {}),
+                maintenance: Map<String, dynamic>.from(e['maintenance'] as Map? ?? {}),
+              ))
+          .toList();
+      return Right(zones);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, List<FaceEvent>>> getFaceEvents() async {
+    try {
+      final response = await _dio.get(AppConfig.integrationsFaceEvents);
+      final events = (response.data['results'] as List)
+          .map((e) => FaceEvent(
+                id:         e['id'] as int,
+                personneId: e['personne_id'] as String?,
+                nom:        e['nom'] as String?,
+                reconnu:    e['reconnu'] as bool? ?? false,
+                confiance:  e['confiance'] as String?,
+                zone:       e['zone'] as String?,
+                autorise:   e['autorise'] as bool? ?? false,
+                timestamp:  DateTime.tryParse(e['timestamp']?.toString() ?? '') ?? DateTime.now(),
+              ))
+          .toList();
+      return Right(events);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
   Product _parseProduct(Map<String, dynamic> data) {
     final lotsRaw = data['lots'] as List? ?? [];
     return Product(

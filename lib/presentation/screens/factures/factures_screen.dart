@@ -23,6 +23,8 @@ class FacturesScreen extends StatelessWidget {
             actions: [
               _FilterDropdown(ctrl: ctrl),
               const SizedBox(width: 12),
+              _TypeFilterDropdown(ctrl: ctrl),
+              const SizedBox(width: 12),
               SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, onTap: ctrl.loadInvoices, outline: true),
             ],
           ),
@@ -67,6 +69,7 @@ class _TableHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(children: [
         _TH(label: 'FOURNISSEUR', flex: 3),
+        _TH(label: 'TYPE', flex: 1),
         _TH(label: 'DATE', flex: 2),
         _TH(label: 'MONTANT HT', flex: 2),
         _TH(label: 'MONTANT TTC', flex: 2),
@@ -100,7 +103,26 @@ class _InvoiceRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(children: [
-        Expanded(flex: 3, child: Text(invoice.supplierName, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
+        Expanded(flex: 3, child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(invoice.supplierName, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+            Container(
+              margin: const EdgeInsets.only(top: 2),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              decoration: BoxDecoration(
+                color: invoice.typeFacture == 'vente' ? AppColors.success.withOpacity(0.1) : AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: Text(
+                invoice.typeFacture == 'vente' ? 'Vente' : 'Achat',
+                style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700,
+                  color: invoice.typeFacture == 'vente' ? AppColors.success : AppColors.primary),
+              ),
+            ),
+          ],
+        )),
         Expanded(flex: 2, child: Text(_fmt(invoice.date), style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted))),
         Expanded(flex: 2, child: Text('${invoice.amountHt.toStringAsFixed(0)} DA', style: const TextStyle(fontSize: 12))),
         Expanded(flex: 2, child: Text('${invoice.amountTtc.toStringAsFixed(0)} DA', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
@@ -169,6 +191,30 @@ class _FilterDropdown extends StatelessWidget {
           DropdownMenuItem(value: InvoiceStatus.rejected, child: Text('Rejetées')),
         ],
         onChanged: (v) => ctrl.statusFilter.value = v,
+      ),
+    ));
+  }
+}
+
+
+class _TypeFilterDropdown extends StatelessWidget {
+  final InvoiceController ctrl;
+  const _TypeFilterDropdown({required this.ctrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() => DropdownButtonHideUnderline(
+      child: DropdownButton<String?>(
+        value: ctrl.typeFilter.value,
+        hint: const Text('Tous les types', style: TextStyle(fontSize: 12)),
+        style: const TextStyle(fontSize: 12),
+        dropdownColor: AppColors.darkCard,
+        items: const [
+          DropdownMenuItem(value: null,      child: Text('Tous les types')),
+          DropdownMenuItem(value: 'achat',   child: Text('Achats')),
+          DropdownMenuItem(value: 'vente',   child: Text('Ventes')),
+        ],
+        onChanged: (v) => ctrl.typeFilter.value = v,
       ),
     ));
   }

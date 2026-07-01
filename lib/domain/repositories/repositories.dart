@@ -24,8 +24,9 @@ abstract class StockRepository {
   Future<Either<String, List<CommandeAuto>>> getCommandesAuto();
   Future<Either<String, void>> validerCommande(int id);
   Future<Either<String, void>> rejeterCommande(int id);
+  Future<Either<String, List<IoTZone>>> getIoTDashboard();
+  Future<Either<String, List<FaceEvent>>> getFaceEvents();
 }
-
 abstract class AlertRepository {
   Future<Either<String, List<Alert>>> getAlerts();
   Stream<Alert> alertStream();

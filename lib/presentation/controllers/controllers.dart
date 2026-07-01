@@ -60,6 +60,9 @@ class StockController extends GetxController {
   final RxList<Movement> movements = <Movement>[].obs;
   final RxList<ChartPoint> chartPoints = <ChartPoint>[].obs;
   final RxList<CommandeAuto> commandesAuto = <CommandeAuto>[].obs;
+  final RxList<IoTZone> iotZones = <IoTZone>[].obs;
+  final RxList<FaceEvent> faceEvents = <FaceEvent>[].obs;
+  final RxInt iotActiveAlarms = 0.obs;
   final Rx<DashboardStats?> stats = Rx<DashboardStats?>(null);
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
@@ -72,7 +75,7 @@ class StockController extends GetxController {
 
   Future<void> loadAll() async {
     isLoading.value = true;
-    await Future.wait([loadProducts(), loadMovements(), loadStats(), loadChart(), loadCommandesAuto()]);
+    await Future.wait([loadProducts(), loadMovements(), loadStats(), loadChart(), loadCommandesAuto(), loadIoT()]);
     isLoading.value = false;
   }
 
@@ -94,6 +97,16 @@ class StockController extends GetxController {
   Future<bool> rejeterCommande(int id) async {
     final r = await _repo.rejeterCommande(id);
     return r.fold((_) => false, (_) { loadCommandesAuto(); return true; });
+  }
+
+  Future<void> loadIoT() async {
+    final r = await _repo.getIoTDashboard();
+    r.fold((_) {}, (zones) {
+      iotZones.assignAll(zones);
+      iotActiveAlarms.value = zones.where((z) => z.hasAlarm).length;
+    });
+    final r2 = await _repo.getFaceEvents();
+    r2.fold((_) {}, (events) => faceEvents.assignAll(events));
   }
 
   List<String> get categories {
