@@ -78,13 +78,17 @@ class _IoTZoneCard extends StatelessWidget {
     final borderColor = hasAlarm ? AppColors.danger : AppColors.darkBorder;
     final module = zone.module;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.darkCard,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: borderColor, width: hasAlarm ? 1.5 : 1),
-      ),
-      padding: const EdgeInsets.all(16),
+    return GestureDetector(
+      onTap: () => _showDetails(context),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: Container(
+          decoration: BoxDecoration(
+            color: AppColors.darkCard,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor, width: hasAlarm ? 1.5 : 1),
+          ),
+          padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -113,6 +117,7 @@ class _IoTZoneCard extends StatelessWidget {
           ],
         ],
       ),
+    ),
     );
   }
 
@@ -191,6 +196,170 @@ class _IoTZoneCard extends StatelessWidget {
             ))
         .toList();
   }
+
+  void _showDetails(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: AppColors.darkSurface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          width: 900,
+          constraints: const BoxConstraints(maxHeight: 700),
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header ──────────────────────────────────────
+              Row(children: [
+                _moduleIcon(zone.module),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text('${zone.module} — ${zone.zoneId}',
+                    style: const TextStyle(fontFamily: 'Syne', fontSize: 16, fontWeight: FontWeight.w700)),
+                  Text('Device: ${zone.deviceId} | ${_fmt(zone.timestamp)}',
+                    style: const TextStyle(color: AppColors.darkTextMuted, fontSize: 11)),
+                ])),
+                if (zone.hasAlarm)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.danger.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppColors.danger.withOpacity(0.3)),
+                    ),
+                    child: const Text('ALARME ACTIVE', style: TextStyle(
+                      color: AppColors.danger, fontSize: 10, fontWeight: FontWeight.w700)),
+                  ),
+                const SizedBox(width: 12),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.darkTextMuted),
+                ),
+              ]),
+              const SizedBox(height: 16),
+              const Divider(color: AppColors.darkBorder, height: 1),
+              const SizedBox(height: 16),
+              // ── Content ─────────────────────────────────────
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Row 1
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (zone.inputs.isNotEmpty)
+                            Expanded(child: _Section(title: 'ENTRÉES', color: AppColors.primary,
+                              items: zone.inputs.entries.map((e) => _Item(
+                                label: e.key,
+                                value: _fmtVal(e.value),
+                                isAlarm: e.value == true && _isDangerInput(e.key),
+                              )).toList())),
+                          if (zone.inputs.isNotEmpty) const SizedBox(width: 12),
+                          if (zone.outputs.isNotEmpty)
+                            Expanded(child: _Section(title: 'SORTIES', color: AppColors.secondary,
+                              items: zone.outputs.entries.map((e) => _Item(
+                                label: e.key,
+                                value: _fmtVal(e.value),
+                                isAlarm: e.value == true && _isDangerOutput(e.key),
+                              )).toList())),
+                          if (zone.outputs.isNotEmpty) const SizedBox(width: 12),
+                          if (zone.states.isNotEmpty)
+                            Expanded(child: _Section(title: 'ÉTATS', color: AppColors.warning,
+                              items: zone.states.entries.map((e) => _Item(
+                                label: e.key, value: _fmtVal(e.value),
+                              )).toList())),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // Row 2
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (zone.hvac.isNotEmpty)
+                            Expanded(child: _Section(title: 'HVAC', color: AppColors.primary,
+                              items: zone.hvac.entries.map((e) => _Item(
+                                label: e.key, value: _fmtVal(e.value),
+                                warn: e.key == 'actual_temperature' &&
+                                  (double.tryParse(e.value.toString()) ?? 0) >
+                                  (double.tryParse(zone.hvac['target_temperature']?.toString() ?? '0') ?? 0),
+                              )).toList())),
+                          if (zone.hvac.isNotEmpty) const SizedBox(width: 12),
+                          if (zone.energy.isNotEmpty)
+                            Expanded(child: _Section(title: 'ÉNERGIE', color: AppColors.success,
+                              items: zone.energy.entries.map((e) => _Item(
+                                label: e.key, value: _fmtVal(e.value),
+                              )).toList())),
+                          if (zone.energy.isNotEmpty) const SizedBox(width: 12),
+                          if (zone.lighting.isNotEmpty)
+                            Expanded(child: _Section(title: 'ÉCLAIRAGE', color: AppColors.warning,
+                              items: zone.lighting.entries.map((e) => _Item(
+                                label: e.key, value: _fmtVal(e.value),
+                              )).toList())),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      // Row 3
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (zone.diagnostic.isNotEmpty)
+                            Expanded(child: _Section(title: 'DIAGNOSTIC', color: AppColors.secondary,
+                              items: zone.diagnostic.entries.map((e) => _Item(
+                                label: e.key, value: _fmtVal(e.value),
+                                isAlarm: e.key == 'plc_status' && e.value != 'OK',
+                              )).toList())),
+                          if (zone.diagnostic.isNotEmpty) const SizedBox(width: 12),
+                          if (zone.maintenance.isNotEmpty)
+                            Expanded(child: _Section(title: 'MAINTENANCE', color: AppColors.warning,
+                              items: zone.maintenance.entries.map((e) => _Item(
+                                label: e.key, value: _fmtVal(e.value),
+                                warn: e.key == 'maintenance_due' && e.value == true,
+                              )).toList())),
+                          if (zone.maintenance.isNotEmpty) const SizedBox(width: 12),
+                          Expanded(child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (zone.alarms.isNotEmpty)
+                                _Section(title: 'ALARMES', color: AppColors.danger,
+                                  items: zone.alarms.entries.map((e) => _Item(
+                                    label: e.key, value: _fmtVal(e.value),
+                                    isAlarm: e.value == true,
+                                  )).toList()),
+                            ],
+                          )),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  bool _isDangerInput(String key) =>
+    ['smoke_detector', 'fire_alarm', 'gas_detector', 'water_leak',
+     'emergency_button', 'heat_detector'].contains(key);
+
+  bool _isDangerOutput(String key) =>
+    ['alarm_output', 'buzzer', 'warning_light', 'emergency_shutdown'].contains(key);
+
+  String _fmtVal(dynamic v) {
+    if (v == true)  return '✅ OUI';
+    if (v == false) return '❌ NON';
+    if (v == null)  return '—';
+    return v.toString();
+  }
+
+  String _fmt(DateTime dt) =>
+    '${dt.day.toString().padLeft(2,'0')}/${dt.month.toString().padLeft(2,'0')}/${dt.year} '
+    '${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}';
 }
 
 class _Val extends StatelessWidget {
@@ -212,6 +381,58 @@ class _Val extends StatelessWidget {
         Text(label, style: const TextStyle(fontSize: 10, color: AppColors.darkTextMuted)),
         const Spacer(),
         Text(value, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: alarm || warn ? color : Colors.white)),
+      ]),
+    );
+  }
+}
+
+
+
+class _Section extends StatelessWidget {
+  final String title;
+  final Color color;
+  final List<_Item> items;
+  const _Section({required this.title, required this.color, required this.items});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.darkCard,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800,
+            color: color, letterSpacing: 0.5)),
+          const SizedBox(height: 8),
+          ...items,
+        ],
+      ),
+    );
+  }
+}
+
+class _Item extends StatelessWidget {
+  final String label;
+  final String value;
+  final bool isAlarm;
+  final bool warn;
+  const _Item({required this.label, required this.value, this.isAlarm = false, this.warn = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final valueColor = isAlarm ? AppColors.danger : warn ? AppColors.warning : Colors.white;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 5),
+      child: Row(children: [
+        Expanded(child: Text(label,
+          style: const TextStyle(fontSize: 10, color: AppColors.darkTextMuted),
+          overflow: TextOverflow.ellipsis)),
+        Text(value, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: valueColor)),
       ]),
     );
   }
