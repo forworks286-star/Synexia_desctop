@@ -118,6 +118,7 @@ class _IoTZoneCard extends StatelessWidget {
         ],
       ),
     ),
+    ),
     );
   }
 
@@ -385,7 +386,6 @@ class _Val extends StatelessWidget {
     );
   }
 }
-
 
 
 class _Section extends StatelessWidget {
