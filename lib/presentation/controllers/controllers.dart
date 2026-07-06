@@ -152,7 +152,10 @@ class StockController extends GetxController {
 
   Future<void> loadProducts() async {
     final r = await _repo.getProducts();
-    r.fold((e) => error.value = e, (p) => products.assignAll(p));
+    r.fold((e) => error.value = e, (p) {
+      products.assignAll(p);
+      products.refresh();
+    });
   }
 
   Future<void> loadMovements() async {
@@ -166,7 +169,7 @@ class StockController extends GetxController {
   }
 
   List<Product> get filteredProducts {
-    return products.where((p) {
+    return products.toList().where((p) {
       final q = searchQuery.value.toLowerCase();
       final matchSearch = q.isEmpty ||
           p.name.toLowerCase().contains(q) ||
