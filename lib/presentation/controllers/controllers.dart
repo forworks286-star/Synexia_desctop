@@ -62,7 +62,6 @@ class StockController extends GetxController {
   final RxList<CommandeAuto> commandesAuto = <CommandeAuto>[].obs;
   final RxList<IoTZone> iotZones = <IoTZone>[].obs;
   final RxList<FaceEvent> faceEvents = <FaceEvent>[].obs;
-  final RxList<Invoice> factures = <Invoice>[].obs;
   final RxInt iotActiveAlarms = 0.obs;
   final Rx<DashboardStats?> stats = Rx<DashboardStats?>(null);
   final RxBool isLoading = false.obs;
