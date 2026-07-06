@@ -62,6 +62,7 @@ class StockController extends GetxController {
   final RxList<CommandeAuto> commandesAuto = <CommandeAuto>[].obs;
   final RxList<IoTZone> iotZones = <IoTZone>[].obs;
   final RxList<FaceEvent> faceEvents = <FaceEvent>[].obs;
+  final RxList<Invoice> factures = <Invoice>[].obs;
   final RxInt iotActiveAlarms = 0.obs;
   final Rx<DashboardStats?> stats = Rx<DashboardStats?>(null);
   final RxBool isLoading = false.obs;
@@ -107,6 +108,38 @@ class StockController extends GetxController {
     });
     final r2 = await _repo.getFaceEvents();
     r2.fold((_) {}, (events) => faceEvents.assignAll(events));
+  }
+
+  void handleWsAutomation(Map<String, dynamic> data) {
+    final zoneId = data['zone_id'] as String? ?? '';
+    final module = data['module'] as String? ?? '';
+    final payload = data['payload'] as Map<String, dynamic>? ?? {};
+    final idx = iotZones.indexWhere(
+        (z) => z.zoneId == zoneId && z.module == module);
+    final newZone = IoTZone(
+      deviceId:    data['device_id'] ?? '',
+      module:      module,
+      zoneId:      zoneId,
+      hasAlarm:    data['has_alarm'] ?? false,
+      timestamp:   DateTime.now(),
+      inputs:      Map<String, dynamic>.from(payload['inputs'] ?? {}),
+      outputs:     Map<String, dynamic>.from(payload['outputs'] ?? {}),
+      states:      Map<String, dynamic>.from(payload['states'] ?? {}),
+      lighting:    Map<String, dynamic>.from(payload['lighting'] ?? {}),
+      hvac:        Map<String, dynamic>.from(payload['hvac'] ?? {}),
+      energy:      Map<String, dynamic>.from(payload['energy'] ?? {}),
+      alarms:      Map<String, dynamic>.from(payload['alarms'] ?? {}),
+      diagnostic:  Map<String, dynamic>.from(payload['diagnostic'] ?? {}),
+      maintenance: Map<String, dynamic>.from(payload['maintenance'] ?? {}),
+    );
+    if (idx >= 0) { iotZones[idx] = newZone; }
+    else          { iotZones.add(newZone); }
+    iotActiveAlarms.value = iotZones.where((z) => z.hasAlarm).length;
+  }
+
+  Future<void> loadFactures() async {
+    final r = await _repo.getFactures();
+    r.fold((_) {}, (list) => factures.assignAll(list));
   }
 
   List<String> get categories {

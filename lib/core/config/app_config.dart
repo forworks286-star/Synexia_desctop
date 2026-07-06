@@ -63,6 +63,7 @@ class AppConfig {
   static String get dashboardIot         => '$apiBase/dashboard/iot';
   static String get integrationsAuto     => '$apiBase/integrations/automation-events/latest';
   static String get integrationsFaceEvents => '$apiBase/integrations/face-events';
+  static String get alertesActive => '$apiBase/alertes/active';
   static const String superAdminUser = 'synexia_root';
 
 }

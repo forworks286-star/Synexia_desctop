@@ -9,6 +9,10 @@ import '../../domain/models/models.dart';
 import '../../domain/repositories/repositories.dart';
 import '../services/api_client.dart';
 
+import 'package:get/get.dart';
+import '../../../presentation/controllers/controllers.dart';
+
+
 class AlertRepositoryImpl implements AlertRepository {
   final _dio = ApiClient.instance.dio;
   WebSocketChannel? _channel;
@@ -55,24 +59,52 @@ class AlertRepositoryImpl implements AlertRepository {
   }
 
   void _connectWebSocket() {
-    if (_disposed) return;
-    try {
-      _channel = WebSocketChannel.connect(Uri.parse(AppConfig.alertesRealtime));
-      _channel!.stream.listen(
-        (data) {
-          try {
-            final json = jsonDecode(data as String) as Map<String, dynamic>;
+  if (_disposed) return;
+  try {
+    _channel = WebSocketChannel.connect(Uri.parse(AppConfig.alertesRealtime));
+    _channel!.stream.listen(
+      (data) {
+        try {
+          final json = jsonDecode(data as String) as Map<String, dynamic>;
+          final type = json['type'] as String?;
+
+         
+          if (type == null || type == 'new_alert' ||
+              json.containsKey('niveau')) {
             _streamController.add(_parseAlert(json));
-          } catch (_) {}
-        },
-        onError: (_) => _scheduleReconnect(),
-        onDone: () => _scheduleReconnect(),
-        cancelOnError: true,
-      );
-    } catch (_) {
-      _scheduleReconnect();
-    }
+          }
+
+          
+          if (type == 'automation_update') {
+            if (Get.isRegistered<StockController>()) {
+              Get.find<StockController>().handleWsAutomation(json);
+            }
+          }
+
+          
+          if (type == 'stock_update') {
+            if (Get.isRegistered<StockController>()) {
+              Get.find<StockController>().loadProducts();
+            }
+          }
+
+          
+          if (type == 'new_facture') {
+            if (Get.isRegistered<StockController>()) {
+              Get.find<StockController>().loadFactures();
+            }
+          }
+
+        } catch (_) {}
+      },
+      onError: (_) => _scheduleReconnect(),
+      onDone: () => _scheduleReconnect(),
+      cancelOnError: true,
+    );
+  } catch (_) {
+    _scheduleReconnect();
   }
+}
 
   void _scheduleReconnect() {
     if (_disposed) return;
