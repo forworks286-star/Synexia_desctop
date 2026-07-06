@@ -62,6 +62,7 @@ class StockController extends GetxController {
   final RxList<CommandeAuto> commandesAuto = <CommandeAuto>[].obs;
   final RxList<IoTZone> iotZones = <IoTZone>[].obs;
   final RxList<FaceEvent> faceEvents = <FaceEvent>[].obs;
+  final RxList<Invoice> factures = <Invoice>[].obs;
   final RxInt iotActiveAlarms = 0.obs;
   final Rx<DashboardStats?> stats = Rx<DashboardStats?>(null);
   final RxBool isLoading = false.obs;
@@ -137,9 +138,11 @@ class StockController extends GetxController {
   }
 
   Future<void> loadFactures() async {
-    final r = await _repo.getFactures();
-    r.fold((_) {}, (list) => factures.assignAll(list));
+    if (Get.isRegistered<InvoiceController>()) {
+      Get.find<InvoiceController>().loadInvoices();
+    }
   }
+
 
   List<String> get categories {
     final cats = products.map((p) => p.categorie ?? '').where((c) => c.isNotEmpty).toSet().toList();
