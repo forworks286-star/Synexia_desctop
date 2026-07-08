@@ -190,10 +190,11 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
             value: role,
             decoration: const InputDecoration(labelText: 'Rôle'),
             items: const [
-              DropdownMenuItem(value: 'manager',     child: Text('Manager')),
-              DropdownMenuItem(value: 'stockiste',   child: Text('Stockiste')),
-              DropdownMenuItem(value: 'agent_kiosk', child: Text('Agent Kiosk')),
-            ],
+                DropdownMenuItem(value: 'admin',       child: Text('Admin')),
+                DropdownMenuItem(value: 'manager',     child: Text('Manager')),
+                DropdownMenuItem(value: 'stockiste',   child: Text('Stockiste')),
+                DropdownMenuItem(value: 'agent_kiosk', child: Text('Agent Kiosk')),
+              ],
             onChanged: (v) => ss(() => role = v!),
           ),
         ],
@@ -232,6 +233,7 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
 
   List<String> _defaultPermissions(String role) {
     switch (role) {
+      case 'admin':     return ['valider_facture', 'modifier_stock', 'voir_camera', 'gerer_utilisateurs'];
       case 'manager':   return ['valider_facture', 'modifier_stock', 'voir_camera'];
       case 'stockiste': return ['modifier_stock'];
       default:          return [];
