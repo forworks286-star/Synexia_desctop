@@ -37,13 +37,7 @@ class AuthController extends GetxController {
   Future<void> login(String username, String password) async {
     isLoading.value = true; error.value = '';
     final result = await _repo.login(username, password);
-    result.fold((e) => error.value = e, (u) {
-      user.value = u;
-      Get.offAllNamed('/dashboard');
-      if (Get.isRegistered<StockController>())   Get.find<StockController>().loadAll();
-      if (Get.isRegistered<InvoiceController>()) Get.find<InvoiceController>().loadInvoices();
-      if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
-    });
+    result.fold((e) => error.value = e, (u) { user.value = u; Get.offAllNamed('/dashboard'); });
     isLoading.value = false;
   }
 
