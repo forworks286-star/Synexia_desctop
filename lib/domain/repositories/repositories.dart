@@ -6,7 +6,6 @@ abstract class AuthRepository {
   Future<Either<String, User>> loginBiometric();
   Future<Either<String, void>> logout();
   Future<User?> getCurrentUser();
-  Future<bool> refreshToken();
 }
 
 abstract class StockRepository {

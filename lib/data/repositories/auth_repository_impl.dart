@@ -44,7 +44,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<String, void>> logout() async {
-    try { await _dio.post(AppConfig.authLogout); } catch (_) {}
+    try {
+      final refresh = await _storage.read(key: AppConfig.refreshTokenKey);
+      await _dio.post(AppConfig.authLogout, data: {'refresh_token': refresh});
+    } catch (_) {}
     await _storage.deleteAll();
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConfig.userKey);
@@ -59,17 +62,6 @@ class AuthRepositoryImpl implements AuthRepository {
       if (raw == null) return null;
       return _parseUser(jsonDecode(raw) as Map<String, dynamic>);
     } catch (_) { return null; }
-  }
-
-  @override
-  Future<bool> refreshToken() async {
-    try {
-      final refresh = await _storage.read(key: AppConfig.refreshTokenKey);
-      if (refresh == null) return false;
-      final response = await _dio.post(AppConfig.authRefresh, data: {'refresh_token': refresh});
-      await _storage.write(key: AppConfig.tokenKey, value: response.data['access'] as String);
-      return true;
-    } catch (_) { return false; }
   }
 
   User _parseUser(Map<String, dynamic> data) => User(
