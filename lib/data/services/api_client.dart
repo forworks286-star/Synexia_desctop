@@ -11,13 +11,13 @@ enum _RefreshResult { success, sessionExpired, sessionCompromised }
 class ApiClient {
   static ApiClient? _instance;
   late final Dio _dio;
+  late final Dio _plainDio;   
   final _storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 
-  // القفل: يمنع عدة تجديدات متوازية من التصادم مع بعض
-  Completer<_RefreshResult>? _refreshCompleter;
 
+  Completer<_RefreshResult>? _refreshCompleter;
   ApiClient._() {
     _dio = Dio(BaseOptions(
       connectTimeout: const Duration(milliseconds: AppConfig.connectTimeout),
@@ -25,9 +25,15 @@ class ApiClient {
       headers: {'Content-Type': 'application/json'},
     ));
 
+    _plainDio = Dio(BaseOptions(
+      connectTimeout: const Duration(milliseconds: AppConfig.connectTimeout),
+      receiveTimeout: const Duration(milliseconds: AppConfig.receiveTimeout),
+      headers: {'Content-Type': 'application/json'},
+    ));
+
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
-        // تجديد استباقي: إذا access باقيلو أقل من 5 دقائق، نجدد قبل ما نبعث الطلب
+   
         await _refreshIfExpiringSoon();
         final token = await _storage.read(key: AppConfig.tokenKey);
         if (token != null) {
@@ -109,7 +115,7 @@ class ApiClient {
         completer.complete(_RefreshResult.sessionExpired);
         return _RefreshResult.sessionExpired;
       }
-      final response = await _dio.post(
+      final response = await _plainDio.post(
         AppConfig.authRefresh,
         data: {'refresh_token': refresh},
       );
