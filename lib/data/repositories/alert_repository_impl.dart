@@ -120,7 +120,7 @@ class AlertRepositoryImpl implements AlertRepository {
       createdAt:    DateTime.tryParse(data['created_at']?.toString() ?? '') ?? DateTime.now(),
       isRead:       (data['is_read'] as bool?) ?? false,
       sourceModule: data['source_module'] as String?,
-      type:         (data['type'] as String?) ?? (data['alert_type'] as String?),
+      type:         (data['alert_type'] as String?) ?? (data['type'] as String?),
     );
   }
   AlertLevel _parseLevel(String level) {
