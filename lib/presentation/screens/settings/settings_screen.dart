@@ -5,8 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/models/models.dart';
-import '../setup/server_setup_screen.dart';
-import '../../../core/config/app_config.dart';
+
 
 
 class SettingsScreen extends StatelessWidget {
@@ -135,18 +134,6 @@ class _ConnectionCard extends StatelessWidget {
         children: [
           const SectionTitle(title: 'CONNEXION SERVEUR'),
           const SizedBox(height: 20),
-          _InfoRow(
-              label: 'Adresse API',
-              value: AppConfig.baseUrl,
-            ),
-            const SizedBox(height: 12),
-            _InfoRow(
-              label: 'WebSocket',
-              value: AppConfig.wsUrl,
-            ),
-          const SizedBox(height: 12),
-          _InfoRow(label: 'Base de données', value: 'PostgreSQL — On-premise'),
-          const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: AppColors.success.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.success.withOpacity(0.2))),
@@ -155,15 +142,6 @@ class _ConnectionCard extends StatelessWidget {
               SizedBox(width: 8),
               Text('Connecté au serveur local', style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600)),
             ]),
-          ),
-          const SizedBox(height: 14),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton(
-              onPressed: () =>
-                  Get.to(() => const ServerSetupScreen(allowBack: true)),
-              child: const Text('Modifier l\'adresse'),
-            ),
           ),
         ],
       ),

@@ -312,7 +312,14 @@ class Invoice extends Equatable {
   final String supplierName;
   final DateTime date;
   final double amountHt;
+  final double amountTva;
   final double amountTtc;
+  final double tauxTva;
+  final double? ppa;
+  final String? numeroFacture;
+  final String? fournisseurNif;
+  final String? fournisseurNis;
+  final String? fournisseurRc;
   final bool stampDetected;
   final bool signatureDetected;
   final InvoiceStatus status;
@@ -324,7 +331,14 @@ class Invoice extends Equatable {
     required this.supplierName,
     required this.date,
     required this.amountHt,
+    this.amountTva = 0,
     required this.amountTtc,
+    this.tauxTva = 19.0,
+    this.ppa,
+    this.numeroFacture,
+    this.fournisseurNif,
+    this.fournisseurNis,
+    this.fournisseurRc,
     required this.stampDetected,
     required this.signatureDetected,
     required this.status,

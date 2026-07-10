@@ -7,6 +7,7 @@ import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../data/services/api_client.dart';
 import '../../../core/config/app_config.dart';
+import '../../../core/utils/formatters.dart';
 
 class ProduitsScreen extends StatelessWidget {
   const ProduitsScreen({super.key});
@@ -143,7 +144,7 @@ class _ProductRow extends StatelessWidget {
                    : product.status == StockStatus.low ? AppColors.warning : null),
           )),
           Expanded(flex: 2, child: Text(
-            '${product.valeurStock.toStringAsFixed(0)} ${product.devise}',
+            formatDA(product.valeurStock),
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           )),
           Expanded(flex: 2, child: Text(product.supplierName ?? '—', style: const TextStyle(fontSize: 12))),
@@ -217,10 +218,10 @@ class _DetailGrid extends StatelessWidget {
       ('Stock disponible',  '${product.stockDisponible} ${product.uniteMesure}'),
       ('Stock réservé',     '${product.stockReserve} ${product.uniteMesure}'),
       ('Seuil critique',    '${product.alertThreshold}'),
-      ('Prix achat',        '${product.prixAchat.toStringAsFixed(2)} ${product.devise}'),
-      ('Prix vente',        '${product.prixVente.toStringAsFixed(2)} ${product.devise}'),
-      ('PMP',               '${product.prixMoyenPondere.toStringAsFixed(2)} ${product.devise}'),
-      ('Valeur stock',      '${product.valeurStock.toStringAsFixed(2)} ${product.devise}'),
+      ('Prix achat',        formatDA(product.prixAchat)),
+      ('Prix vente',        formatDA(product.prixVente)),
+      ('PMP',               formatDA(product.prixMoyenPondere)),
+      ('Valeur stock',      formatDA(product.valeurStock)),
       ('TVA',               '${product.tauxTva}%'),
       ('Catégorie',         product.categorie ?? '—'),
       ('Pays origine',      product.paysOrigine ?? '—'),

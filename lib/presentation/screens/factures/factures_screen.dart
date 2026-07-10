@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
+import '../../../core/utils/formatters.dart';
 
 class FacturesScreen extends StatelessWidget {
   const FacturesScreen({super.key});
@@ -68,6 +69,7 @@ class _TableHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(children: [
+        _TH(label: 'N° FACTURE', flex: 2),
         _TH(label: 'FOURNISSEUR', flex: 3),
         _TH(label: 'TYPE', flex: 1),
         _TH(label: 'DATE', flex: 2),
@@ -98,11 +100,40 @@ class _InvoiceRow extends StatelessWidget {
 
   const _InvoiceRow({required this.invoice, required this.ctrl});
 
+  void _showDetails(BuildContext context) {
+    showDialog(context: context, builder: (_) => AlertDialog(
+      backgroundColor: AppColors.darkCard,
+      title: Text('Facture ${invoice.numeroFacture ?? invoice.id}'),
+      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _detailLine('Taux TVA', '${invoice.tauxTva.toStringAsFixed(0)}%'),
+        _detailLine('Montant TVA', formatDA(invoice.amountTva)),
+        if (invoice.ppa != null) _detailLine('PPA', formatDA(invoice.ppa!)),
+        _detailLine('NIF fournisseur', invoice.fournisseurNif ?? '—'),
+        _detailLine('NIS fournisseur', invoice.fournisseurNis ?? '—'),
+        _detailLine('RC fournisseur', invoice.fournisseurRc ?? '—'),
+      ]),
+      actions: [TextButton(onPressed: () => Get.back(), child: const Text('Fermer'))],
+    ));
+  }
+
+  Widget _detailLine(String label, String value) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+      Text(label, style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+      Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+    ]),
+  );
+
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(children: [
+        Expanded(flex: 2, child: GestureDetector(
+          onTap: () => _showDetails(context),
+          child: Text(invoice.numeroFacture ?? '—',
+            style: const TextStyle(fontSize: 12, fontFamily: 'monospace', decoration: TextDecoration.underline)),
+        )),
         Expanded(flex: 3, child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
@@ -124,8 +155,8 @@ class _InvoiceRow extends StatelessWidget {
           ],
         )),
         Expanded(flex: 2, child: Text(_fmt(invoice.date), style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted))),
-        Expanded(flex: 2, child: Text('${invoice.amountHt.toStringAsFixed(0)} DA', style: const TextStyle(fontSize: 12))),
-        Expanded(flex: 2, child: Text('${invoice.amountTtc.toStringAsFixed(0)} DA', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
+        Expanded(flex: 2, child: Text(formatDA(invoice.amountHt), style: const TextStyle(fontSize: 12))),
+        Expanded(flex: 2, child: Text(formatDA(invoice.amountTtc), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
         Expanded(flex: 2, child: Row(children: [
           _AuthDot(detected: invoice.stampDetected, label: 'Cachet'),
           const SizedBox(width: 8),
