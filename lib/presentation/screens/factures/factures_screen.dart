@@ -70,8 +70,8 @@ class _TableHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(children: [
         _TH(label: 'N° FACTURE', flex: 2),
+        _TH(label: '', flex: 1),
         _TH(label: 'FOURNISSEUR', flex: 3),
-        _TH(label: 'TYPE', flex: 1),
         _TH(label: 'DATE', flex: 2),
         _TH(label: 'MONTANT HT', flex: 2),
         _TH(label: 'MONTANT TTC', flex: 2),
@@ -129,10 +129,12 @@ class _InvoiceRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
       child: Row(children: [
-        Expanded(flex: 2, child: GestureDetector(
-          onTap: () => _showDetails(context),
-          child: Text(invoice.numeroFacture ?? '—',
-            style: const TextStyle(fontSize: 12, fontFamily: 'monospace', decoration: TextDecoration.underline)),
+        Expanded(flex: 2, child: Text(invoice.numeroFacture ?? '—',
+          style: const TextStyle(fontSize: 12, fontFamily: 'monospace'))),
+        Expanded(flex: 1, child: IconButton(
+          icon: const Icon(Icons.info_outline_rounded, size: 18),
+          tooltip: 'Plus d\'infos',
+          onPressed: () => _showDetails(context),
         )),
         Expanded(flex: 3, child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
