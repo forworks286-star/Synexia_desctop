@@ -56,7 +56,10 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const PageHeader(title: 'Historique Produit'),
+          Row(children: [
+            IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => Get.back()),
+            const Expanded(child: PageHeader(title: 'Historique Produit')),
+          ]),
           const SizedBox(height: 20),
           SynCard(
             child: Autocomplete<Product>(
