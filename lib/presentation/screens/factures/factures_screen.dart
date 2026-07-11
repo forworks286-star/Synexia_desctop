@@ -6,6 +6,7 @@ import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../core/utils/formatters.dart';
+import 'facture_detail_screen.dart';
 
 class FacturesScreen extends StatelessWidget {
   const FacturesScreen({super.key});
@@ -100,29 +101,6 @@ class _InvoiceRow extends StatelessWidget {
 
   const _InvoiceRow({required this.invoice, required this.ctrl});
 
-  void _showDetails(BuildContext context) {
-    showDialog(context: context, builder: (_) => AlertDialog(
-      backgroundColor: AppColors.darkCard,
-      title: Text('Facture ${invoice.numeroFacture ?? invoice.id}'),
-      content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-        _detailLine('Taux TVA', '${invoice.tauxTva.toStringAsFixed(0)}%'),
-        _detailLine('Montant TVA', formatDA(invoice.amountTva)),
-        if (invoice.ppa != null) _detailLine('PPA', formatDA(invoice.ppa!)),
-        _detailLine('NIF fournisseur', invoice.fournisseurNif ?? '—'),
-        _detailLine('NIS fournisseur', invoice.fournisseurNis ?? '—'),
-        _detailLine('RC fournisseur', invoice.fournisseurRc ?? '—'),
-      ]),
-      actions: [TextButton(onPressed: () => Get.back(), child: const Text('Fermer'))],
-    ));
-  }
-
-  Widget _detailLine(String label, String value) => Padding(
-    padding: const EdgeInsets.symmetric(vertical: 4),
-    child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-      Text(label, style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
-      Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-    ]),
-  );
 
   @override
   Widget build(BuildContext context) {
@@ -133,8 +111,8 @@ class _InvoiceRow extends StatelessWidget {
           style: const TextStyle(fontSize: 12, fontFamily: 'monospace'))),
         Expanded(flex: 1, child: IconButton(
           icon: const Icon(Icons.info_outline_rounded, size: 18),
-          tooltip: 'Plus d\'infos',
-          onPressed: () => _showDetails(context),
+          tooltip: 'Voir la facture',
+          onPressed: () => Get.to(() => FactureDetailScreen(factureId: invoice.id)),
         )),
         Expanded(flex: 3, child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -171,7 +149,8 @@ class _InvoiceRow extends StatelessWidget {
           return Row(children: [
             SynButton(label: 'Valider', color: AppColors.success, onTap: () => ctrl.validateInvoice(invoice.id)),
             const SizedBox(width: 8),
-            SynButton(label: 'Rejeter', outline: true, color: AppColors.danger, onTap: () => ctrl.rejectInvoice(invoice.id)),
+            SynButton(label: 'Rejeter', outline: true, color: AppColors.danger,
+              onTap: () => Get.to(() => FactureDetailScreen(factureId: invoice.id))),
           ]);
         })),
       ]),

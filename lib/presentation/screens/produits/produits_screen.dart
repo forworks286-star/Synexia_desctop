@@ -8,6 +8,8 @@ import '../../widgets/widgets.dart';
 import '../../../data/services/api_client.dart';
 import '../../../core/config/app_config.dart';
 import '../../../core/utils/formatters.dart';
+import '../factures/facture_detail_screen.dart';
+import '../historique/historique_produit_screen.dart';
 
 class ProduitsScreen extends StatelessWidget {
   const ProduitsScreen({super.key});
@@ -33,7 +35,7 @@ class ProduitsScreen extends StatelessWidget {
               Obx(() {
                 final auth = Get.find<AuthController>();
                 if (!auth.canEdit) return const SizedBox.shrink();
-                return SynButton(label: 'Ajouter', icon: Icons.add_rounded, onTap: () => _showAddProduit(stock));
+                return SynButton(label: 'Ajouter', icon: Icons.add_rounded, onTap: () => _showChoixAjout(stock));
               }),
               const SizedBox(width: 10),
               SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, onTap: stock.loadProducts, outline: true),
@@ -268,6 +270,16 @@ void _showDetail(Product product) {
               const Divider(),
               const SizedBox(height: 16),
               _DetailGrid(product: product),
+              const SizedBox(height: 12),
+              SynButton(
+                label: 'Voir historique des prix',
+                icon: Icons.show_chart_rounded,
+                outline: true,
+                onTap: () {
+                  Get.back();
+                  Get.to(() => HistoriqueProduitScreen(initialProduct: product));
+                },
+              ),
               if (product.lots.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 const Text('LOTS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
@@ -321,159 +333,208 @@ void _showDetail(Product product) {
   String _fmtDate(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
   
-void _showAddProduit(StockController stock) {
-  final skuCtrl       = TextEditingController();
-  final nomCtrl       = TextEditingController();
-  final qrCtrl        = TextEditingController();
+
+void _showChoixAjout(StockController stock) {
+  Get.dialog(AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: const Text('Ajouter un produit'),
+    content: const Text('Choisissez le mode d\'ajout :', style: TextStyle(fontSize: 13)),
+    actions: [
+      TextButton(
+        onPressed: () { Get.back(); _showAddProduitSimple(stock); },
+        child: const Text('Fiche produit seulement\n(sans stock)', textAlign: TextAlign.center),
+      ),
+      ElevatedButton(
+        onPressed: () { Get.back(); _showAddProduitComplet(stock); },
+        child: const Text('Avec stock initial\n(facture automatique)', textAlign: TextAlign.center),
+      ),
+    ],
+  ));
+}
+
+void _showAddProduitSimple(StockController stock) {
+  final skuCtrl = TextEditingController();
+  final nomCtrl = TextEditingController();
+  final qrCtrl = TextEditingController();
   final categorieCtrl = TextEditingController();
   final prixAchatCtrl = TextEditingController(text: '0');
   final prixVenteCtrl = TextEditingController(text: '0');
-  final seuilCtrl     = TextEditingController(text: '10');
-  final emplacementCtrl  = TextEditingController();
-  final fournisseurCtrl  = TextEditingController();
+  String typeStock = 'marchandise';
+  String? errorMsg;
+
+  Get.dialog(StatefulBuilder(builder: (context, setState) => Dialog(
+    child: Container(
+      width: 480,
+      padding: const EdgeInsets.all(28),
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Expanded(child: Text('Fiche produit (sans stock)',
+            style: TextStyle(fontFamily: 'Syne', fontSize: 16, fontWeight: FontWeight.w700))),
+          IconButton(onPressed: Get.back, icon: const Icon(Icons.close_rounded, size: 18)),
+        ]),
+        const SizedBox(height: 20),
+        Row(children: [
+          Expanded(child: TextField(controller: skuCtrl, decoration: const InputDecoration(labelText: 'SKU *'))),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: qrCtrl, decoration: const InputDecoration(labelText: 'QR Code *'))),
+        ]),
+        const SizedBox(height: 12),
+        TextField(controller: nomCtrl, decoration: const InputDecoration(labelText: 'Nom du produit *')),
+        const SizedBox(height: 12),
+        TextField(controller: categorieCtrl, decoration: const InputDecoration(labelText: 'Catégorie')),
+        const SizedBox(height: 12),
+        DropdownButtonFormField<String>(
+          value: typeStock,
+          decoration: const InputDecoration(labelText: 'Type de stock'),
+          items: typeStockOptions.map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2))).toList(),
+          onChanged: (v) => setState(() => typeStock = v ?? 'marchandise'),
+        ),
+        const SizedBox(height: 12),
+        Row(children: [
+          Expanded(child: TextField(controller: prixAchatCtrl,
+            decoration: const InputDecoration(labelText: 'Prix achat référence'), keyboardType: TextInputType.number)),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: prixVenteCtrl,
+            decoration: const InputDecoration(labelText: 'Prix vente référence'), keyboardType: TextInputType.number)),
+        ]),
+        if (errorMsg != null) ...[
+          const SizedBox(height: 12),
+          Text(errorMsg!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+        ],
+        const SizedBox(height: 24),
+        Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          OutlinedButton(onPressed: Get.back, child: const Text('Annuler')),
+          const SizedBox(width: 12),
+          ElevatedButton(
+            onPressed: () async {
+              if (skuCtrl.text.trim().isEmpty || nomCtrl.text.trim().isEmpty || qrCtrl.text.trim().isEmpty) {
+                setState(() => errorMsg = 'SKU, Nom et QR Code sont obligatoires');
+                return;
+              }
+              try {
+                final dio = ApiClient.instance.dio;
+                await dio.post(AppConfig.stockProduitsCreate, data: {
+                  'sku': skuCtrl.text.trim(), 'nom': nomCtrl.text.trim(),
+                  'qr_code': qrCtrl.text.trim(),
+                  'categorie': categorieCtrl.text.trim().isEmpty ? null : categorieCtrl.text.trim(),
+                  'type_stock': typeStock,
+                  'prix_achat': double.tryParse(prixAchatCtrl.text) ?? 0,
+                  'prix_vente': double.tryParse(prixVenteCtrl.text) ?? 0,
+                  'unite_mesure': 'piece', 'devise': 'DZD', 'taux_tva': 19.0,
+                });
+                Get.back();
+                await stock.loadProducts();
+                Get.snackbar('Succès', 'Fiche produit créée (stock à 0, en attente de facture)',
+                  backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+              } catch (e) {
+                setState(() => errorMsg = 'Erreur — SKU ou QR Code déjà utilisé');
+              }
+            },
+            child: const Text('Créer'),
+          ),
+        ]),
+      ]),
+    ),
+  )));
+}
+
+void _showAddProduitComplet(StockController stock) {
+  final skuCtrl = TextEditingController();
+  final nomCtrl = TextEditingController();
+  final qrCtrl = TextEditingController();
+  final categorieCtrl = TextEditingController();
+  final prixAchatCtrl = TextEditingController(text: '0');
+  final prixVenteCtrl = TextEditingController(text: '0');
+  final seuilCtrl = TextEditingController(text: '10');
   final stockInitialCtrl = TextEditingController(text: '0');
+  String typeStock = 'marchandise';
   String? errorMsg;
 
   Get.dialog(StatefulBuilder(builder: (context, setState) => Dialog(
     child: Container(
       width: 520,
       padding: const EdgeInsets.all(28),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(children: [
-            const Expanded(child: Text('Ajouter un produit',
-              style: TextStyle(fontFamily: 'Syne', fontSize: 16, fontWeight: FontWeight.w700))),
-            IconButton(onPressed: Get.back, icon: const Icon(Icons.close_rounded, size: 18)),
-          ]),
-          const SizedBox(height: 20),
-          Row(children: [
-            Expanded(child: TextField(controller: skuCtrl,
-              decoration: const InputDecoration(labelText: 'SKU *'))),
-            const SizedBox(width: 12),
-            Expanded(child: TextField(controller: qrCtrl,
-              decoration: const InputDecoration(labelText: 'QR Code *'))),
-          ]),
+      child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          const Expanded(child: Text('Produit avec stock initial',
+            style: TextStyle(fontFamily: 'Syne', fontSize: 16, fontWeight: FontWeight.w700))),
+          IconButton(onPressed: Get.back, icon: const Icon(Icons.close_rounded, size: 18)),
+        ]),
+        const SizedBox(height: 8),
+        const Text('Une facture d\'ajustement sera créée automatiquement pour tracer cette entrée.',
+          style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+        const SizedBox(height: 20),
+        Row(children: [
+          Expanded(child: TextField(controller: skuCtrl, decoration: const InputDecoration(labelText: 'SKU *'))),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: qrCtrl, decoration: const InputDecoration(labelText: 'QR Code *'))),
+        ]),
+        const SizedBox(height: 12),
+        TextField(controller: nomCtrl, decoration: const InputDecoration(labelText: 'Nom du produit *')),
+        const SizedBox(height: 12),
+        Row(children: [
+          Expanded(child: TextField(controller: categorieCtrl, decoration: const InputDecoration(labelText: 'Catégorie'))),
+          const SizedBox(width: 12),
+          Expanded(child: DropdownButtonFormField<String>(
+            value: typeStock,
+            decoration: const InputDecoration(labelText: 'Type de stock'),
+            items: typeStockOptions.map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2))).toList(),
+            onChanged: (v) => setState(() => typeStock = v ?? 'marchandise'),
+          )),
+        ]),
+        const SizedBox(height: 12),
+        Row(children: [
+          Expanded(child: TextField(controller: prixAchatCtrl,
+            decoration: const InputDecoration(labelText: 'Prix achat'), keyboardType: TextInputType.number)),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: prixVenteCtrl,
+            decoration: const InputDecoration(labelText: 'Prix vente'), keyboardType: TextInputType.number)),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: seuilCtrl,
+            decoration: const InputDecoration(labelText: 'Seuil critique'), keyboardType: TextInputType.number)),
+        ]),
+        const SizedBox(height: 12),
+        TextField(controller: stockInitialCtrl,
+          decoration: const InputDecoration(labelText: 'Quantité initiale *'), keyboardType: TextInputType.number),
+        if (errorMsg != null) ...[
           const SizedBox(height: 12),
-          TextField(controller: nomCtrl,
-            decoration: const InputDecoration(labelText: 'Nom du produit *')),
-          const SizedBox(height: 12),
-          TextField(controller: categorieCtrl,
-            decoration: const InputDecoration(labelText: 'Catégorie')),
-          const SizedBox(height: 12),
-          TextField(controller: emplacementCtrl,
-            decoration: const InputDecoration(labelText: 'Emplacement (ex: Allée 1, Rack A)')),
-          const SizedBox(height: 12),
-          Row(children: [
-            Expanded(child: TextField(controller: fournisseurCtrl,
-              decoration: const InputDecoration(labelText: 'Fournisseur'))),
-            const SizedBox(width: 12),
-            Expanded(child: TextField(controller: stockInitialCtrl,
-              decoration: const InputDecoration(labelText: 'Stock initial'),
-              keyboardType: TextInputType.number)),
-          ]),
-          const SizedBox(height: 12),
-          Row(children: [
-            Expanded(child: TextField(controller: prixAchatCtrl,
-              decoration: const InputDecoration(labelText: 'Prix achat'),
-              keyboardType: TextInputType.number)),
-            const SizedBox(width: 12),
-            Expanded(child: TextField(controller: prixVenteCtrl,
-              decoration: const InputDecoration(labelText: 'Prix vente'),
-              keyboardType: TextInputType.number)),
-            const SizedBox(width: 12),
-            Expanded(child: TextField(controller: seuilCtrl,
-              decoration: const InputDecoration(labelText: 'Seuil critique'),
-              keyboardType: TextInputType.number)),
-          ]),
-          if (errorMsg != null) ...[
-            const SizedBox(height: 12),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: AppColors.danger.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: AppColors.danger.withOpacity(0.2)),
-              ),
-              child: Text(errorMsg!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
-            ),
-          ],
-          const SizedBox(height: 24),
-          Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            OutlinedButton(onPressed: Get.back, child: const Text('Annuler')),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: () async {
-                if (skuCtrl.text.trim().isEmpty || nomCtrl.text.trim().isEmpty || qrCtrl.text.trim().isEmpty) {
-                  setState(() => errorMsg = 'SKU, Nom et QR Code sont obligatoires');
-                  return;
-                }
-                try {
-                  final dio = ApiClient.instance.dio;
-                  await dio.post(AppConfig.stockProduitsCreate, data: {
-                    'sku': skuCtrl.text.trim(),
-                    'nom': nomCtrl.text.trim(),
-                    'qr_code': qrCtrl.text.trim(),
-                    'categorie': categorieCtrl.text.trim().isEmpty ? null : categorieCtrl.text.trim(),
-                    'prix_achat': double.tryParse(prixAchatCtrl.text) ?? 0,
-                    'prix_vente': double.tryParse(prixVenteCtrl.text) ?? 0,
-                    'seuil_critique': int.tryParse(seuilCtrl.text) ?? 10,
-                    'unite_mesure': 'piece',
-                    'devise': 'DZD',
-                    'taux_tva': 19.0,
-                  });
-
-                  // إنشاء fournisseur si l'utilisateur a entré un nom
-                  int? fournisseurId;
-                  if (fournisseurCtrl.text.trim().isNotEmpty) {
-                    final fResp = await dio.post(AppConfig.stockFournisseurs, data: {
-                      'nom': fournisseurCtrl.text.trim(),
-                    });
-                    fournisseurId = fResp.data['id'] as int?;
-                  }
-
-                  // Récupérer le produit créé
-                  final resp = await dio.get(AppConfig.stockProducts);
-                  final allProducts = resp.data['results'] as List;
-                  final newProd = allProducts.lastWhere(
-                    (p) => p['sku'] == skuCtrl.text.trim(), orElse: () => null);
-
-                  // Mettre à jour le produit avec fournisseur_id
-                  if (newProd != null && fournisseurId != null) {
-                    await dio.put('${AppConfig.stockProducts}/${newProd['id']}', data: {
-                      'fournisseur_id': fournisseurId,
-                    });
-                  }
-
-                  // Créer le lot initial
-                  final stockInitial = int.tryParse(stockInitialCtrl.text) ?? 0;
-                  if (newProd != null) {
-                    await dio.post(AppConfig.stockLots, data: {
-                      'produit_id': newProd['id'],
-                      'numero_lot': 'LOT-INIT-${skuCtrl.text.trim()}',
-                      'quantite_physique': stockInitial,
-                      'quantite_reservee': 0,
-                      'statut': 'disponible',
-                      'emplacement': emplacementCtrl.text.trim().isEmpty
-                          ? null : emplacementCtrl.text.trim(),
-                    });
-                  }
-
+          Text(errorMsg!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+        ],
+        const SizedBox(height: 24),
+        Row(mainAxisAlignment: MainAxisAlignment.end, children: [
+          OutlinedButton(onPressed: Get.back, child: const Text('Annuler')),
+          const SizedBox(width: 12),
+          ElevatedButton(
+            onPressed: () async {
+              if (skuCtrl.text.trim().isEmpty || nomCtrl.text.trim().isEmpty || qrCtrl.text.trim().isEmpty) {
+                setState(() => errorMsg = 'SKU, Nom et QR Code sont obligatoires');
+                return;
+              }
+              final r = await stock.ajoutManuelComplet({
+                'sku': skuCtrl.text.trim(), 'nom': nomCtrl.text.trim(),
+                'qr_code': qrCtrl.text.trim(),
+                'categorie': categorieCtrl.text.trim().isEmpty ? null : categorieCtrl.text.trim(),
+                'type_stock': typeStock,
+                'prix_achat': double.tryParse(prixAchatCtrl.text) ?? 0,
+                'prix_vente': double.tryParse(prixVenteCtrl.text) ?? 0,
+                'seuil_critique': int.tryParse(seuilCtrl.text) ?? 10,
+                'quantite_initiale': int.tryParse(stockInitialCtrl.text) ?? 0,
+              });
+              r.fold(
+                (e) => setState(() => errorMsg = e),
+                (_) async {
                   Get.back();
                   await stock.loadProducts();
-                  Get.snackbar('Succès', 'Produit ajouté avec succès',
-                    backgroundColor: AppColors.success.withOpacity(0.1),
-                    colorText: AppColors.success);
-                } catch (e) {
-                  setState(() => errorMsg = 'Erreur — SKU ou QR Code déjà utilisé');
-                }
-              },
-              child: const Text('Ajouter'),
-            ),
-          ]),
-        ],
-      ),
+                  Get.snackbar('Succès', 'Produit + facture d\'ajustement créés',
+                    backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+                },
+              );
+            },
+            child: const Text('Créer'),
+          ),
+        ]),
+      ]),
     ),
   )));
 }
+

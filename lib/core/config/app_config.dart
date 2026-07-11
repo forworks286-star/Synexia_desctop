@@ -66,4 +66,11 @@ class AppConfig {
   static String get alertesActive => '$apiBase/alertes/active';
   static const String superAdminUser = 'synexia_root';
 
+  static String get factureLignes => '$apiBase/factures/{id}/lignes';
+  static String get ligneDelete => '$apiBase/lignes/{id}';
+  static String get produitHistoriquePrix => '$apiBase/produits/{id}/historique-prix';
+  static String get factureDetail => '$apiBase/factures/{id}';
+  static String get facturesRejeter => '$apiBase/factures/{id}/rejeter';
+  static String get produitAjoutManuelComplet => '$apiBase/stock/produits/ajout-manuel-complet';
+
 }

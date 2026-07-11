@@ -196,6 +196,17 @@ class StockRepositoryImpl implements StockRepository {
     }
   }
 
+
+  @override
+  Future<Either<String, void>> ajoutManuelComplet(Map<String, dynamic> data) async {
+    try {
+      await _dio.post(AppConfig.produitAjoutManuelComplet, data: data);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
   Product _parseProduct(Map<String, dynamic> data) {
     final lotsRaw = data['lots'] as List? ?? [];
     return Product(

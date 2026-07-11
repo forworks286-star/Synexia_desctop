@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:dartz/dartz.dart';
 import 'dart:convert';
-
 import '../../core/config/app_config.dart';
 import '../../domain/models/models.dart';
 import '../../domain/repositories/repositories.dart';
@@ -76,6 +76,7 @@ class StockController extends GetxController {
   final RxString searchQuery = ''.obs;
   final Rx<StockStatus?> statusFilter = Rx<StockStatus?>(null);
   final RxString categorieFilter = ''.obs;
+  Future<Either<String, void>> ajoutManuelComplet(Map<String, dynamic> data) => _repo.ajoutManuelComplet(data);
 
   @override
   void onInit() { super.onInit(); loadAll(); }
@@ -214,8 +215,8 @@ class InvoiceController extends GetxController {
     return r.fold((_) => false, (_) { loadInvoices(); return true; });
   }
 
-  Future<bool> rejectInvoice(int id) async {
-    final r = await _repo.rejectInvoice(id);
+  Future<bool> rejectInvoice(int id, String motif) async {
+    final r = await _repo.rejectInvoice(id, motif);
     return r.fold((_) => false, (_) { loadInvoices(); return true; });
   }
 

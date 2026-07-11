@@ -60,6 +60,8 @@ class Product extends Equatable {
   final Map<String, dynamic> champsExtra;
   final List<Lot> lots;
 
+  final String typeStock;
+
   const Product({
     required this.id,
     required this.sku,
@@ -91,6 +93,7 @@ class Product extends Equatable {
     this.delaiLivraisonJours,
     this.champsExtra = const {},
     this.lots = const [],
+    this.typeStock = 'marchandise',
   });
 
   int get stockQuantity => stockDisponible;
@@ -115,6 +118,8 @@ class Lot extends Equatable {
   final DateTime? dateFabrication;
   final DateTime? dateExpiration;
   final String? emplacement;
+  final int? factureId;
+  final String? numeroFacture;
 
   const Lot({
     required this.id,
@@ -125,6 +130,8 @@ class Lot extends Equatable {
     this.dateFabrication,
     this.dateExpiration,
     this.emplacement,
+    this.factureId,
+    this.numeroFacture,
   });
 
   @override
@@ -325,6 +332,9 @@ class Invoice extends Equatable {
   final InvoiceStatus status;
   final String? photoUrl;
   final String typeFacture;
+  final bool creeManuellement;
+  final String? motifRejet;
+  final bool incoherenceDetectee;
 
   const Invoice({
     required this.id,
@@ -344,8 +354,54 @@ class Invoice extends Equatable {
     required this.status,
     this.photoUrl,
     this.typeFacture = 'achat',
+    this.creeManuellement = false,
+    this.motifRejet,
+    this.incoherenceDetectee = false,
   });
 
   @override
   List<Object?> get props => [id];
+}
+
+
+class LigneFacture extends Equatable {
+  final int id;
+  final int factureId;
+  final int? produitId;
+  final String produitNom;
+  final String? typeStock;
+  final bool matched;
+  final double quantite;
+  final double prixUnitaire;
+  final double montantLigne;
+  final String source;
+  final DateTime factureDate;
+  final String fournisseurNom;
+  final String typeFacture;
+  final String? numeroFacture;
+
+  const LigneFacture({
+    required this.id, required this.factureId, this.produitId,
+    required this.produitNom, this.typeStock, this.matched = true,
+    required this.quantite, required this.prixUnitaire,
+    required this.montantLigne, required this.source, required this.factureDate,
+    required this.fournisseurNom, required this.typeFacture, this.numeroFacture,
+  });
+
+  @override
+  List<Object?> get props => [id];
+}
+
+class HistoriquePrixProduit {
+  final int produitId;
+  final String produitNom;
+  final List<LigneFacture> historique;
+  final double? prixAchatMoyen;
+  final double? prixVenteMoyen;
+  final double? margePercent;
+
+  const HistoriquePrixProduit({
+    required this.produitId, required this.produitNom, required this.historique,
+    this.prixAchatMoyen, this.prixVenteMoyen, this.margePercent,
+  });
 }

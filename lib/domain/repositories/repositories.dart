@@ -25,6 +25,7 @@ abstract class StockRepository {
   Future<Either<String, void>> rejeterCommande(int id);
   Future<Either<String, List<IoTZone>>> getIoTDashboard();
   Future<Either<String, List<FaceEvent>>> getFaceEvents();
+  Future<Either<String, void>> ajoutManuelComplet(Map<String, dynamic> data);
 }
 abstract class AlertRepository {
   Future<Either<String, List<Alert>>> getAlerts();
@@ -38,7 +39,11 @@ abstract class InvoiceRepository {
   Future<Either<String, Invoice>> getInvoice(int id);
   Future<Either<String, Invoice>> submitOcrResult(Map<String, dynamic> ocrData);
   Future<Either<String, void>> validateInvoice(int id);
-  Future<Either<String, void>> rejectInvoice(int id);
+  Future<Either<String, void>> rejectInvoice(int id, String motif);
+  Future<Either<String, List<LigneFacture>>> getLignes(int factureId);
+  Future<Either<String, LigneFacture>> addLigne(int factureId, {int? produitId, String? designation, String? typeStock, required double quantite, required double prixUnitaire});
+  Future<Either<String, void>> deleteLigne(int ligneId);
+  Future<Either<String, HistoriquePrixProduit>> getHistoriquePrix(int produitId);
 }
 
 
