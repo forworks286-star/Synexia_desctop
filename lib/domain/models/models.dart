@@ -379,6 +379,7 @@ class LigneFacture extends Equatable {
   final String fournisseurNom;
   final String typeFacture;
   final String? numeroFacture;
+  final String factureStatus;
 
   const LigneFacture({
     required this.id, required this.factureId, this.produitId,
@@ -386,6 +387,7 @@ class LigneFacture extends Equatable {
     required this.quantite, required this.prixUnitaire,
     required this.montantLigne, required this.source, required this.factureDate,
     required this.fournisseurNom, required this.typeFacture, this.numeroFacture,
+    this.factureStatus = 'validated',
   });
 
   @override

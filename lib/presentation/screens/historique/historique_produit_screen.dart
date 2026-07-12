@@ -190,32 +190,70 @@ class _PriceChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final achats = historique.where((l) => l.typeFacture != 'vente').toList().reversed.toList();
+    // بس Achat/Ajustement مؤكدة (validated) — نفس منطق المتوسطات بالسيرفر.
+    // historique يوصل من السيرفر مرتب: الأحدث أول (بالتاريخ ثم بالـid) — نعكسو
+    // بالكامل هنا مرة وحدة، فيولي ترتيب زمني تصاعدي حقيقي (الأقدم أول).
+    final achats = historique
+        .where((l) => l.typeFacture != 'vente' && l.factureStatus == 'validated')
+        .toList()
+        .reversed
+        .toList();
+
     if (achats.isEmpty) {
-      return const Center(child: Text('Aucun achat enregistré pour ce produit',
+      return const Center(child: Text('Aucun achat validé enregistré pour ce produit',
         style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)));
     }
+    if (achats.length < 2) {
+      return Center(child: Text(
+        'Un seul achat validé (${formatDA(achats.first.prixUnitaire)})\nLe graphique apparaîtra dès qu\'il y aura 2 achats ou plus.',
+        textAlign: TextAlign.center,
+        style: const TextStyle(color: AppColors.darkTextMuted, fontSize: 12)));
+    }
+
     final spots = <FlSpot>[
       for (int i = 0; i < achats.length; i++) FlSpot(i.toDouble(), achats[i].prixUnitaire),
     ];
+
     return LineChart(LineChartData(
       gridData: const FlGridData(show: true, drawVerticalLine: false),
       titlesData: FlTitlesData(
         topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, getTitlesWidget: (v, meta) {
+        bottomTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 26, getTitlesWidget: (v, meta) {
           final i = v.toInt();
           if (i < 0 || i >= achats.length) return const SizedBox.shrink();
           final d = achats[i].factureDate;
-          return Text('${d.day}/${d.month}', style: const TextStyle(fontSize: 9, color: AppColors.darkTextMuted));
+          // نتفادى تكرار نفس التاريخ جنب بعضو مباشرة (يصير فعليًا لو عدة فواتير بنفس اليوم)
+          if (i > 0) {
+            final prev = achats[i - 1].factureDate;
+            if (prev.day == d.day && prev.month == d.month && prev.year == d.year) {
+              return const SizedBox.shrink();
+            }
+          }
+          return Padding(
+            padding: const EdgeInsets.only(top: 6),
+            child: Text('${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${(d.year % 100).toString().padLeft(2, '0')}',
+              style: const TextStyle(fontSize: 9, color: AppColors.darkTextMuted)),
+          );
         })),
-        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 50, getTitlesWidget: (v, meta) =>
-          Text(v.toStringAsFixed(0), style: const TextStyle(fontSize: 9, color: AppColors.darkTextMuted)))),
+        leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 55, getTitlesWidget: (v, meta) =>
+          Text(formatDA(v), style: const TextStyle(fontSize: 8, color: AppColors.darkTextMuted)))),
       ),
       borderData: FlBorderData(show: false),
+      lineTouchData: LineTouchData(
+        touchTooltipData: LineTouchTooltipData(
+          getTooltipItems: (spots) => spots.map((s) {
+            final l = achats[s.x.toInt()];
+            return LineTooltipItem(
+              '${formatDA(l.prixUnitaire)}\n${l.fournisseurNom}',
+              const TextStyle(color: Colors.white, fontSize: 11),
+            );
+          }).toList(),
+        ),
+      ),
       lineBarsData: [
         LineChartBarData(
-          spots: spots, isCurved: true, color: AppColors.primary, barWidth: 2,
+          spots: spots, isCurved: false, color: AppColors.primary, barWidth: 2,
           dotData: const FlDotData(show: true),
           belowBarData: BarAreaData(show: true, color: AppColors.primary.withOpacity(0.08)),
         ),
@@ -231,6 +269,12 @@ class _HistoriqueRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isVente = ligne.typeFacture == 'vente';
+    final statusColor = ligne.factureStatus == 'validated' ? AppColors.success
+                       : ligne.factureStatus == 'rejected' ? AppColors.danger
+                       : AppColors.warning;
+    final statusLabel = ligne.factureStatus == 'validated' ? 'Acceptée'
+                       : ligne.factureStatus == 'rejected' ? 'Rejetée'
+                       : 'En attente';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.darkBorder, width: 0.5))),
@@ -246,13 +290,18 @@ class _HistoriqueRow extends StatelessWidget {
           child: Text(isVente ? 'Vente' : 'Achat', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700,
             color: isVente ? AppColors.success : AppColors.primary)),
         )),
-        Expanded(flex: 3, child: Text(ligne.fournisseurNom, style: const TextStyle(fontSize: 12))),
-        Expanded(flex: 2, child: Text('${ligne.quantite.toStringAsFixed(0)} u.', style: const TextStyle(fontSize: 12))),
+        Expanded(flex: 2, child: Text(ligne.fournisseurNom, style: const TextStyle(fontSize: 12))),
+        Expanded(flex: 1, child: Text('${ligne.quantite.toStringAsFixed(0)} u.', style: const TextStyle(fontSize: 12))),
         Expanded(flex: 2, child: Text(formatDA(ligne.prixUnitaire), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
         Expanded(flex: 2, child: GestureDetector(
           onTap: () => Get.to(() => FactureDetailScreen(factureId: ligne.factureId)),
           child: Text(ligne.numeroFacture ?? '#${ligne.factureId}',
             style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: AppColors.primary, decoration: TextDecoration.underline)),
+        )),
+        Expanded(flex: 2, child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+          decoration: BoxDecoration(color: statusColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+          child: Text(statusLabel, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: statusColor)),
         )),
       ]),
     );

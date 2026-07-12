@@ -165,6 +165,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     fournisseurNom: data['fournisseur_nom'] as String,
     typeFacture: data['type_facture'] as String,
     numeroFacture: data['numero_facture'] as String?,
+    factureStatus: data['facture_status'] as String? ?? 'validated',
   );
 
   InvoiceStatus _parseStatus(String status) {

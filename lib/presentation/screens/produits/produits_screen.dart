@@ -87,7 +87,6 @@ class _TableHeader extends StatelessWidget {
         _TH(label: 'CATÉGORIE', flex: 2),
         _TH(label: 'STOCK DISPO', flex: 1),
         _TH(label: 'VALEUR', flex: 2),
-        _TH(label: 'FOURNISSEUR', flex: 2),
         _TH(label: 'STATUT', flex: 1),
       ]),
     );
@@ -149,7 +148,6 @@ class _ProductRow extends StatelessWidget {
             formatDA(product.valeurStock),
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           )),
-          Expanded(flex: 2, child: Text(product.supplierName ?? '—', style: const TextStyle(fontSize: 12))),
           Expanded(flex: 1, child: StatusChip(status: product.status, label: _statusLabel)),
         ]),
       ),
@@ -227,7 +225,6 @@ class _DetailGrid extends StatelessWidget {
       ('TVA',               '${product.tauxTva}%'),
       ('Catégorie',         product.categorie ?? '—'),
       ('Pays origine',      product.paysOrigine ?? '—'),
-      ('Fournisseur',       product.supplierName ?? '—'),
     ];
 
     return Wrap(
