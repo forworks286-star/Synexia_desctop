@@ -436,6 +436,11 @@ void _showAddProduitSimple(StockController stock) {
 }
 
 void _showAddProduitComplet(StockController stock) {
+  final fournisseurCtrl = TextEditingController();
+  final paysOrigineCtrl = TextEditingController();
+  final nifCtrl = TextEditingController();
+  final nisCtrl = TextEditingController();
+  final rcCtrl = TextEditingController();
   final skuCtrl = TextEditingController();
   final nomCtrl = TextEditingController();
   final qrCtrl = TextEditingController();
@@ -479,6 +484,27 @@ void _showAddProduitComplet(StockController stock) {
             onChanged: (v) => setState(() => typeStock = v ?? 'marchandise'),
           )),
         ]),
+
+        const SizedBox(height: 12),
+        Row(children: [
+          Expanded(child: TextField(controller: fournisseurCtrl,
+            decoration: const InputDecoration(labelText: 'Fournisseur'))),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: paysOrigineCtrl,
+            decoration: const InputDecoration(labelText: 'Pays d\'origine'))),
+        ]),
+        const SizedBox(height: 12),
+        Row(children: [
+          Expanded(child: TextField(controller: nifCtrl,
+            decoration: const InputDecoration(labelText: 'NIF fournisseur'))),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: nisCtrl,
+            decoration: const InputDecoration(labelText: 'NIS fournisseur'))),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: rcCtrl,
+            decoration: const InputDecoration(labelText: 'RC fournisseur'))),
+        ]),
+        
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: TextField(controller: prixAchatCtrl,
@@ -516,6 +542,11 @@ void _showAddProduitComplet(StockController stock) {
                 'prix_vente': double.tryParse(prixVenteCtrl.text) ?? 0,
                 'seuil_critique': int.tryParse(seuilCtrl.text) ?? 10,
                 'quantite_initiale': int.tryParse(stockInitialCtrl.text) ?? 0,
+                'fournisseur_nom': fournisseurCtrl.text.trim().isEmpty ? null : fournisseurCtrl.text.trim(),
+                'pays_origine': paysOrigineCtrl.text.trim().isEmpty ? null : paysOrigineCtrl.text.trim(),
+                'fournisseur_nif': nifCtrl.text.trim().isEmpty ? null : nifCtrl.text.trim(),
+                'fournisseur_nis': nisCtrl.text.trim().isEmpty ? null : nisCtrl.text.trim(),
+                'fournisseur_rc': rcCtrl.text.trim().isEmpty ? null : rcCtrl.text.trim(),
               });
               r.fold(
                 (e) => setState(() => errorMsg = e),
