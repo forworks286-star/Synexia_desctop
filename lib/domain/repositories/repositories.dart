@@ -1,3 +1,6 @@
+
+lib/domain/repositories/repositories.dart
+
 import 'package:dartz/dartz.dart';
 import '../models/models.dart';
 
@@ -45,5 +48,3 @@ abstract class InvoiceRepository {
   Future<Either<String, void>> deleteLigne(int ligneId);
   Future<Either<String, HistoriquePrixProduit>> getHistoriquePrix(int produitId);
 }
-
-
