@@ -112,7 +112,7 @@ class _BomTab extends StatelessWidget {
           )),
           Align(alignment: Alignment.centerLeft, child: TextButton.icon(
             icon: const Icon(Icons.add), label: const Text('Ajouter un composant'),
-            onTap: () => setState(() => composants.add({})),
+            onPressed: () => setState(() => composants.add({})),
           )),
         ])),
         actions: [

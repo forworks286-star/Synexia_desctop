@@ -1,6 +1,4 @@
 
-lib/domain/repositories/repositories.dart
-
 import 'dart:typed_data';
 import 'package:dartz/dartz.dart';
 import '../models/models.dart';
