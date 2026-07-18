@@ -28,6 +28,9 @@ class FacturesScreen extends StatelessWidget {
               _TypeFilterDropdown(ctrl: ctrl),
               const SizedBox(width: 12),
               SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, onTap: ctrl.loadInvoices, outline: true),
+              const SizedBox(width: 12),
+              SynButton(label: 'Facture manuelle', icon: Icons.edit_note_rounded,
+                onTap: () => _showFactureManuelleDialog(context, ctrl)),
             ],
           ),
           const SizedBox(height: 20),
@@ -230,4 +233,78 @@ class _TypeFilterDropdown extends StatelessWidget {
       ),
     ));
   }
+}
+
+void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl) {
+  final fournisseurCtrl = TextEditingController();
+  final dateCtrl = TextEditingController(text: DateTime.now().toIso8601String().split('T').first);
+  final htCtrl = TextEditingController();
+  final tvaCtrl = TextEditingController();
+  final ttcCtrl = TextEditingController();
+  final motifCtrl = TextEditingController();
+  String typeFacture = 'achat';
+
+  Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: const Text('Nouvelle facture manuelle'),
+    content: SizedBox(width: 440, child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Container(
+        padding: const EdgeInsets.all(10),
+        margin: const EdgeInsets.only(bottom: 12),
+        decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+        child: const Row(children: [
+          Icon(Icons.info_outline_rounded, size: 16, color: AppColors.warning),
+          SizedBox(width: 8),
+          Expanded(child: Text('Une facture créée manuellement reste en attente jusqu\'à vérification par un administrateur.',
+            style: TextStyle(fontSize: 11, color: AppColors.warning))),
+        ]),
+      ),
+      DropdownButtonFormField<String>(
+        value: typeFacture,
+        decoration: const InputDecoration(labelText: 'Type'),
+        items: const [
+          DropdownMenuItem(value: 'achat', child: Text('Achat')),
+          DropdownMenuItem(value: 'vente', child: Text('Vente')),
+        ],
+        onChanged: (v) => setState(() => typeFacture = v ?? 'achat'),
+      ),
+      const SizedBox(height: 10),
+      TextField(controller: fournisseurCtrl, decoration: const InputDecoration(labelText: 'Fournisseur / Client')),
+      const SizedBox(height: 10),
+      TextField(controller: dateCtrl, decoration: const InputDecoration(labelText: 'Date (AAAA-MM-JJ)')),
+      const SizedBox(height: 10),
+      Row(children: [
+        Expanded(child: TextField(controller: htCtrl, decoration: const InputDecoration(labelText: 'Montant HT'), keyboardType: TextInputType.number)),
+        const SizedBox(width: 8),
+        Expanded(child: TextField(controller: tvaCtrl, decoration: const InputDecoration(labelText: 'TVA'), keyboardType: TextInputType.number)),
+        const SizedBox(width: 8),
+        Expanded(child: TextField(controller: ttcCtrl, decoration: const InputDecoration(labelText: 'TTC'), keyboardType: TextInputType.number)),
+      ]),
+      const SizedBox(height: 10),
+      TextField(controller: motifCtrl, maxLines: 2,
+        decoration: const InputDecoration(labelText: 'Motif (obligatoire)', hintText: 'Pourquoi une saisie manuelle ?')),
+    ])),
+    actions: [
+      TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+      ElevatedButton(
+        onPressed: () async {
+          if (motifCtrl.text.trim().isEmpty || fournisseurCtrl.text.trim().isEmpty) return;
+          final ok = await ctrl.creerFactureManuelle(
+            fournisseurNom: fournisseurCtrl.text.trim(), date: dateCtrl.text.trim(),
+            typeFacture: typeFacture,
+            montantHt: double.tryParse(htCtrl.text) ?? 0,
+            montantTva: double.tryParse(tvaCtrl.text) ?? 0,
+            montantTtc: double.tryParse(ttcCtrl.text) ?? 0,
+            motifCreationManuelle: motifCtrl.text.trim(),
+          );
+          Get.back();
+          if (ok) {
+            Get.snackbar('Facture créée', 'En attente de vérification par un administrateur',
+              backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+          }
+        },
+        child: const Text('Créer'),
+      ),
+    ],
+  )));
 }

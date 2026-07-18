@@ -335,6 +335,8 @@ class Invoice extends Equatable {
   final bool creeManuellement;
   final String? motifRejet;
   final bool incoherenceDetectee;
+  final int? creeParId;
+  final String? motifCreationManuelle;
 
   const Invoice({
     required this.id,
@@ -357,6 +359,8 @@ class Invoice extends Equatable {
     this.creeManuellement = false,
     this.motifRejet,
     this.incoherenceDetectee = false,
+    this.creeParId,
+    this.motifCreationManuelle,
   });
 
   @override
@@ -373,21 +377,102 @@ class LigneFacture extends Equatable {
   final bool matched;
   final double quantite;
   final double prixUnitaire;
+  final double? prixVente;
   final double montantLigne;
   final String source;
+  final String? dateFabrication;
+  final String? dateExpiration;
+  final bool dateExpirationManquante;
   final DateTime factureDate;
   final String fournisseurNom;
   final String typeFacture;
   final String? numeroFacture;
   final String factureStatus;
+  final int? factureCreeParId;
 
   const LigneFacture({
     required this.id, required this.factureId, this.produitId,
     required this.produitNom, this.typeStock, this.matched = true,
-    required this.quantite, required this.prixUnitaire,
+    required this.quantite, required this.prixUnitaire, this.prixVente,
     required this.montantLigne, required this.source, required this.factureDate,
+    this.dateFabrication, this.dateExpiration, this.dateExpirationManquante = false,
     required this.fournisseurNom, required this.typeFacture, this.numeroFacture,
-    this.factureStatus = 'validated',
+    this.factureStatus = 'validated', this.factureCreeParId,
+  });
+
+  @override
+  List<Object?> get props => [id];
+}
+
+class DemandeModification extends Equatable {
+  final int id;
+  final int factureId;
+  final int demandeurId;
+  final String champConcerne;
+  final String? valeurActuelle;
+  final String? valeurProposee;
+  final String compteRendu;
+  final String statut; // pending | approuvee | refusee
+  final int? traiteParId;
+  final String? motifRefus;
+  final DateTime dateCreation;
+
+  const DemandeModification({
+    required this.id, required this.factureId, required this.demandeurId,
+    required this.champConcerne, this.valeurActuelle, this.valeurProposee,
+    required this.compteRendu, this.statut = 'pending', this.traiteParId,
+    this.motifRefus, required this.dateCreation,
+  });
+
+  @override
+  List<Object?> get props => [id];
+}
+
+class LigneBom {
+  final int id;
+  final int composantProduitId;
+  final String composantNom;
+  final String? composantUnite;
+  final double quantiteNecessaire;
+
+  const LigneBom({
+    required this.id, required this.composantProduitId, required this.composantNom,
+    this.composantUnite, required this.quantiteNecessaire,
+  });
+}
+
+class BomModel extends Equatable {
+  final int id;
+  final int produitFiniId;
+  final String? produitFiniNom;
+  final String? nom;
+  final bool actif;
+  final List<LigneBom> lignes;
+
+  const BomModel({
+    required this.id, required this.produitFiniId, this.produitFiniNom,
+    this.nom, this.actif = true, this.lignes = const [],
+  });
+
+  @override
+  List<Object?> get props => [id];
+}
+
+class OrdreFabrication extends Equatable {
+  final int id;
+  final String numeroOf;
+  final int bomId;
+  final String? produitFiniNom;
+  final double quantiteProduite;
+  final String? numeroLot;
+  final double? coutRevientTotal;
+  final double? coutRevientUnitaire;
+  final DateTime dateCreation;
+
+  const OrdreFabrication({
+    required this.id, required this.numeroOf, required this.bomId,
+    this.produitFiniNom, required this.quantiteProduite, this.numeroLot,
+    this.coutRevientTotal, this.coutRevientUnitaire, required this.dateCreation,
   });
 
   @override

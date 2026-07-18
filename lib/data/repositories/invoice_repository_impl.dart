@@ -82,7 +82,8 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   @override
   Future<Either<String, LigneFacture>> addLigne(int factureId,
       {int? produitId, String? designation, String? typeStock,
-      required double quantite, required double prixUnitaire}) async {
+      required double quantite, required double prixUnitaire,
+      double? prixVente, String? dateFabrication, String? dateExpiration}) async {
     try {
       final url = AppConfig.factureLignes.replaceAll('{id}', '$factureId');
       final response = await _dio.post(url, data: {
@@ -90,12 +91,90 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
         if (designation != null) 'designation': designation,
         if (typeStock != null) 'type_stock': typeStock,
         'quantite': quantite, 'prix_unitaire': prixUnitaire,
+        if (prixVente != null) 'prix_vente': prixVente,
+        if (dateFabrication != null) 'date_fabrication': dateFabrication,
+        if (dateExpiration != null) 'date_expiration': dateExpiration,
       });
       return Right(_parseLigne(response.data as Map<String, dynamic>));
     } on DioException catch (e) {
       return Left(_mapError(e));
     }
   }
+
+  @override
+  Future<Either<String, Invoice>> creerFactureManuelle({
+      required String fournisseurNom, required String date, required String typeFacture,
+      required double montantHt, required double montantTva, required double montantTtc,
+      required String motifCreationManuelle}) async {
+    try {
+      final response = await _dio.post(AppConfig.facturesManuelle, data: {
+        'fournisseur_nom': fournisseurNom, 'date': date, 'type_facture': typeFacture,
+        'montant_ht': montantHt, 'montant_tva': montantTva, 'montant_ttc': montantTtc,
+        'motif_creation_manuelle': motifCreationManuelle,
+      });
+      return Right(_parseInvoice(response.data as Map<String, dynamic>));
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, DemandeModification>> creerDemande({
+      required int factureId, required String champConcerne,
+      required String valeurProposee, required String compteRendu}) async {
+    try {
+      final response = await _dio.post(AppConfig.demandesModification, data: {
+        'facture_id': factureId, 'champ_concerne': champConcerne,
+        'valeur_proposee': valeurProposee, 'compte_rendu': compteRendu,
+      });
+      return Right(_parseDemande(response.data as Map<String, dynamic>));
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, List<DemandeModification>>> getDemandes({String statut = 'pending'}) async {
+    try {
+      final response = await _dio.get(AppConfig.demandesModification, queryParameters: {'statut': statut});
+      final list = (response.data['results'] as List)
+          .map((e) => _parseDemande(e as Map<String, dynamic>)).toList();
+      return Right(list);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, void>> approuverDemande(int id) async {
+    try {
+      final url = AppConfig.demandeApprouver.replaceAll('{id}', '$id');
+      await _dio.put(url);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, void>> refuserDemande(int id, String? motif) async {
+    try {
+      final url = AppConfig.demandeRefuser.replaceAll('{id}', '$id');
+      await _dio.put(url, data: {'motif_refus': motif});
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  DemandeModification _parseDemande(Map<String, dynamic> data) => DemandeModification(
+    id: data['id'] as int, factureId: data['facture_id'] as int,
+    demandeurId: data['demandeur_id'] as int, champConcerne: data['champ_concerne'] as String,
+    valeurActuelle: data['valeur_actuelle'] as String?, valeurProposee: data['valeur_proposee'] as String?,
+    compteRendu: data['compte_rendu'] as String, statut: data['statut'] as String? ?? 'pending',
+    traiteParId: data['traite_par_id'] as int?, motifRefus: data['motif_refus'] as String?,
+    dateCreation: DateTime.tryParse(data['date_creation']?.toString() ?? '') ?? DateTime.now(),
+  );
 
   @override
   Future<Either<String, void>> deleteLigne(int ligneId) async {
@@ -148,6 +227,8 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     status:             _parseStatus(data['status'] as String? ?? 'pending'),
     photoUrl:           data['photo_url'] as String?,
     typeFacture:        (data['type_facture'] as String?) ?? 'achat',
+    creeParId:          data['cree_par_id'] as int?,
+    motifCreationManuelle: data['motif_creation_manuelle'] as String?,
   );
 
   LigneFacture _parseLigne(Map<String, dynamic> data) => LigneFacture(
@@ -159,13 +240,18 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     matched: (data['matched'] as bool?) ?? true,
     quantite: (data['quantite'] as num).toDouble(),
     prixUnitaire: (data['prix_unitaire'] as num).toDouble(),
+    prixVente: (data['prix_vente'] as num?)?.toDouble(),
     montantLigne: (data['montant_ligne'] as num).toDouble(),
     source: data['source'] as String? ?? 'manuel',
+    dateFabrication: data['date_fabrication'] as String?,
+    dateExpiration: data['date_expiration'] as String?,
+    dateExpirationManquante: (data['date_expiration_manquante'] as bool?) ?? false,
     factureDate: DateTime.parse(data['facture_date'] as String),
     fournisseurNom: data['fournisseur_nom'] as String,
     typeFacture: data['type_facture'] as String,
     numeroFacture: data['numero_facture'] as String?,
     factureStatus: data['facture_status'] as String? ?? 'validated',
+    factureCreeParId: data['facture_cree_par_id'] as int?,
   );
 
   InvoiceStatus _parseStatus(String status) {

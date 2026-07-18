@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 
@@ -265,6 +266,18 @@ class StockRepositoryImpl implements StockRepository {
     date:                 DateTime.tryParse(data['date']?.toString() ?? '') ?? DateTime.now(),
     userName:             data['user_name'] as String?,
   );
+
+  @override
+  Future<Either<String, Uint8List>> getLotQr(int lotId) async {
+    try {
+      final url = AppConfig.lotQr.replaceAll('{id}', '$lotId');
+      final response = await _dio.get<List<int>>(url,
+          options: Options(responseType: ResponseType.bytes));
+      return Right(Uint8List.fromList(response.data!));
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
 
   String _mapError(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||

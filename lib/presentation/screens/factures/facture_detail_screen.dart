@@ -131,6 +131,17 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
         Expanded(child: _infoLine('NIS fournisseur', invoice.fournisseurNis ?? '—')),
         Expanded(child: _infoLine('RC fournisseur', invoice.fournisseurRc ?? '—')),
       ]),
+      if (invoice.motifCreationManuelle != null) ...[
+        const SizedBox(height: 8),
+        _infoLine('Motif (création manuelle)', invoice.motifCreationManuelle!),
+      ],
+      if (!_isPending) ...[
+        const SizedBox(height: 14),
+        Align(alignment: Alignment.centerLeft, child: SynButton(
+          label: 'Demander une modification', outline: true, icon: Icons.flag_outlined,
+          onTap: () => _showDemandeDialog(invoice.id, 'fournisseur_nom', invoice.supplierName),
+        )),
+      ],
     ]));
   }
 
@@ -201,6 +212,17 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
         Expanded(flex: 1, child: Text('${l.quantite.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12))),
         Expanded(flex: 2, child: Text(formatDA(l.prixUnitaire), style: const TextStyle(fontSize: 12))),
         Expanded(flex: 2, child: Text(formatDA(l.montantLigne), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
+        if (l.dateExpiration != null)
+          Padding(
+            padding: const EdgeInsets.only(right: 6),
+            child: Text('Exp: ${l.dateExpiration}', style: TextStyle(fontSize: 10,
+              color: l.dateExpirationManquante ? AppColors.warning : AppColors.darkTextMuted)),
+          )
+        else if (l.dateExpirationManquante)
+          const Padding(
+            padding: EdgeInsets.only(right: 6),
+            child: Icon(Icons.event_busy_rounded, size: 14, color: AppColors.warning),
+          ),
         if (_isPending)
           IconButton(
             icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
@@ -210,7 +232,11 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
             },
           )
         else
-          const SizedBox(width: 40),
+          IconButton(
+            icon: const Icon(Icons.flag_outlined, size: 18, color: AppColors.warning),
+            tooltip: 'Demander une modification sur cette ligne',
+            onPressed: () => _showDemandeDialog(l.factureId, 'ligne:${l.id}:date_expiration', l.dateExpiration ?? ''),
+          ),
       ]),
     );
   }
@@ -274,6 +300,9 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
     final designationCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '1');
     final prixCtrl = TextEditingController();
+    final prixVenteCtrl = TextEditingController();
+    final dateFabCtrl = TextEditingController();
+    final dateExpCtrl = TextEditingController();
     String? selectedTypeStock;
     bool nouveauProduit = false;
 
@@ -314,7 +343,18 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
             decoration: const InputDecoration(labelText: 'Quantité'), keyboardType: TextInputType.number)),
           const SizedBox(width: 12),
           Expanded(child: TextField(controller: prixCtrl,
-            decoration: const InputDecoration(labelText: 'Prix unitaire'), keyboardType: TextInputType.number)),
+            decoration: const InputDecoration(labelText: 'Prix d\'achat unitaire'), keyboardType: TextInputType.number)),
+        ]),
+        const SizedBox(height: 12),
+        TextField(controller: prixVenteCtrl,
+          decoration: const InputDecoration(labelText: 'Prix de vente (optionnel)'), keyboardType: TextInputType.number),
+        const SizedBox(height: 12),
+        Row(children: [
+          Expanded(child: TextField(controller: dateFabCtrl,
+            decoration: const InputDecoration(labelText: 'Date fabrication (AAAA-MM-JJ)'))),
+          const SizedBox(width: 12),
+          Expanded(child: TextField(controller: dateExpCtrl,
+            decoration: const InputDecoration(labelText: 'Date expiration (AAAA-MM-JJ)'))),
         ]),
       ])),
       actions: [
@@ -323,15 +363,20 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
           onPressed: () async {
             final qty = double.tryParse(qtyCtrl.text) ?? 0;
             final prix = double.tryParse(prixCtrl.text) ?? 0;
+            final prixVente = double.tryParse(prixVenteCtrl.text);
             if (qty <= 0) return;
             final r = nouveauProduit
                 ? await _repo.addLigne(widget.factureId,
                     designation: designationCtrl.text.trim(), typeStock: selectedTypeStock,
-                    quantite: qty, prixUnitaire: prix)
+                    quantite: qty, prixUnitaire: prix, prixVente: prixVente,
+                    dateFabrication: dateFabCtrl.text.trim().isEmpty ? null : dateFabCtrl.text.trim(),
+                    dateExpiration: dateExpCtrl.text.trim().isEmpty ? null : dateExpCtrl.text.trim())
                 : (selectedProduct == null
                     ? null
                     : await _repo.addLigne(widget.factureId,
-                        produitId: selectedProduct!.id, quantite: qty, prixUnitaire: prix));
+                        produitId: selectedProduct!.id, quantite: qty, prixUnitaire: prix, prixVente: prixVente,
+                        dateFabrication: dateFabCtrl.text.trim().isEmpty ? null : dateFabCtrl.text.trim(),
+                        dateExpiration: dateExpCtrl.text.trim().isEmpty ? null : dateExpCtrl.text.trim()));
             if (r == null) return;
             Get.back();
             r.fold((e) {}, (_) => _load());
@@ -370,6 +415,43 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
       case InvoiceStatus.rejected: return 'Rejetée';
       case InvoiceStatus.pending: return 'En attente';
     }
+  }
+
+  void _showDemandeDialog(int factureId, String champConcerne, String valeurActuelle) {
+    final valeurCtrl = TextEditingController(text: valeurActuelle);
+    final compteRenduCtrl = TextEditingController();
+    final invoiceCtrl = Get.find<InvoiceController>();
+    Get.dialog(AlertDialog(
+      backgroundColor: AppColors.darkCard,
+      title: const Text('Demande de modification'),
+      content: SizedBox(width: 400, child: Column(mainAxisSize: MainAxisSize.min, children: [
+        Text('Champ : $champConcerne', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+        const SizedBox(height: 10),
+        TextField(controller: valeurCtrl, decoration: const InputDecoration(labelText: 'Valeur proposée')),
+        const SizedBox(height: 10),
+        TextField(controller: compteRenduCtrl, maxLines: 3,
+          decoration: const InputDecoration(labelText: 'Compte-rendu (obligatoire)',
+            hintText: 'Expliquez pourquoi ce changement est nécessaire...')),
+      ])),
+      actions: [
+        TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+        ElevatedButton(
+          onPressed: () async {
+            if (compteRenduCtrl.text.trim().isEmpty) return;
+            final ok = await invoiceCtrl.creerDemande(
+              factureId: factureId, champConcerne: champConcerne,
+              valeurProposee: valeurCtrl.text.trim(), compteRendu: compteRenduCtrl.text.trim(),
+            );
+            Get.back();
+            if (ok) {
+              Get.snackbar('Demande envoyée', 'En attente de validation par un administrateur',
+                backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+            }
+          },
+          child: const Text('Envoyer la demande'),
+        ),
+      ],
+    ));
   }
 }
 

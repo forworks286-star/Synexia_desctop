@@ -9,6 +9,7 @@ import 'data/repositories/auth_repository_impl.dart';
 import 'data/repositories/stock_repository_impl.dart';
 import 'data/repositories/invoice_repository_impl.dart';
 import 'data/repositories/alert_repository_impl.dart';
+import 'data/repositories/manufacturing_repository_impl.dart';
 import 'presentation/controllers/controllers.dart';
 import 'presentation/screens/setup/connection_gate_screen.dart';
 import 'presentation/screens/setup/server_setup_screen.dart';
@@ -26,6 +27,7 @@ void main() async {
   Get.put(StockController(StockRepositoryImpl()));
   Get.put(InvoiceController(InvoiceRepositoryImpl()));
   Get.put(AlertController(AlertRepositoryImpl()));
+  Get.put(ManufacturingController(ManufacturingRepositoryImpl()));
 
   runApp(const SynexiaDesktopApp());
 }

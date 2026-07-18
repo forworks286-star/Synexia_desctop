@@ -18,8 +18,9 @@ class DesktopSidebar extends StatelessWidget {
     final items = [
       _NavItem(icon: Icons.grid_view_rounded,       label: 'Dashboard',   index: 0),
       _NavItem(icon: Icons.inventory_2_outlined,    label: 'Produits',    index: 1),
-      if (role == UserRole.admin || role == UserRole.manager)
-        _NavItem(icon: Icons.receipt_long_outlined, label: 'Factures',    index: 2),
+      // Factures : visible pour tous — chacun ne voit que ses propres factures
+      // cote serveur (sauf admin/manager qui voient tout). Voir GET /factures.
+      _NavItem(icon: Icons.receipt_long_outlined,   label: 'Factures',    index: 2),
       if (role == UserRole.admin || role == UserRole.manager)
         _NavItem(icon: Icons.sensors_rounded,       label: 'IoT',         index: 7),
       _NavItem(icon: Icons.notifications_outlined,  label: 'Alertes',     index: 3),
@@ -27,6 +28,10 @@ class DesktopSidebar extends StatelessWidget {
         _NavItem(icon: Icons.security_rounded,      label: 'Sécurité',    index: 8),
       if (role == UserRole.admin || role == UserRole.manager)
         _NavItem(icon: Icons.bar_chart_rounded,     label: 'Rapports',    index: 4),
+      if (role == UserRole.admin || role == UserRole.manager)
+        _NavItem(icon: Icons.precision_manufacturing_outlined, label: 'Fabrication', index: 9),
+      if (role == UserRole.admin || role == UserRole.manager)
+        _NavItem(icon: Icons.fact_check_outlined,   label: 'Approbations', index: 10),
       if (role == UserRole.admin)
         _NavItem(icon: Icons.admin_panel_settings_outlined, label: 'Admin', index: 6),
       _NavItem(icon: Icons.settings_outlined,       label: 'Paramètres',  index: 5),
@@ -65,7 +70,11 @@ class DesktopSidebar extends StatelessWidget {
           Expanded(
             child: Obx(() => Column(
               children: items.map((item) {
-                final badge = item.index == 3 ? alerts.unreadCount.value : 0;
+                int badge = 0;
+                if (item.index == 3) badge = alerts.unreadCount.value;
+                if (item.index == 10 && Get.isRegistered<InvoiceController>()) {
+                  badge = Get.find<InvoiceController>().demandes.length;
+                }
                 return _SidebarItem(
                   item:     item,
                   selected: settings.selectedNavIndex.value == item.index,

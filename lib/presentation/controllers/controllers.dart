@@ -194,6 +194,7 @@ class InvoiceController extends GetxController {
   InvoiceController(this._repo);
 
   final RxList<Invoice> invoices = <Invoice>[].obs;
+  final RxList<DemandeModification> demandes = <DemandeModification>[].obs;
   final RxBool isLoading = false.obs;
   final RxString error = ''.obs;
   final Rx<InvoiceStatus?> statusFilter = Rx<InvoiceStatus?>(null);
@@ -201,7 +202,7 @@ class InvoiceController extends GetxController {
 
 
   @override
-  void onInit() { super.onInit(); loadInvoices(); }
+  void onInit() { super.onInit(); loadInvoices(); loadDemandes(); }
 
   Future<void> loadInvoices() async {
     isLoading.value = true;
@@ -220,6 +221,41 @@ class InvoiceController extends GetxController {
     return r.fold((_) => false, (_) { loadInvoices(); return true; });
   }
 
+  Future<bool> creerFactureManuelle({required String fournisseurNom, required String date,
+      required String typeFacture, required double montantHt, required double montantTva,
+      required double montantTtc, required String motifCreationManuelle}) async {
+    final r = await _repo.creerFactureManuelle(
+      fournisseurNom: fournisseurNom, date: date, typeFacture: typeFacture,
+      montantHt: montantHt, montantTva: montantTva, montantTtc: montantTtc,
+      motifCreationManuelle: motifCreationManuelle,
+    );
+    return r.fold((_) => false, (_) { loadInvoices(); return true; });
+  }
+
+  Future<void> loadDemandes() async {
+    final r = await _repo.getDemandes(statut: 'pending');
+    r.fold((_) {}, (d) => demandes.assignAll(d));
+  }
+
+  Future<bool> creerDemande({required int factureId, required String champConcerne,
+      required String valeurProposee, required String compteRendu}) async {
+    final r = await _repo.creerDemande(
+      factureId: factureId, champConcerne: champConcerne,
+      valeurProposee: valeurProposee, compteRendu: compteRendu,
+    );
+    return r.fold((_) => false, (_) { loadDemandes(); return true; });
+  }
+
+  Future<bool> approuverDemande(int id) async {
+    final r = await _repo.approuverDemande(id);
+    return r.fold((_) => false, (_) { loadDemandes(); loadInvoices(); return true; });
+  }
+
+  Future<bool> refuserDemande(int id, String? motif) async {
+    final r = await _repo.refuserDemande(id, motif);
+    return r.fold((_) => false, (_) { loadDemandes(); return true; });
+  }
+
     List<Invoice> get filteredInvoices {
     return invoices.where((i) {
       final matchStatus = statusFilter.value == null || i.status == statusFilter.value;
@@ -229,6 +265,48 @@ class InvoiceController extends GetxController {
   }
 
 }
+
+class ManufacturingController extends GetxController {
+  final ManufacturingRepository _repo;
+  ManufacturingController(this._repo);
+
+  final RxList<BomModel> boms = <BomModel>[].obs;
+  final RxList<OrdreFabrication> ordres = <OrdreFabrication>[].obs;
+  final RxBool isLoading = false.obs;
+  final RxString error = ''.obs;
+
+  @override
+  void onInit() { super.onInit(); loadAll(); }
+
+  Future<void> loadAll() async {
+    isLoading.value = true;
+    await Future.wait([loadBoms(), loadOrdres()]);
+    isLoading.value = false;
+  }
+
+  Future<void> loadBoms() async {
+    final r = await _repo.getBoms();
+    r.fold((e) => error.value = e, (b) => boms.assignAll(b));
+  }
+
+  Future<void> loadOrdres() async {
+    final r = await _repo.getOrdresFabrication();
+    r.fold((e) => error.value = e, (o) => ordres.assignAll(o));
+  }
+
+  Future<bool> creerBom({required int produitFiniId, String? nom, required List<Map<String, dynamic>> lignes}) async {
+    final r = await _repo.creerBom(produitFiniId: produitFiniId, nom: nom, lignes: lignes);
+    return r.fold((_) => false, (_) { loadBoms(); return true; });
+  }
+
+  Future<Either<String, Map<String, dynamic>>> creerOrdreFabrication(
+      {required int bomId, required double quantiteProduite, String? emplacement}) async {
+    final r = await _repo.creerOrdreFabrication(bomId: bomId, quantiteProduite: quantiteProduite, emplacement: emplacement);
+    r.fold((_) {}, (_) { loadOrdres(); if (Get.isRegistered<StockController>()) Get.find<StockController>().loadProducts(); });
+    return r;
+  }
+}
+
 
 class AlertController extends GetxController {
   final AlertRepository _repo;

@@ -73,4 +73,16 @@ class AppConfig {
   static String get facturesRejeter => '$apiBase/factures/{id}/rejeter';
   static String get produitAjoutManuelComplet => '$apiBase/stock/produits/ajout-manuel-complet';
 
+  static String get facturesManuelle => '$apiBase/factures/manuelle';
+  static String get lotQr => '$apiBase/stock/lots/{id}/qr';
+  static String get lotSuggere => '$apiBase/stock/produits/{id}/lot-suggere';
+
+  static String get demandesModification => '$apiBase/demandes/modification';
+  static String get demandeApprouver => '$apiBase/demandes/modification/{id}/approuver';
+  static String get demandeRefuser => '$apiBase/demandes/modification/{id}/refuser';
+
+  static String get bomAll => '$apiBase/bom';
+  static String get bomDuProduit => '$apiBase/bom/produit/{id}';
+  static String get ordresFabrication => '$apiBase/bom/ordres-fabrication';
+
 }

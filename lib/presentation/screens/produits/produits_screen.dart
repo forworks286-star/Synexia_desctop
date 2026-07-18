@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:typed_data';
+import 'package:dartz/dartz.dart';
+import '../../../data/repositories/stock_repository_impl.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -302,7 +305,15 @@ void _showDetail(Product product) {
                         style: TextStyle(fontSize: 11,
                           color: l.dateExpiration!.isBefore(DateTime.now().add(const Duration(days: 30)))
                             ? AppColors.danger : AppColors.darkTextMuted)),
+                    ] else ...[
+                      const SizedBox(width: 16),
+                      const Icon(Icons.event_busy_rounded, size: 13, color: AppColors.warning),
                     ],
+                    IconButton(
+                      icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppColors.primary),
+                      tooltip: 'Imprimer le QR de ce lot',
+                      onPressed: () => _showLotQr(l.id, l.numeroLot ?? '#${l.id}'),
+                    ),
                   ]),
                 )).toList(),
               ],
@@ -566,3 +577,27 @@ void _showAddProduitComplet(StockController stock) {
   )));
 }
 
+void _showLotQr(int lotId, String numeroLot) async {
+    Get.dialog(FutureBuilder<Either<String, Uint8List>>(
+      future: StockRepositoryImpl().getLotQr(lotId),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const AlertDialog(content: SizedBox(height: 120,
+            child: Center(child: CircularProgressIndicator())));
+        }
+        return snapshot.data!.fold(
+          (e) => AlertDialog(title: const Text('Erreur'), content: Text(e)),
+          (bytes) => AlertDialog(
+            title: Text('QR — Lot $numeroLot'),
+            content: SizedBox(width: 260, height: 300, child: Column(children: [
+              Image.memory(bytes, width: 220, height: 220),
+              const SizedBox(height: 10),
+              const Text('Imprimez cette fenêtre (Ctrl+P) et collez le QR sur les cartons du lot.',
+                style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted), textAlign: TextAlign.center),
+            ])),
+            actions: [TextButton(onPressed: () => Get.back(), child: const Text('Fermer'))],
+          ),
+        );
+      },
+    ));
+  }
