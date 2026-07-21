@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
-import 'package:dartz/dartz.dart';
+import 'package:dartz/dartz.dart' hide State;
 import '../../../data/repositories/stock_repository_impl.dart';
 import 'package:get/get.dart';
 
