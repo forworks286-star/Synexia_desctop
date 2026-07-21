@@ -81,6 +81,8 @@ class AppConfig {
   static String get demandeApprouver => '$apiBase/demandes/modification/{id}/approuver';
   static String get demandeRefuser => '$apiBase/demandes/modification/{id}/refuser';
 
+  static String get appairageGenerer => '$apiBase/appairage/generer';
+
   static String get bomAll => '$apiBase/bom';
   static String get bomDuProduit => '$apiBase/bom/produit/{id}';
   static String get ordresFabrication => '$apiBase/bom/ordres-fabrication';

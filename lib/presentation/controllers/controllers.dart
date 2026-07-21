@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dartz/dartz.dart';
 import 'dart:convert';
+import 'dart:async';
 import '../../core/config/app_config.dart';
 import '../../domain/models/models.dart';
 import '../../domain/repositories/repositories.dart';
@@ -175,6 +176,8 @@ class StockController extends GetxController {
     r.fold((e) => error.value = e, (s) => stats.value = s);
   }
 
+  final Rx<String?> typeStockFilter = Rx<String?>(null);
+
   List<Product> get filteredProducts {
     return products.toList().where((p) {
       final q = searchQuery.value.toLowerCase();
@@ -184,7 +187,8 @@ class StockController extends GetxController {
           p.qrReference.toLowerCase().contains(q);
       final matchStatus   = statusFilter.value == null || p.status == statusFilter.value;
       final matchCategorie = categorieFilter.value.isEmpty || p.categorie == categorieFilter.value;
-      return matchSearch && matchStatus && matchCategorie;
+      final matchType = typeStockFilter.value == null || p.typeStock == typeStockFilter.value;
+      return matchSearch && matchStatus && matchCategorie && matchType;
     }).toList();
   }
 }
@@ -222,12 +226,13 @@ class InvoiceController extends GetxController {
   }
 
   Future<bool> creerFactureManuelle({required String fournisseurNom, required String date,
-      required String typeFacture, required double montantHt, required double montantTva,
-      required double montantTtc, required String motifCreationManuelle}) async {
+      required String typeFacture, required String typeStock, required double montantHt,
+      required double montantTva, required double montantTtc, required String motifCreationManuelle,
+      required List<Map<String, dynamic>> lignes}) async {
     final r = await _repo.creerFactureManuelle(
-      fournisseurNom: fournisseurNom, date: date, typeFacture: typeFacture,
+      fournisseurNom: fournisseurNom, date: date, typeFacture: typeFacture, typeStock: typeStock,
       montantHt: montantHt, montantTva: montantTva, montantTtc: montantTtc,
-      motifCreationManuelle: motifCreationManuelle,
+      motifCreationManuelle: motifCreationManuelle, lignes: lignes,
     );
     return r.fold((_) => false, (_) { loadInvoices(); return true; });
   }
@@ -314,6 +319,9 @@ class AlertController extends GetxController {
 
   final RxList<Alert> alerts = <Alert>[].obs;
   final RxInt unreadCount = 0.obs;
+  final _appairageController = StreamController<Map<String, dynamic>>.broadcast();
+  Stream<Map<String, dynamic>> get appairageStream => _appairageController.stream;
+  void pushAppairage(Map<String, dynamic> data) => _appairageController.add(data);
 
   @override
   void onInit() { super.onInit(); loadAlerts(); _listenRealtime(); }

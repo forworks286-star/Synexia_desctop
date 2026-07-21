@@ -104,13 +104,16 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   @override
   Future<Either<String, Invoice>> creerFactureManuelle({
       required String fournisseurNom, required String date, required String typeFacture,
-      required double montantHt, required double montantTva, required double montantTtc,
-      required String motifCreationManuelle}) async {
+      required String typeStock, required double montantHt, required double montantTva,
+      required double montantTtc, required String motifCreationManuelle,
+      required List<Map<String, dynamic>> lignes}) async {
     try {
       final response = await _dio.post(AppConfig.facturesManuelle, data: {
         'fournisseur_nom': fournisseurNom, 'date': date, 'type_facture': typeFacture,
+        'type_stock': typeStock,
         'montant_ht': montantHt, 'montant_tva': montantTva, 'montant_ttc': montantTtc,
         'motif_creation_manuelle': motifCreationManuelle,
+        'lignes': lignes,
       });
       return Right(_parseInvoice(response.data as Map<String, dynamic>));
     } on DioException catch (e) {

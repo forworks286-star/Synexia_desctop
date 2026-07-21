@@ -114,6 +114,12 @@ class AlertRepositoryImpl implements AlertRepository {
             }
           }
 
+          if (type == 'appairage_update') {
+            if (Get.isRegistered<AlertController>()) {
+              Get.find<AlertController>().pushAppairage(json);
+            }
+          }
+
         } catch (_) {}
       },
       onError: (_) => _scheduleReconnect(),

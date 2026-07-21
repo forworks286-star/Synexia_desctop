@@ -240,9 +240,11 @@ class StockRepositoryImpl implements StockRepository {
       supplierSecondaireName: data['supplier_secondaire_name'] as String?,
       delaiLivraisonJours:  data['delai_livraison_jours'] as int?,
       champsExtra:          (data['champs_extra'] as Map<String, dynamic>?) ?? {},
+      typeStock:            (data['type_stock'] as String?) ?? 'marchandise',
       lots:                 lotsRaw.map((l) => Lot(
         id:                  l['id'] as int,
         numeroLot:           l['numero_lot'] as String?,
+        numeroLotFournisseur: l['numero_lot_fournisseur'] as String?,
         quantitePhysique:    l['quantite_physique'] as int? ?? 0,
         quantiteDisponible:  l['quantite_disponible'] as int? ?? 0,
         statut:              l['statut'] as String? ?? 'disponible',

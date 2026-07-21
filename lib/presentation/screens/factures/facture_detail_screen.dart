@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../controllers/controllers.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/formatters.dart';
@@ -87,7 +88,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
               ]),
             ),
           ],
-          if (_isPending) ...[
+          if (_isPending && Get.find<AuthController>().isManager) ...[
             const SizedBox(height: 20),
             _buildActionButtons(invoice),
           ],

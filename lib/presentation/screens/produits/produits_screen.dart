@@ -23,9 +23,8 @@ class ProduitsScreen extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.all(28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        _TypeFilterTabs(),
           PageHeader(
             title: 'Produits',
             actions: [
@@ -601,3 +600,33 @@ void _showLotQr(int lotId, String numeroLot) async {
       },
     ));
   }
+
+
+
+  class _TypeFilterTabs extends StatefulWidget {
+  @override
+  State<_TypeFilterTabs> createState() => _TypeFilterTabsState();
+}
+
+class _TypeFilterTabsState extends State<_TypeFilterTabs> {
+  static const _options = {
+    null: 'Tout', 'marchandise': 'Marchandise', 'matiere_premiere': 'Matière première',
+    'produit_fini': 'Produit fini', 'consommable': 'Consommable',
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final stock = Get.find<StockController>();
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Obx(() => Wrap(spacing: 8, children: _options.entries.map((e) {
+        final selected = stock.typeStockFilter.value == e.key;
+        return ChoiceChip(
+          label: Text(e.value),
+          selected: selected,
+          onSelected: (_) => stock.typeStockFilter.value = e.key,
+        );
+      }).toList())),
+    );
+  }
+}

@@ -7,6 +7,10 @@ import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../core/utils/formatters.dart';
 import 'facture_detail_screen.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:async';
+import '../../../core/config/app_config.dart';
+import '../../../data/services/api_client.dart';
 
 class FacturesScreen extends StatelessWidget {
   const FacturesScreen({super.key});
@@ -29,8 +33,8 @@ class FacturesScreen extends StatelessWidget {
               const SizedBox(width: 12),
               SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, onTap: ctrl.loadInvoices, outline: true),
               const SizedBox(width: 12),
-              SynButton(label: 'Facture manuelle', icon: Icons.edit_note_rounded,
-                onTap: () => _showFactureManuelleDialog(context, ctrl)),
+              SynButton(label: 'Nouvelle facture', icon: Icons.add_rounded,
+                onTap: () => ouvrirNouvelleFacture(context, ctrl)),
             ],
           ),
           const SizedBox(height: 20),
@@ -235,19 +239,27 @@ class _TypeFilterDropdown extends StatelessWidget {
   }
 }
 
-void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl) {
+Map<String, dynamic> _ligneVide() => {
+  'designation': '', 'quantite': '', 'prix_unitaire': '', 'prix_vente': '',
+  'date_fabrication': null, 'date_expiration': null, 'numero_lot_fournisseur': '',
+};
+
+void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {String? typeStockInitial}) {
   final fournisseurCtrl = TextEditingController();
-  final dateCtrl = TextEditingController(text: DateTime.now().toIso8601String().split('T').first);
+  DateTime factureDate = DateTime.now();
   final htCtrl = TextEditingController();
   final tvaCtrl = TextEditingController();
   final ttcCtrl = TextEditingController();
   final motifCtrl = TextEditingController();
   String typeFacture = 'achat';
+  String typeStock = typeStockInitial ?? 'marchandise';
+  final lignes = <Map<String, dynamic>>[_ligneVide()];
 
   Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
     backgroundColor: AppColors.darkCard,
     title: const Text('Nouvelle facture manuelle'),
-    content: SizedBox(width: 440, child: Column(mainAxisSize: MainAxisSize.min, children: [
+    content: SizedBox(width: 560, child: SingleChildScrollView(child: Column(
+        mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
       Container(
         padding: const EdgeInsets.all(10),
         margin: const EdgeInsets.only(bottom: 12),
@@ -259,19 +271,45 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl) {
             style: TextStyle(fontSize: 11, color: AppColors.warning))),
         ]),
       ),
-      DropdownButtonFormField<String>(
-        value: typeFacture,
-        decoration: const InputDecoration(labelText: 'Type'),
-        items: const [
-          DropdownMenuItem(value: 'achat', child: Text('Achat')),
-          DropdownMenuItem(value: 'vente', child: Text('Vente')),
-        ],
-        onChanged: (v) => setState(() => typeFacture = v ?? 'achat'),
-      ),
+      Row(children: [
+        Expanded(child: DropdownButtonFormField<String>(
+          value: typeFacture,
+          decoration: const InputDecoration(labelText: 'Type'),
+          items: const [
+            DropdownMenuItem(value: 'achat', child: Text('Achat')),
+            DropdownMenuItem(value: 'vente', child: Text('Vente')),
+          ],
+          onChanged: (v) => setState(() => typeFacture = v ?? 'achat'),
+        )),
+        const SizedBox(width: 10),
+        Expanded(child: DropdownButtonFormField<String>(
+          value: typeStock,
+          decoration: const InputDecoration(labelText: 'Catégorie'),
+          items: const [
+            DropdownMenuItem(value: 'marchandise', child: Text('Marchandise')),
+            DropdownMenuItem(value: 'matiere_premiere', child: Text('Matière première')),
+            DropdownMenuItem(value: 'produit_fini', child: Text('Produit fini')),
+            DropdownMenuItem(value: 'consommable', child: Text('Consommable')),
+          ],
+          onChanged: (v) => setState(() => typeStock = v ?? 'marchandise'),
+        )),
+      ]),
       const SizedBox(height: 10),
       TextField(controller: fournisseurCtrl, decoration: const InputDecoration(labelText: 'Fournisseur / Client')),
       const SizedBox(height: 10),
-      TextField(controller: dateCtrl, decoration: const InputDecoration(labelText: 'Date (AAAA-MM-JJ)')),
+      InkWell(
+        onTap: () async {
+          final picked = await showDatePicker(
+            context: context, initialDate: factureDate,
+            firstDate: DateTime(2020), lastDate: DateTime(2100),
+          );
+          if (picked != null) setState(() => factureDate = picked);
+        },
+        child: InputDecorator(
+          decoration: const InputDecoration(labelText: 'Date de la facture'),
+          child: Text('${factureDate.year}-${factureDate.month.toString().padLeft(2, '0')}-${factureDate.day.toString().padLeft(2, '0')}'),
+        ),
+      ),
       const SizedBox(height: 10),
       Row(children: [
         Expanded(child: TextField(controller: htCtrl, decoration: const InputDecoration(labelText: 'Montant HT'), keyboardType: TextInputType.number)),
@@ -283,19 +321,44 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl) {
       const SizedBox(height: 10),
       TextField(controller: motifCtrl, maxLines: 2,
         decoration: const InputDecoration(labelText: 'Motif (obligatoire)', hintText: 'Pourquoi une saisie manuelle ?')),
-    ])),
+      const Divider(height: 28),
+      const SectionTitle(title: 'ARTICLES'),
+      const SizedBox(height: 8),
+      ...lignes.asMap().entries.map((entry) => _LigneManuelleRow(
+        data: entry.value,
+        onRemove: lignes.length > 1 ? () => setState(() => lignes.removeAt(entry.key)) : null,
+        onChanged: () => setState(() {}),
+      )),
+      Align(alignment: Alignment.centerLeft, child: TextButton.icon(
+        icon: const Icon(Icons.add), label: const Text('Ajouter un article'),
+        onPressed: () => setState(() => lignes.add(_ligneVide())),
+      )),
+    ]))),
     actions: [
       TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
       ElevatedButton(
         onPressed: () async {
           if (motifCtrl.text.trim().isEmpty || fournisseurCtrl.text.trim().isEmpty) return;
+          final lignesPourEnvoi = lignes.map((l) => {
+            'designation': l['designation'],
+            'quantite': double.tryParse(l['quantite'] as String? ?? '') ?? 0,
+            'prix_unitaire': double.tryParse(l['prix_unitaire'] as String? ?? '') ?? 0,
+            'prix_vente': (l['prix_vente'] as String?)?.isNotEmpty == true
+                ? double.tryParse(l['prix_vente'] as String) : null,
+            'date_fabrication': l['date_fabrication'],
+            'date_expiration': l['date_expiration'],
+            'numero_lot_fournisseur': (l['numero_lot_fournisseur'] as String?)?.isEmpty == true
+                ? null : l['numero_lot_fournisseur'],
+          }).toList();
           final ok = await ctrl.creerFactureManuelle(
-            fournisseurNom: fournisseurCtrl.text.trim(), date: dateCtrl.text.trim(),
-            typeFacture: typeFacture,
+            fournisseurNom: fournisseurCtrl.text.trim(),
+            date: '${factureDate.year}-${factureDate.month.toString().padLeft(2, '0')}-${factureDate.day.toString().padLeft(2, '0')}',
+            typeFacture: typeFacture, typeStock: typeStock,
             montantHt: double.tryParse(htCtrl.text) ?? 0,
             montantTva: double.tryParse(tvaCtrl.text) ?? 0,
             montantTtc: double.tryParse(ttcCtrl.text) ?? 0,
             motifCreationManuelle: motifCtrl.text.trim(),
+            lignes: lignesPourEnvoi,
           );
           Get.back();
           if (ok) {
@@ -303,8 +366,282 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl) {
               backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
           }
         },
-        child: const Text('Créer'),
+        child: const Text('Envoyer'),
       ),
     ],
   )));
+}
+
+class _LigneManuelleRow extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final VoidCallback? onRemove;
+  final VoidCallback onChanged;
+  const _LigneManuelleRow({required this.data, required this.onRemove, required this.onChanged});
+
+  Future<void> _pickDate(BuildContext context, String key) async {
+    final picked = await showDatePicker(
+      context: context, initialDate: DateTime.now(),
+      firstDate: DateTime(2020), lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      data[key] = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      onChanged();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(color: AppColors.darkSurface, borderRadius: BorderRadius.circular(8)),
+      child: Column(children: [
+        Row(children: [
+          Expanded(flex: 2, child: TextFormField(
+            initialValue: data['designation'] as String,
+            decoration: const InputDecoration(labelText: 'Désignation'),
+            onChanged: (v) => data['designation'] = v,
+          )),
+          const SizedBox(width: 8),
+          Expanded(child: TextFormField(
+            initialValue: data['quantite'] as String,
+            decoration: const InputDecoration(labelText: 'Qté'), keyboardType: TextInputType.number,
+            onChanged: (v) => data['quantite'] = v,
+          )),
+          if (onRemove != null)
+            IconButton(icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.danger), onPressed: onRemove),
+        ]),
+        const SizedBox(height: 6),
+        Row(children: [
+          Expanded(child: TextFormField(
+            initialValue: data['prix_unitaire'] as String,
+            decoration: const InputDecoration(labelText: 'Prix achat'), keyboardType: TextInputType.number,
+            onChanged: (v) => data['prix_unitaire'] = v,
+          )),
+          const SizedBox(width: 8),
+          Expanded(child: TextFormField(
+            initialValue: data['prix_vente'] as String,
+            decoration: const InputDecoration(labelText: 'Prix vente (optionnel)'), keyboardType: TextInputType.number,
+            onChanged: (v) => data['prix_vente'] = v,
+          )),
+        ]),
+        const SizedBox(height: 6),
+        Row(children: [
+          Expanded(child: InkWell(
+            onTap: () => _pickDate(context, 'date_fabrication'),
+            child: InputDecorator(decoration: const InputDecoration(labelText: 'Fabrication'),
+              child: Text(data['date_fabrication'] as String? ?? '—', style: const TextStyle(fontSize: 12))),
+          )),
+          const SizedBox(width: 8),
+          Expanded(child: InkWell(
+            onTap: () => _pickDate(context, 'date_expiration'),
+            child: InputDecorator(decoration: const InputDecoration(labelText: 'Expiration'),
+              child: Text(data['date_expiration'] as String? ?? '—', style: const TextStyle(fontSize: 12))),
+          )),
+        ]),
+        const SizedBox(height: 6),
+        TextFormField(
+          initialValue: data['numero_lot_fournisseur'] as String,
+          decoration: const InputDecoration(labelText: 'N° de lot fabricant (si imprimé sur le produit)'),
+          onChanged: (v) => data['numero_lot_fournisseur'] = v,
+        ),
+      ]),
+    );
+  }
+}
+
+void ouvrirNouvelleFacture(BuildContext context, InvoiceController ctrl) {
+  Get.dialog(AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: const Text('Nouvelle facture'),
+    content: SizedBox(width: 400, child: Column(mainAxisSize: MainAxisSize.min, children: [
+      _ChoixCard(
+        icon: Icons.qr_code_scanner_rounded, title: 'Depuis un téléphone (OCR)',
+        subtitle: 'Nécessite l\'application mobile',
+        onTap: () { Get.back(); _choisirType(context, ctrl, viaOcr: true); },
+      ),
+      const SizedBox(height: 10),
+      _ChoixCard(
+        icon: Icons.edit_note_rounded, title: 'Saisie manuelle',
+        subtitle: 'Remplir la facture directement ici',
+        onTap: () { Get.back(); _choisirType(context, ctrl, viaOcr: false); },
+      ),
+    ])),
+  ));
+}
+
+void _choisirType(BuildContext context, InvoiceController ctrl, {required bool viaOcr}) {
+  const types = {
+    'marchandise': 'Marchandise', 'matiere_premiere': 'Matière première',
+    'produit_fini': 'Produit fini', 'consommable': 'Consommable',
+  };
+  Get.dialog(AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: const Text('Catégorie de la facture'),
+    content: SizedBox(width: 380, child: Column(mainAxisSize: MainAxisSize.min,
+      children: types.entries.map((e) => _ChoixCard(
+        icon: Icons.category_outlined, title: e.value, subtitle: '',
+        onTap: () {
+          Get.back();
+          if (viaOcr) {
+            Get.dialog(_AttenteAppairageDialog(typeStock: e.key), barrierDismissible: false);
+          } else {
+            _showFactureManuelleDialog(context, ctrl, typeStockInitial: e.key);
+          }
+        },
+      )).toList(),
+    )),
+  ));
+}
+
+class _ChoixCard extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+  const _ChoixCard({required this.icon, required this.title, required this.subtitle, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap, borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        margin: const EdgeInsets.only(bottom: 4),
+        decoration: BoxDecoration(color: AppColors.darkSurface, borderRadius: BorderRadius.circular(10)),
+        child: Row(children: [
+          Icon(icon, color: AppColors.primary),
+          const SizedBox(width: 12),
+          Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+            if (subtitle.isNotEmpty) Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+          ])),
+          const Icon(Icons.chevron_right_rounded, color: AppColors.darkTextMuted),
+        ]),
+      ),
+    );
+  }
+}
+
+class _AttenteAppairageDialog extends StatefulWidget {
+  final String typeStock;
+  const _AttenteAppairageDialog({required this.typeStock});
+
+  @override
+  State<_AttenteAppairageDialog> createState() => _AttenteAppairageDialogState();
+}
+
+class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
+  String? _code;
+  String _statut = 'attente';
+  int _secondesRestantes = 180;
+  Timer? _timer;
+  StreamSubscription? _wsSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _genererCode();
+  }
+
+  Future<void> _genererCode() async {
+    setState(() { _statut = 'attente'; _code = null; });
+    try {
+      final response = await ApiClient.instance.dio.post(AppConfig.appairageGenerer, data: {
+        'type_stock': widget.typeStock, 'type_facture': 'achat',
+      });
+      setState(() {
+        _code = response.data['code'] as String;
+        _secondesRestantes = response.data['expire_dans_secondes'] as int;
+      });
+      _demarrerCompteARebours();
+      _ecouterAppairage();
+    } catch (_) {
+      setState(() => _statut = 'erreur');
+    }
+  }
+
+  void _demarrerCompteARebours() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (t) {
+      if (_secondesRestantes <= 1) {
+        t.cancel();
+        setState(() => _statut = 'expire');
+      } else {
+        setState(() => _secondesRestantes--);
+      }
+    });
+  }
+
+  void _ecouterAppairage() {
+    final alertCtrl = Get.find<AlertController>();
+    _wsSub = alertCtrl.appairageStream.listen((data) {
+      if (data['code'] != _code) return;
+      final statut = data['statut'] as String?;
+      if (statut == 'scanne') {
+        setState(() => _statut = 'scanne');
+      } else if (statut == 'complete') {
+        _timer?.cancel();
+        Get.back();
+        final factureId = data['facture_id'] as int?;
+        if (factureId != null) {
+          Get.to(() => FactureDetailScreen(factureId: factureId));
+        }
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _wsSub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: AppColors.darkCard,
+      title: const Text('Recevoir depuis un téléphone'),
+      content: SizedBox(width: 340, child: Column(mainAxisSize: MainAxisSize.min, children: [
+        if (_statut == 'expire') ...[
+          const Icon(Icons.timer_off_rounded, size: 48, color: AppColors.warning),
+          const SizedBox(height: 12),
+          const Text('Code expiré', style: TextStyle(fontWeight: FontWeight.w700)),
+          const SizedBox(height: 12),
+          SynButton(label: 'Générer un nouveau code', onTap: _genererCode),
+        ] else if (_statut == 'erreur') ...[
+          const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.danger),
+          const SizedBox(height: 12),
+          const Text('Erreur de connexion au serveur'),
+          const SizedBox(height: 12),
+          SynButton(label: 'Réessayer', onTap: _genererCode),
+        ] else if (_code == null) ...[
+          const SizedBox(height: 40),
+          const CircularProgressIndicator(),
+        ] else ...[
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+            child: QrImageView(data: _code!, size: 180),
+          ),
+          const SizedBox(height: 14),
+          Text(_code!, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: 4)),
+          const SizedBox(height: 10),
+          Text('Expire dans ${_secondesRestantes}s', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+          const SizedBox(height: 14),
+          if (_statut == 'attente')
+            const Text('Depuis l\'application mobile : entrez ce code ou scannez le QR.',
+              textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
+          if (_statut == 'scanne') ...[
+            const Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 28),
+            const SizedBox(height: 6),
+            const Text('Téléphone connecté — en attente de la photo...',
+              textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.success)),
+          ],
+        ],
+      ])),
+      actions: [TextButton(onPressed: () => Get.back(), child: const Text('Annuler'))],
+    );
+  }
 }

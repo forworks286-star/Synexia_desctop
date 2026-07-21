@@ -112,6 +112,7 @@ enum StockStatus { normal, low, critical }
 class Lot extends Equatable {
   final int id;
   final String? numeroLot;
+  final String? numeroLotFournisseur;
   final int quantitePhysique;
   final int quantiteDisponible;
   final String statut;
@@ -124,6 +125,7 @@ class Lot extends Equatable {
   const Lot({
     required this.id,
     this.numeroLot,
+    this.numeroLotFournisseur,
     required this.quantitePhysique,
     required this.quantiteDisponible,
     this.statut = 'disponible',
