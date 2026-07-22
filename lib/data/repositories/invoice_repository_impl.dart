@@ -277,6 +277,12 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     numeroFacture: data['numero_facture'] as String?,
     factureStatus: data['facture_status'] as String? ?? 'validated',
     factureCreeParId: data['facture_cree_par_id'] as int?,
+    numeroLotFournisseur: data['numero_lot_fournisseur'] as String?,
+    nouveauCategorie: data['nouveau_categorie'] as String?,
+    nouveauCodeBarre: data['nouveau_code_barre'] as String?,
+    nouveauUniteMesure: data['nouveau_unite_mesure'] as String?,
+    nouveauSeuilCritique: data['nouveau_seuil_critique'] as int?,
+    nouveauEmplacement: data['nouveau_emplacement'] as String?,
   );
 
   InvoiceStatus _parseStatus(String status) {

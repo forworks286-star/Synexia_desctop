@@ -708,9 +708,12 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
           'prix_vente': l.prixVente?.toString() ?? '',
           'date_fabrication': l.dateFabrication,
           'date_expiration': l.dateExpiration,
-          'numero_lot_fournisseur': '',
-          'nouveau_categorie': '', 'nouveau_code_barre': '', 'nouveau_unite_mesure': '',
-          'nouveau_seuil_critique': '', 'nouveau_emplacement': '',
+          'numero_lot_fournisseur': l.numeroLotFournisseur ?? '',
+          'nouveau_categorie': l.nouveauCategorie ?? '',
+          'nouveau_code_barre': l.nouveauCodeBarre ?? '',
+          'nouveau_unite_mesure': l.nouveauUniteMesure ?? '',
+          'nouveau_seuil_critique': l.nouveauSeuilCritique?.toString() ?? '',
+          'nouveau_emplacement': l.nouveauEmplacement ?? '',
         }).toList()
       : <Map<String, dynamic>>[_ligneVide()];
 
