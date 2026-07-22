@@ -482,7 +482,8 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
   late final _uniteMesureCtrl = TextEditingController(text: widget.data['nouveau_unite_mesure'] as String);
   late final _seuilCritiqueCtrl = TextEditingController(text: widget.data['nouveau_seuil_critique'] as String);
   late final _emplacementCtrl = TextEditingController(text: widget.data['nouveau_emplacement'] as String);
-  bool get _nouveauProduit => widget.data['produit_id'] == null;
+  late bool _nouveauProduit = widget.data['produit_id'] == null;
+
 
   Future<void> _pickDate(BuildContext context, String key) async {
     final picked = await showDatePicker(
@@ -511,8 +512,10 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
           title: const Text('Produit inexistant (nouveau)', style: TextStyle(fontSize: 12)),
           value: _nouveauProduit,
           onChanged: (v) => setState(() {
-            widget.data['produit_id'] = null;
+            _nouveauProduit = v;
+            if (v) widget.data['produit_id'] = null;
           }),
+
         ),
         if (!_nouveauProduit)
           Autocomplete<Product>(
