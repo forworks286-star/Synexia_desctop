@@ -59,7 +59,7 @@ class FacturesScreen extends StatelessWidget {
                 ...ctrl.facturesACorriger.map((f) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: Row(children: [
-                    Expanded(child: Text('#${f.id} — ${f.supplierName} — ${Formatters.currency(f.amountTtc)}',
+                    Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
                       style: const TextStyle(fontSize: 13))),
                     SynButton(label: 'Corriger maintenant', icon: Icons.build_rounded,
                       onTap: () => _showCompleterModificationDialog(context, ctrl, f)),

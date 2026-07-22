@@ -256,12 +256,7 @@ class InvoiceController extends GetxController {
     final r = await _repo.refuserDemande(id, motif);
     return r.fold((_) => false, (_) { loadDemandes(); return true; });
   }
-
-  Future<bool> refuserDemande(int id, String? motif) async {
-    final r = await _repo.refuserDemande(id, motif);
-    return r.fold((_) => false, (_) { loadDemandes(); return true; });
-  }
-
+  
   final RxList<Invoice> facturesACorriger = <Invoice>[].obs;
 
   Future<void> loadFacturesACorriger() async {
