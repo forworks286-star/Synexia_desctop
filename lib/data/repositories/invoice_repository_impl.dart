@@ -159,6 +159,37 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     }
   }
 
+  @override
+  Future<Either<String, List<Invoice>>> getFacturesParStatut(String statut) async {
+    try {
+      final response = await _dio.get(AppConfig.facturesAll, queryParameters: {'statut': statut});
+      final invoices = (response.data['results'] as List)
+          .map((e) => _parseInvoice(e as Map<String, dynamic>))
+          .toList();
+      return Right(invoices);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, Invoice>> completerModification({
+      required int factureId, required String fournisseurNom, required String date,
+      required double montantHt, required double montantTva, required double montantTtc,
+      required List<Map<String, dynamic>> lignes}) async {
+    try {
+      final url = AppConfig.factureCompleterModification.replaceAll('{id}', '$factureId');
+      final response = await _dio.put(url, data: {
+        'fournisseur_nom': fournisseurNom, 'date': date,
+        'montant_ht': montantHt, 'montant_tva': montantTva, 'montant_ttc': montantTtc,
+        'lignes': lignes,
+      });
+      return Right(_parseInvoice(response.data as Map<String, dynamic>));
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
   DemandeModification _parseDemande(Map<String, dynamic> data) => DemandeModification(
     id: data['id'] as int, factureId: data['facture_id'] as int,
     demandeurId: data['demandeur_id'] as int, demandeurNom: data['demandeur_nom'] as String?,

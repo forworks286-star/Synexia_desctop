@@ -206,7 +206,7 @@ class InvoiceController extends GetxController {
 
 
   @override
-  void onInit() { super.onInit(); loadInvoices(); loadDemandes(); }
+  void onInit() { super.onInit(); loadInvoices(); loadDemandes(); loadFacturesACorriger(); }
 
   Future<void> loadInvoices() async {
     isLoading.value = true;
@@ -255,6 +255,28 @@ class InvoiceController extends GetxController {
   Future<bool> refuserDemande(int id, String? motif) async {
     final r = await _repo.refuserDemande(id, motif);
     return r.fold((_) => false, (_) { loadDemandes(); return true; });
+  }
+
+  Future<bool> refuserDemande(int id, String? motif) async {
+    final r = await _repo.refuserDemande(id, motif);
+    return r.fold((_) => false, (_) { loadDemandes(); return true; });
+  }
+
+  final RxList<Invoice> facturesACorriger = <Invoice>[].obs;
+
+  Future<void> loadFacturesACorriger() async {
+    final r = await _repo.getFacturesParStatut('modification_autorisee');
+    r.fold((_) {}, (l) => facturesACorriger.assignAll(l));
+  }
+
+  Future<bool> completerModification({required int factureId, required String fournisseurNom,
+      required String date, required double montantHt, required double montantTva,
+      required double montantTtc, required List<Map<String, dynamic>> lignes}) async {
+    final r = await _repo.completerModification(
+      factureId: factureId, fournisseurNom: fournisseurNom, date: date,
+      montantHt: montantHt, montantTva: montantTva, montantTtc: montantTtc, lignes: lignes,
+    );
+    return r.fold((_) => false, (_) { loadInvoices(); loadFacturesACorriger(); return true; });
   }
 
     List<Invoice> get filteredInvoices {

@@ -38,6 +38,36 @@ class FacturesScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
+          Obx(() {
+            if (ctrl.facturesACorriger.isEmpty) return const SizedBox.shrink();
+            return Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.warning.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  const Icon(Icons.edit_note_rounded, color: AppColors.warning, size: 18),
+                  const SizedBox(width: 8),
+                  Text('${ctrl.facturesACorriger.length} facture(s) à corriger — votre demande a été approuvée',
+                    style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 13)),
+                ]),
+                const SizedBox(height: 10),
+                ...ctrl.facturesACorriger.map((f) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(children: [
+                    Expanded(child: Text('#${f.id} — ${f.supplierName} — ${Formatters.currency(f.amountTtc)}',
+                      style: const TextStyle(fontSize: 13))),
+                    SynButton(label: 'Corriger maintenant', icon: Icons.build_rounded,
+                      onTap: () => _showCompleterModificationDialog(context, ctrl, f)),
+                  ]),
+                )),
+              ]),
+            );
+          }),
           Expanded(
             child: SynCard(
               padding: EdgeInsets.zero,
@@ -624,6 +654,98 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
       ]),
     );
   }
+}
+
+void _showCompleterModificationDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
+  final fournisseurCtrl = TextEditingController(text: facture.supplierName);
+  DateTime factureDate = facture.date;
+  final htCtrl = TextEditingController(text: facture.amountHt.toString());
+  final tvaCtrl = TextEditingController(text: facture.amountTva.toString());
+  final ttcCtrl = TextEditingController(text: facture.amountTtc.toString());
+  final lignes = <Map<String, dynamic>>[_ligneVide()];
+
+  Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: Text('Corriger la facture #${facture.id}'),
+    content: SizedBox(width: 560, child: SingleChildScrollView(child: Column(
+        mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+      TextField(controller: fournisseurCtrl, decoration: const InputDecoration(labelText: 'Fournisseur / Client')),
+      const SizedBox(height: 10),
+      InkWell(
+        onTap: () async {
+          final picked = await showDatePicker(
+            context: context, initialDate: factureDate,
+            firstDate: DateTime(2020), lastDate: DateTime(2100),
+          );
+          if (picked != null) setState(() => factureDate = picked);
+        },
+        child: InputDecorator(
+          decoration: const InputDecoration(labelText: 'Date de la facture'),
+          child: Text('${factureDate.year}-${factureDate.month.toString().padLeft(2, '0')}-${factureDate.day.toString().padLeft(2, '0')}'),
+        ),
+      ),
+      const SizedBox(height: 10),
+      Row(children: [
+        Expanded(child: TextField(controller: htCtrl, decoration: const InputDecoration(labelText: 'Montant HT'), keyboardType: TextInputType.number)),
+        const SizedBox(width: 8),
+        Expanded(child: TextField(controller: tvaCtrl, decoration: const InputDecoration(labelText: 'TVA'), keyboardType: TextInputType.number)),
+        const SizedBox(width: 8),
+        Expanded(child: TextField(controller: ttcCtrl, decoration: const InputDecoration(labelText: 'TTC'), keyboardType: TextInputType.number)),
+      ]),
+      const Divider(height: 28),
+      const SectionTitle(title: 'ARTICLES CORRIGÉS'),
+      const SizedBox(height: 8),
+      ...lignes.asMap().entries.map((entry) => _LigneManuelleRow(
+        data: entry.value,
+        onRemove: lignes.length > 1 ? () => setState(() => lignes.removeAt(entry.key)) : null,
+        onChanged: () => setState(() {}),
+      )),
+      Align(alignment: Alignment.centerLeft, child: TextButton.icon(
+        icon: const Icon(Icons.add), label: const Text('Ajouter un article'),
+        onPressed: () => setState(() => lignes.add(_ligneVide())),
+      )),
+    ]))),
+    actions: [
+      TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+      ElevatedButton(
+        onPressed: () async {
+          if (fournisseurCtrl.text.trim().isEmpty) return;
+          if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
+            Get.snackbar('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0',
+              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            return;
+          }
+          final lignesPourEnvoi = lignes.map((l) => {
+            'produit_id': l['produit_id'],
+            'designation': l['designation'],
+            'quantite': double.tryParse(l['quantite'] as String? ?? '') ?? 0,
+            'prix_unitaire': double.tryParse(l['prix_unitaire'] as String? ?? '') ?? 0,
+            'prix_vente': (l['prix_vente'] as String?)?.isNotEmpty == true
+                ? double.tryParse(l['prix_vente'] as String) : null,
+            'date_fabrication': l['date_fabrication'],
+            'date_expiration': l['date_expiration'],
+            'numero_lot_fournisseur': (l['numero_lot_fournisseur'] as String?)?.isEmpty == true
+                ? null : l['numero_lot_fournisseur'],
+          }).toList();
+          final ok = await ctrl.completerModification(
+            factureId: facture.id,
+            fournisseurNom: fournisseurCtrl.text.trim(),
+            date: '${factureDate.year}-${factureDate.month.toString().padLeft(2, '0')}-${factureDate.day.toString().padLeft(2, '0')}',
+            montantHt: double.tryParse(htCtrl.text) ?? 0,
+            montantTva: double.tryParse(tvaCtrl.text) ?? 0,
+            montantTtc: double.tryParse(ttcCtrl.text) ?? 0,
+            lignes: lignesPourEnvoi,
+          );
+          Get.back();
+          if (ok) {
+            Get.snackbar('Facture corrigée', 'La facture est de nouveau en attente de vérification',
+              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+          }
+        },
+        child: const Text('Envoyer la correction'),
+      ),
+    ],
+  )));
 }
 
 void ouvrirNouvelleFacture(BuildContext context, InvoiceController ctrl) {
