@@ -18,6 +18,8 @@ class FacturesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.find<InvoiceController>();
+    ctrl.loadFacturesACorriger();
+    ctrl.loadFacturesEnAttenteModification();
 
     return Padding(
       padding: const EdgeInsets.all(28),
@@ -38,6 +40,37 @@ class FacturesScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
+          Obx(() {
+            if (ctrl.facturesEnAttenteModification.isEmpty) return const SizedBox.shrink();
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.grey.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey.withOpacity(0.3)),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  const Icon(Icons.lock_clock_rounded, color: AppColors.darkTextMuted, size: 18),
+                  const SizedBox(width: 8),
+                  Text('${ctrl.facturesEnAttenteModification.length} demande(s) de modification en attente d\'approbation',
+                    style: const TextStyle(color: AppColors.darkTextMuted, fontWeight: FontWeight.bold, fontSize: 13)),
+                ]),
+                const SizedBox(height: 10),
+                ...ctrl.facturesEnAttenteModification.map((f) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(children: [
+                    Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
+                      style: const TextStyle(fontSize: 13, color: AppColors.darkTextMuted))),
+                    const Icon(Icons.lock_outline_rounded, size: 16, color: AppColors.darkTextMuted),
+                    const SizedBox(width: 6),
+                    const Text('En attente admin', style: TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+                  ]),
+                )),
+              ]),
+            );
+          }),
           Obx(() {
             if (ctrl.facturesACorriger.isEmpty) return const SizedBox.shrink();
             return Container(

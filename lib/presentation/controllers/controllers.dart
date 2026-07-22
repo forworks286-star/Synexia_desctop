@@ -30,7 +30,12 @@ class AuthController extends GetxController {
       await Future.delayed(const Duration(milliseconds: 800));
       try {
         if (Get.isRegistered<StockController>())   Get.find<StockController>().loadAll();
-        if (Get.isRegistered<InvoiceController>()) Get.find<InvoiceController>().loadInvoices();
+        if (Get.isRegistered<InvoiceController>()) {
+          Get.find<InvoiceController>().loadInvoices();
+          Get.find<InvoiceController>().loadDemandes();
+          Get.find<InvoiceController>().loadFacturesACorriger();
+          Get.find<InvoiceController>().loadFacturesEnAttenteModification();
+        }
         if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
       } catch (_) {}
     }
@@ -42,7 +47,12 @@ class AuthController extends GetxController {
       user.value = u;
       Get.offAllNamed('/dashboard');
       if (Get.isRegistered<StockController>())   Get.find<StockController>().loadAll();
-      if (Get.isRegistered<InvoiceController>()) Get.find<InvoiceController>().loadInvoices();
+      if (Get.isRegistered<InvoiceController>()) {
+        Get.find<InvoiceController>().loadInvoices();
+        Get.find<InvoiceController>().loadDemandes();
+        Get.find<InvoiceController>().loadFacturesACorriger();
+        Get.find<InvoiceController>().loadFacturesEnAttenteModification();
+      }
       if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
     });
     isLoading.value = false;
@@ -206,7 +216,7 @@ class InvoiceController extends GetxController {
 
 
   @override
-  void onInit() { super.onInit(); loadInvoices(); loadDemandes(); loadFacturesACorriger(); }
+  void onInit() { super.onInit(); loadInvoices(); loadDemandes(); loadFacturesACorriger(); loadFacturesEnAttenteModification(); }
 
   Future<void> loadInvoices() async {
     isLoading.value = true;
@@ -238,7 +248,7 @@ class InvoiceController extends GetxController {
       motifCreationManuelle: motifCreationManuelle, lignes: lignes,
       compteRenduDemande: compteRenduDemande,
     );
-    return r.fold((_) => false, (_) { loadInvoices(); loadDemandes(); return true; });
+    return r.fold((_) => false, (_) { loadInvoices(); loadDemandes(); loadFacturesEnAttenteModification(); return true; });
   }
 
   Future<void> loadDemandes() async {
@@ -258,10 +268,16 @@ class InvoiceController extends GetxController {
   }
   
   final RxList<Invoice> facturesACorriger = <Invoice>[].obs;
+  final RxList<Invoice> facturesEnAttenteModification = <Invoice>[].obs;
 
   Future<void> loadFacturesACorriger() async {
     final r = await _repo.getFacturesParStatut('modification_autorisee');
     r.fold((_) {}, (l) => facturesACorriger.assignAll(l));
+  }
+
+  Future<void> loadFacturesEnAttenteModification() async {
+    final r = await _repo.getFacturesParStatut('en_attente_modification');
+    r.fold((_) {}, (l) => facturesEnAttenteModification.assignAll(l));
   }
 
   Future<bool> completerModification({required int factureId, required String fournisseurNom,
