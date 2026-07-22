@@ -105,15 +105,18 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   Future<Either<String, Invoice>> creerFactureManuelle({
       required String fournisseurNom, required String date, required String typeFacture,
       required String typeStock, required double montantHt, required double montantTva,
-      required double montantTtc, required String motifCreationManuelle,
-      required List<Map<String, dynamic>> lignes}) async {
+      required double montantTtc, String? fournisseurNif, String? fournisseurNis, String? fournisseurRc,
+      required String motifCreationManuelle,
+      required List<Map<String, dynamic>> lignes, String? compteRenduDemande}) async {
     try {
       final response = await _dio.post(AppConfig.facturesManuelle, data: {
         'fournisseur_nom': fournisseurNom, 'date': date, 'type_facture': typeFacture,
         'type_stock': typeStock,
         'montant_ht': montantHt, 'montant_tva': montantTva, 'montant_ttc': montantTtc,
+        'fournisseur_nif': fournisseurNif, 'fournisseur_nis': fournisseurNis, 'fournisseur_rc': fournisseurRc,
         'motif_creation_manuelle': motifCreationManuelle,
         'lignes': lignes,
+        if (compteRenduDemande != null) 'compte_rendu_demande': compteRenduDemande,
       });
       return Right(_parseInvoice(response.data as Map<String, dynamic>));
     } on DioException catch (e) {
@@ -121,20 +124,6 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     }
   }
 
-  @override
-  Future<Either<String, DemandeModification>> creerDemande({
-      required int factureId, required String champConcerne,
-      required String valeurProposee, required String compteRendu}) async {
-    try {
-      final response = await _dio.post(AppConfig.demandesModification, data: {
-        'facture_id': factureId, 'champ_concerne': champConcerne,
-        'valeur_proposee': valeurProposee, 'compte_rendu': compteRendu,
-      });
-      return Right(_parseDemande(response.data as Map<String, dynamic>));
-    } on DioException catch (e) {
-      return Left(_mapError(e));
-    }
-  }
 
   @override
   Future<Either<String, List<DemandeModification>>> getDemandes({String statut = 'pending'}) async {
@@ -172,11 +161,13 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
 
   DemandeModification _parseDemande(Map<String, dynamic> data) => DemandeModification(
     id: data['id'] as int, factureId: data['facture_id'] as int,
-    demandeurId: data['demandeur_id'] as int, champConcerne: data['champ_concerne'] as String,
-    valeurActuelle: data['valeur_actuelle'] as String?, valeurProposee: data['valeur_proposee'] as String?,
+    demandeurId: data['demandeur_id'] as int, demandeurNom: data['demandeur_nom'] as String?,
     compteRendu: data['compte_rendu'] as String, statut: data['statut'] as String? ?? 'pending',
     traiteParId: data['traite_par_id'] as int?, motifRefus: data['motif_refus'] as String?,
     dateCreation: DateTime.tryParse(data['date_creation']?.toString() ?? '') ?? DateTime.now(),
+    dateTraitement: data['date_traitement'] != null ? DateTime.tryParse(data['date_traitement'].toString()) : null,
+    factureFournisseur: data['facture_fournisseur'] as String?,
+    factureMontantTtc: (data['facture_montant_ttc'] as num?)?.toDouble(),
   );
 
   @override

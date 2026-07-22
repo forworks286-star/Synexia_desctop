@@ -240,8 +240,11 @@ class _TypeFilterDropdown extends StatelessWidget {
 }
 
 Map<String, dynamic> _ligneVide() => {
+  'produit_id': null,
   'designation': '', 'quantite': '', 'prix_unitaire': '', 'prix_vente': '',
   'date_fabrication': null, 'date_expiration': null, 'numero_lot_fournisseur': '',
+  'nouveau_categorie': '', 'nouveau_code_barre': '', 'nouveau_unite_mesure': '',
+  'nouveau_seuil_critique': '', 'nouveau_emplacement': '',
 };
 
 void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {String? typeStockInitial}) {
@@ -251,6 +254,10 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
   final tvaCtrl = TextEditingController();
   final ttcCtrl = TextEditingController();
   final motifCtrl = TextEditingController();
+  final nifCtrl = TextEditingController();
+  final nisCtrl = TextEditingController();
+  final rcCtrl = TextEditingController();
+  final compteRenduDemandeCtrl = TextEditingController();
   String typeFacture = 'achat';
   String typeStock = typeStockInitial ?? 'marchandise';
   final lignes = <Map<String, dynamic>>[_ligneVide()];
@@ -297,6 +304,14 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
       const SizedBox(height: 10),
       TextField(controller: fournisseurCtrl, decoration: const InputDecoration(labelText: 'Fournisseur / Client')),
       const SizedBox(height: 10),
+      Row(children: [
+        Expanded(child: TextField(controller: nifCtrl, decoration: const InputDecoration(labelText: 'NIF (optionnel)'))),
+        const SizedBox(width: 8),
+        Expanded(child: TextField(controller: nisCtrl, decoration: const InputDecoration(labelText: 'NIS (optionnel)'))),
+        const SizedBox(width: 8),
+        Expanded(child: TextField(controller: rcCtrl, decoration: const InputDecoration(labelText: 'RC (optionnel)'))),
+      ]),
+      const SizedBox(height: 10),
       InkWell(
         onTap: () async {
           final picked = await showDatePicker(
@@ -333,13 +348,30 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
         icon: const Icon(Icons.add), label: const Text('Ajouter un article'),
         onPressed: () => setState(() => lignes.add(_ligneVide())),
       )),
+      const Divider(height: 28),
+      TextField(controller: compteRenduDemandeCtrl, maxLines: 3,
+        decoration: const InputDecoration(
+          labelText: 'Problème constaté (optionnel)',
+          hintText: 'Laissez les champs concernés vides, et expliquez ici précisément ce qui manque ou est incorrect.',
+        )),
     ]))),
     actions: [
       TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
-      ElevatedButton(
+      TextButton(
         onPressed: () async {
+          if (compteRenduDemandeCtrl.text.trim().isEmpty) {
+            Get.snackbar('Compte-rendu requis', 'Expliquez le problème avant d\'envoyer une demande de modification',
+              backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+            return;
+          }
           if (motifCtrl.text.trim().isEmpty || fournisseurCtrl.text.trim().isEmpty) return;
+          if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
+            Get.snackbar('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0',
+              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            return;
+          }
           final lignesPourEnvoi = lignes.map((l) => {
+            'produit_id': l['produit_id'],
             'designation': l['designation'],
             'quantite': double.tryParse(l['quantite'] as String? ?? '') ?? 0,
             'prix_unitaire': double.tryParse(l['prix_unitaire'] as String? ?? '') ?? 0,
@@ -349,6 +381,12 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             'date_expiration': l['date_expiration'],
             'numero_lot_fournisseur': (l['numero_lot_fournisseur'] as String?)?.isEmpty == true
                 ? null : l['numero_lot_fournisseur'],
+            'nouveau_categorie': (l['nouveau_categorie'] as String?)?.isEmpty == true ? null : l['nouveau_categorie'],
+            'nouveau_code_barre': (l['nouveau_code_barre'] as String?)?.isEmpty == true ? null : l['nouveau_code_barre'],
+            'nouveau_unite_mesure': (l['nouveau_unite_mesure'] as String?)?.isEmpty == true ? null : l['nouveau_unite_mesure'],
+            'nouveau_seuil_critique': (l['nouveau_seuil_critique'] as String?)?.isNotEmpty == true
+                ? int.tryParse(l['nouveau_seuil_critique'] as String) : null,
+            'nouveau_emplacement': (l['nouveau_emplacement'] as String?)?.isEmpty == true ? null : l['nouveau_emplacement'],
           }).toList();
           final ok = await ctrl.creerFactureManuelle(
             fournisseurNom: fournisseurCtrl.text.trim(),
@@ -357,6 +395,57 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             montantHt: double.tryParse(htCtrl.text) ?? 0,
             montantTva: double.tryParse(tvaCtrl.text) ?? 0,
             montantTtc: double.tryParse(ttcCtrl.text) ?? 0,
+            fournisseurNif: nifCtrl.text.trim().isEmpty ? null : nifCtrl.text.trim(),
+            fournisseurNis: nisCtrl.text.trim().isEmpty ? null : nisCtrl.text.trim(),
+            fournisseurRc: rcCtrl.text.trim().isEmpty ? null : rcCtrl.text.trim(),
+            motifCreationManuelle: motifCtrl.text.trim(),
+            lignes: lignesPourEnvoi,
+            compteRenduDemande: compteRenduDemandeCtrl.text.trim(),
+          );
+          Get.back();
+          if (ok) {
+            Get.snackbar('Facture envoyée', 'En confirmation de changement — un administrateur doit valider votre demande',
+              backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+          }
+        },
+        child: const Text('Envoyer + demande de modification'),
+      ),
+      ElevatedButton(
+        onPressed: () async {
+          if (motifCtrl.text.trim().isEmpty || fournisseurCtrl.text.trim().isEmpty) return;
+          if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
+            Get.snackbar('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0',
+              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            return;
+          }
+          final lignesPourEnvoi = lignes.map((l) => {
+            'produit_id': l['produit_id'],
+            'designation': l['designation'],
+            'quantite': double.tryParse(l['quantite'] as String? ?? '') ?? 0,
+            'prix_unitaire': double.tryParse(l['prix_unitaire'] as String? ?? '') ?? 0,
+            'prix_vente': (l['prix_vente'] as String?)?.isNotEmpty == true
+                ? double.tryParse(l['prix_vente'] as String) : null,
+            'date_fabrication': l['date_fabrication'],
+            'date_expiration': l['date_expiration'],
+            'numero_lot_fournisseur': (l['numero_lot_fournisseur'] as String?)?.isEmpty == true
+                ? null : l['numero_lot_fournisseur'],
+            'nouveau_categorie': (l['nouveau_categorie'] as String?)?.isEmpty == true ? null : l['nouveau_categorie'],
+            'nouveau_code_barre': (l['nouveau_code_barre'] as String?)?.isEmpty == true ? null : l['nouveau_code_barre'],
+            'nouveau_unite_mesure': (l['nouveau_unite_mesure'] as String?)?.isEmpty == true ? null : l['nouveau_unite_mesure'],
+            'nouveau_seuil_critique': (l['nouveau_seuil_critique'] as String?)?.isNotEmpty == true
+                ? int.tryParse(l['nouveau_seuil_critique'] as String) : null,
+            'nouveau_emplacement': (l['nouveau_emplacement'] as String?)?.isEmpty == true ? null : l['nouveau_emplacement'],
+          }).toList();
+          final ok = await ctrl.creerFactureManuelle(
+            fournisseurNom: fournisseurCtrl.text.trim(),
+            date: '${factureDate.year}-${factureDate.month.toString().padLeft(2, '0')}-${factureDate.day.toString().padLeft(2, '0')}',
+            typeFacture: typeFacture, typeStock: typeStock,
+            montantHt: double.tryParse(htCtrl.text) ?? 0,
+            montantTva: double.tryParse(tvaCtrl.text) ?? 0,
+            montantTtc: double.tryParse(ttcCtrl.text) ?? 0,
+            fournisseurNif: nifCtrl.text.trim().isEmpty ? null : nifCtrl.text.trim(),
+            fournisseurNis: nisCtrl.text.trim().isEmpty ? null : nisCtrl.text.trim(),
+            fournisseurRc: rcCtrl.text.trim().isEmpty ? null : rcCtrl.text.trim(),
             motifCreationManuelle: motifCtrl.text.trim(),
             lignes: lignesPourEnvoi,
           );
@@ -372,11 +461,28 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
   )));
 }
 
-class _LigneManuelleRow extends StatelessWidget {
+class _LigneManuelleRow extends StatefulWidget {
   final Map<String, dynamic> data;
   final VoidCallback? onRemove;
   final VoidCallback onChanged;
   const _LigneManuelleRow({required this.data, required this.onRemove, required this.onChanged});
+
+  @override
+  State<_LigneManuelleRow> createState() => _LigneManuelleRowState();
+}
+
+class _LigneManuelleRowState extends State<_LigneManuelleRow> {
+  late final _designationCtrl = TextEditingController(text: widget.data['designation'] as String);
+  late final _quantiteCtrl = TextEditingController(text: widget.data['quantite'] as String);
+  late final _prixAchatCtrl = TextEditingController(text: widget.data['prix_unitaire'] as String);
+  late final _prixVenteCtrl = TextEditingController(text: widget.data['prix_vente'] as String);
+  late final _lotFournisseurCtrl = TextEditingController(text: widget.data['numero_lot_fournisseur'] as String);
+  late final _categorieCtrl = TextEditingController(text: widget.data['nouveau_categorie'] as String);
+  late final _codeBarreCtrl = TextEditingController(text: widget.data['nouveau_code_barre'] as String);
+  late final _uniteMesureCtrl = TextEditingController(text: widget.data['nouveau_unite_mesure'] as String);
+  late final _seuilCritiqueCtrl = TextEditingController(text: widget.data['nouveau_seuil_critique'] as String);
+  late final _emplacementCtrl = TextEditingController(text: widget.data['nouveau_emplacement'] as String);
+  bool get _nouveauProduit => widget.data['produit_id'] == null;
 
   Future<void> _pickDate(BuildContext context, String key) async {
     final picked = await showDatePicker(
@@ -384,45 +490,112 @@ class _LigneManuelleRow extends StatelessWidget {
       firstDate: DateTime(2020), lastDate: DateTime(2100),
     );
     if (picked != null) {
-      data[key] = '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
-      onChanged();
+      setState(() => widget.data[key] =
+        '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}');
+      widget.onChanged();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final quantiteVide = (double.tryParse(_quantiteCtrl.text) ?? 0) <= 0;
+    final stock = Get.find<StockController>();
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(color: AppColors.darkSurface, borderRadius: BorderRadius.circular(8)),
       child: Column(children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          dense: true,
+          title: const Text('Produit inexistant (nouveau)', style: TextStyle(fontSize: 12)),
+          value: _nouveauProduit,
+          onChanged: (v) => setState(() {
+            widget.data['produit_id'] = null;
+          }),
+        ),
+        if (!_nouveauProduit)
+          Autocomplete<Product>(
+            displayStringForOption: (p) => p.name,
+            optionsBuilder: (v) => v.text.isEmpty ? const Iterable<Product>.empty()
+                : stock.products.where((p) => p.name.toLowerCase().contains(v.text.toLowerCase())),
+            onSelected: (p) => setState(() {
+              widget.data['produit_id'] = p.id;
+              _designationCtrl.text = p.name;
+              widget.data['designation'] = p.name;
+            }),
+            fieldViewBuilder: (context, controller, focusNode, onSubmit) => TextField(
+              controller: controller, focusNode: focusNode,
+              decoration: const InputDecoration(hintText: 'Rechercher un produit existant...'),
+            ),
+          )
+        else ...[
+          TextField(
+            controller: _designationCtrl,
+            decoration: const InputDecoration(labelText: 'Nom du nouveau produit'),
+            onChanged: (v) => widget.data['designation'] = v,
+          ),
+          const SizedBox(height: 6),
+          Row(children: [
+            Expanded(child: TextField(controller: _categorieCtrl,
+              decoration: const InputDecoration(labelText: 'Catégorie'),
+              onChanged: (v) => widget.data['nouveau_categorie'] = v)),
+            const SizedBox(width: 8),
+            Expanded(child: TextField(controller: _codeBarreCtrl,
+              decoration: const InputDecoration(labelText: 'Code-barres'),
+              onChanged: (v) => widget.data['nouveau_code_barre'] = v)),
+          ]),
+          const SizedBox(height: 6),
+          Row(children: [
+            Expanded(child: TextField(controller: _uniteMesureCtrl,
+              decoration: const InputDecoration(labelText: 'Unité (kg, litre, pièce...)'),
+              onChanged: (v) => widget.data['nouveau_unite_mesure'] = v)),
+            const SizedBox(width: 8),
+            Expanded(child: TextField(controller: _seuilCritiqueCtrl,
+              decoration: const InputDecoration(labelText: 'Seuil critique'), keyboardType: TextInputType.number,
+              onChanged: (v) => widget.data['nouveau_seuil_critique'] = v)),
+          ]),
+          const SizedBox(height: 6),
+          TextField(controller: _emplacementCtrl,
+            decoration: const InputDecoration(labelText: 'Emplacement'),
+            onChanged: (v) => widget.data['nouveau_emplacement'] = v),
+        ],
+        const SizedBox(height: 6),
         Row(children: [
-          Expanded(flex: 2, child: TextFormField(
-            initialValue: data['designation'] as String,
-            decoration: const InputDecoration(labelText: 'Désignation'),
-            onChanged: (v) => data['designation'] = v,
+          Expanded(child: TextField(
+            controller: _designationCtrl,
+            enabled: false,
+            decoration: const InputDecoration(labelText: 'Désignation retenue'),
           )),
-          const SizedBox(width: 8),
-          Expanded(child: TextFormField(
-            initialValue: data['quantite'] as String,
-            decoration: const InputDecoration(labelText: 'Qté'), keyboardType: TextInputType.number,
-            onChanged: (v) => data['quantite'] = v,
-          )),
-          if (onRemove != null)
-            IconButton(icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.danger), onPressed: onRemove),
         ]),
         const SizedBox(height: 6),
         Row(children: [
-          Expanded(child: TextFormField(
-            initialValue: data['prix_unitaire'] as String,
-            decoration: const InputDecoration(labelText: 'Prix achat'), keyboardType: TextInputType.number,
-            onChanged: (v) => data['prix_unitaire'] = v,
+          Expanded(child: TextField(
+            controller: _quantiteCtrl,
+            decoration: InputDecoration(
+              labelText: 'Qté *',
+              errorText: quantiteVide ? 'Requis' : null,
+            ),
+            keyboardType: TextInputType.number,
+            onChanged: (v) => setState(() => widget.data['quantite'] = v),
+          )),
+          if (widget.onRemove != null)
+            IconButton(icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.danger), onPressed: widget.onRemove),
+        ]),
+        const SizedBox(height: 6),
+        Row(children: [
+          Expanded(child: TextField(
+            controller: _prixAchatCtrl,
+            decoration: const InputDecoration(labelText: 'Prix achat'),
+            keyboardType: TextInputType.number,
+            onChanged: (v) => widget.data['prix_unitaire'] = v,
           )),
           const SizedBox(width: 8),
-          Expanded(child: TextFormField(
-            initialValue: data['prix_vente'] as String,
-            decoration: const InputDecoration(labelText: 'Prix vente (optionnel)'), keyboardType: TextInputType.number,
-            onChanged: (v) => data['prix_vente'] = v,
+          Expanded(child: TextField(
+            controller: _prixVenteCtrl,
+            decoration: const InputDecoration(labelText: 'Prix vente (optionnel)'),
+            keyboardType: TextInputType.number,
+            onChanged: (v) => widget.data['prix_vente'] = v,
           )),
         ]),
         const SizedBox(height: 6),
@@ -430,20 +603,20 @@ class _LigneManuelleRow extends StatelessWidget {
           Expanded(child: InkWell(
             onTap: () => _pickDate(context, 'date_fabrication'),
             child: InputDecorator(decoration: const InputDecoration(labelText: 'Fabrication'),
-              child: Text(data['date_fabrication'] as String? ?? '—', style: const TextStyle(fontSize: 12))),
+              child: Text(widget.data['date_fabrication'] as String? ?? '—', style: const TextStyle(fontSize: 12))),
           )),
           const SizedBox(width: 8),
           Expanded(child: InkWell(
             onTap: () => _pickDate(context, 'date_expiration'),
             child: InputDecorator(decoration: const InputDecoration(labelText: 'Expiration'),
-              child: Text(data['date_expiration'] as String? ?? '—', style: const TextStyle(fontSize: 12))),
+              child: Text(widget.data['date_expiration'] as String? ?? '—', style: const TextStyle(fontSize: 12))),
           )),
         ]),
         const SizedBox(height: 6),
-        TextFormField(
-          initialValue: data['numero_lot_fournisseur'] as String,
+        TextField(
+          controller: _lotFournisseurCtrl,
           decoration: const InputDecoration(labelText: 'N° de lot fabricant (si imprimé sur le produit)'),
-          onChanged: (v) => data['numero_lot_fournisseur'] = v,
+          onChanged: (v) => widget.data['numero_lot_fournisseur'] = v,
         ),
       ]),
     );

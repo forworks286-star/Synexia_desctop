@@ -227,14 +227,18 @@ class InvoiceController extends GetxController {
 
   Future<bool> creerFactureManuelle({required String fournisseurNom, required String date,
       required String typeFacture, required String typeStock, required double montantHt,
-      required double montantTva, required double montantTtc, required String motifCreationManuelle,
-      required List<Map<String, dynamic>> lignes}) async {
+      required double montantTva, required double montantTtc,
+      String? fournisseurNif, String? fournisseurNis, String? fournisseurRc,
+      required String motifCreationManuelle,
+      required List<Map<String, dynamic>> lignes, String? compteRenduDemande}) async {
     final r = await _repo.creerFactureManuelle(
       fournisseurNom: fournisseurNom, date: date, typeFacture: typeFacture, typeStock: typeStock,
       montantHt: montantHt, montantTva: montantTva, montantTtc: montantTtc,
+      fournisseurNif: fournisseurNif, fournisseurNis: fournisseurNis, fournisseurRc: fournisseurRc,
       motifCreationManuelle: motifCreationManuelle, lignes: lignes,
+      compteRenduDemande: compteRenduDemande,
     );
-    return r.fold((_) => false, (_) { loadInvoices(); return true; });
+    return r.fold((_) => false, (_) { loadInvoices(); loadDemandes(); return true; });
   }
 
   Future<void> loadDemandes() async {
@@ -242,14 +246,6 @@ class InvoiceController extends GetxController {
     r.fold((_) {}, (d) => demandes.assignAll(d));
   }
 
-  Future<bool> creerDemande({required int factureId, required String champConcerne,
-      required String valeurProposee, required String compteRendu}) async {
-    final r = await _repo.creerDemande(
-      factureId: factureId, champConcerne: champConcerne,
-      valeurProposee: valeurProposee, compteRendu: compteRendu,
-    );
-    return r.fold((_) => false, (_) { loadDemandes(); return true; });
-  }
 
   Future<bool> approuverDemande(int id) async {
     final r = await _repo.approuverDemande(id);

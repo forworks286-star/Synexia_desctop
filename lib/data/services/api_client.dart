@@ -12,7 +12,7 @@ class ApiClient {
   static ApiClient? _instance;
   late final Dio _dio;
   late final Dio _plainDio;   
-  final _storage = const FlutterSecureStorage(
+  final storage = const FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 
@@ -35,7 +35,7 @@ class ApiClient {
       onRequest: (options, handler) async {
    
         await _refreshIfExpiringSoon();
-        final token = await _storage.read(key: AppConfig.tokenKey);
+        final token = await storage.read(key: AppConfig.tokenKey);
         if (token != null) {
           options.headers['Authorization'] = 'Bearer $token';
         }
@@ -45,14 +45,14 @@ class ApiClient {
         if (error.response?.statusCode == 401) {
           final result = await _refreshToken();
           if (result == _RefreshResult.success) {
-            final token = await _storage.read(key: AppConfig.tokenKey);
+            final token = await storage.read(key: AppConfig.tokenKey);
             error.requestOptions.headers['Authorization'] = 'Bearer $token';
             try {
               final response = await _dio.fetch(error.requestOptions);
               return handler.resolve(response);
             } catch (_) {}
           } else {
-            await _storage.deleteAll();
+            await storage.deleteAll();
             Get.offAllNamed('/login');
             if (result == _RefreshResult.sessionCompromised) {
               Get.snackbar('Session terminée',
@@ -77,7 +77,7 @@ class ApiClient {
 
   /// يفحص وقت انتهاء access token المخزّن، ويجدد قبل الانتهاء بـ 5 دقائق
   Future<void> _refreshIfExpiringSoon() async {
-    final token = await _storage.read(key: AppConfig.tokenKey);
+    final token = await storage.read(key: AppConfig.tokenKey);
     if (token == null) return;
     final exp = _getTokenExpiry(token);
     if (exp == null) return;
@@ -110,7 +110,7 @@ class ApiClient {
     final completer = Completer<_RefreshResult>();
     _refreshCompleter = completer;
     try {
-      final refresh = await _storage.read(key: AppConfig.refreshTokenKey);
+     final refresh = await storage.read(key: AppConfig.refreshTokenKey);
       if (refresh == null) {
         completer.complete(_RefreshResult.sessionExpired);
         return _RefreshResult.sessionExpired;
@@ -119,8 +119,8 @@ class ApiClient {
         AppConfig.authRefresh,
         data: {'refresh_token': refresh},
       );
-      await _storage.write(key: AppConfig.tokenKey, value: response.data['access'] as String);
-      await _storage.write(key: AppConfig.refreshTokenKey, value: response.data['refresh'] as String);
+      await storage.write(key: AppConfig.tokenKey, value: response.data['access'] as String);
+      await storage.write(key: AppConfig.refreshTokenKey, value: response.data['refresh'] as String);
       completer.complete(_RefreshResult.success);
       return _RefreshResult.success;
     } on DioException catch (e) {

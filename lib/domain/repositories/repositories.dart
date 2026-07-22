@@ -47,8 +47,7 @@ abstract class InvoiceRepository {
   Future<Either<String, LigneFacture>> addLigne(int factureId, {int? produitId, String? designation, String? typeStock, required double quantite, required double prixUnitaire, double? prixVente, String? dateFabrication, String? dateExpiration});
   Future<Either<String, void>> deleteLigne(int ligneId);
   Future<Either<String, HistoriquePrixProduit>> getHistoriquePrix(int produitId);
-  Future<Either<String, Invoice>> creerFactureManuelle({required String fournisseurNom, required String date, required String typeFacture, required String typeStock, required double montantHt, required double montantTva, required double montantTtc, required String motifCreationManuelle, required List<Map<String, dynamic>> lignes});
-  Future<Either<String, DemandeModification>> creerDemande({required int factureId, required String champConcerne, required String valeurProposee, required String compteRendu});
+  Future<Either<String, Invoice>> creerFactureManuelle({required String fournisseurNom, required String date, required String typeFacture, required String typeStock, required double montantHt, required double montantTva, required double montantTtc, String? fournisseurNif, String? fournisseurNis, String? fournisseurRc, required String motifCreationManuelle, required List<Map<String, dynamic>> lignes, String? compteRenduDemande});
   Future<Either<String, List<DemandeModification>>> getDemandes({String statut = 'pending'});
   Future<Either<String, void>> approuverDemande(int id);
   Future<Either<String, void>> refuserDemande(int id, String? motif);

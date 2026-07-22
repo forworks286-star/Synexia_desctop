@@ -410,20 +410,22 @@ class DemandeModification extends Equatable {
   final int id;
   final int factureId;
   final int demandeurId;
-  final String champConcerne;
-  final String? valeurActuelle;
-  final String? valeurProposee;
+  final String? demandeurNom;
   final String compteRendu;
   final String statut; // pending | approuvee | refusee
   final int? traiteParId;
   final String? motifRefus;
   final DateTime dateCreation;
+  final DateTime? dateTraitement;
+  final String? factureFournisseur;
+  final double? factureMontantTtc;
 
   const DemandeModification({
     required this.id, required this.factureId, required this.demandeurId,
-    required this.champConcerne, this.valeurActuelle, this.valeurProposee,
+    this.demandeurNom,
     required this.compteRendu, this.statut = 'pending', this.traiteParId,
-    this.motifRefus, required this.dateCreation,
+    this.motifRefus, required this.dateCreation, this.dateTraitement,
+    this.factureFournisseur, this.factureMontantTtc,
   });
 
   @override

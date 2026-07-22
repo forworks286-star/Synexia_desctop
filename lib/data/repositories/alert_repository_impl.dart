@@ -58,10 +58,14 @@ class AlertRepositoryImpl implements AlertRepository {
     }
   }
 
-  void _connectWebSocket() {
+  void _connectWebSocket() async {
   if (_disposed) return;
   try {
-    _channel = WebSocketChannel.connect(Uri.parse(AppConfig.alertesRealtime));
+    final token = await ApiClient.instance.storage.read(key: AppConfig.tokenKey);
+    final url = token != null
+        ? '${AppConfig.alertesRealtime}?token=$token'
+        : AppConfig.alertesRealtime;
+    _channel = WebSocketChannel.connect(Uri.parse(url));
     _channel!.stream.listen(
       (data) {
         try {
