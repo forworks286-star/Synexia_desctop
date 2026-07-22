@@ -11,6 +11,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:async';
 import '../../../core/config/app_config.dart';
 import '../../../data/services/api_client.dart';
+import '../../../data/repositories/invoice_repository_impl.dart';
 
 class FacturesScreen extends StatelessWidget {
   const FacturesScreen({super.key});
@@ -689,13 +690,29 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
   }
 }
 
-void _showCompleterModificationDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
+void _showCompleterModificationDialog(BuildContext context, InvoiceController ctrl, Invoice facture) async {
+  final lignesResult = await InvoiceRepositoryImpl().getLignes(facture.id);
+  final lignesExistantes = lignesResult.fold((_) => <LigneFacture>[], (l) => l);
+
   final fournisseurCtrl = TextEditingController(text: facture.supplierName);
   DateTime factureDate = facture.date;
   final htCtrl = TextEditingController(text: facture.amountHt.toString());
   final tvaCtrl = TextEditingController(text: facture.amountTva.toString());
   final ttcCtrl = TextEditingController(text: facture.amountTtc.toString());
-  final lignes = <Map<String, dynamic>>[_ligneVide()];
+  final lignes = lignesExistantes.isNotEmpty
+      ? lignesExistantes.map((l) => <String, dynamic>{
+          'produit_id': l.produitId,
+          'designation': l.produitNom,
+          'quantite': l.quantite.toString(),
+          'prix_unitaire': l.prixUnitaire.toString(),
+          'prix_vente': l.prixVente?.toString() ?? '',
+          'date_fabrication': l.dateFabrication,
+          'date_expiration': l.dateExpiration,
+          'numero_lot_fournisseur': '',
+          'nouveau_categorie': '', 'nouveau_code_barre': '', 'nouveau_unite_mesure': '',
+          'nouveau_seuil_critique': '', 'nouveau_emplacement': '',
+        }).toList()
+      : <Map<String, dynamic>>[_ligneVide()];
 
   Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
     backgroundColor: AppColors.darkCard,
