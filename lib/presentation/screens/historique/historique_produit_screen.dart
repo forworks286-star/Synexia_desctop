@@ -123,6 +123,11 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
                   Expanded(child: Text(lot.dateExpiration != null
                     ? 'Expire: ${lot.dateExpiration!.day}/${lot.dateExpiration!.month}/${lot.dateExpiration!.year}'
                     : '', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
+                  Expanded(child: Row(children: [
+                    const Icon(Icons.place_outlined, size: 13, color: AppColors.darkTextMuted),
+                    const SizedBox(width: 3),
+                    Expanded(child: Text(lot.emplacement ?? '—', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
+                  ])),
                   if (lot.numeroFacture != null && lot.factureId != null)
                     TextButton(
                       onPressed: () => Get.to(() => FactureDetailScreen(factureId: lot.factureId!)),

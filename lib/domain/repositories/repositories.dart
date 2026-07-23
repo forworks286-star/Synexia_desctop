@@ -57,6 +57,7 @@ abstract class InvoiceRepository {
       required double montantHt, required double montantTva, required double montantTtc,
       required List<Map<String, dynamic>> lignes});
   Future<Either<String, void>> confirmerOcr(int factureId, List<Map<String, dynamic>> lignes);
+  Future<Either<String, void>> enregistrerEmplacementsOcr(int factureId, List<Map<String, dynamic>> lignes);
   Future<Either<String, void>> creerDemandeModification(int factureId, String compteRendu);
 }
 

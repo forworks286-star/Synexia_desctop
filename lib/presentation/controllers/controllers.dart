@@ -283,6 +283,11 @@ class InvoiceController extends GetxController {
     return r.fold((_) => false, (_) { loadInvoices(); loadFacturesOcrAVerifier(); return true; });
   }
 
+  Future<bool> enregistrerEmplacementsOcr(int factureId, List<Map<String, dynamic>> lignes) async {
+    final r = await _repo.enregistrerEmplacementsOcr(factureId, lignes);
+    return r.fold((_) => false, (_) => true);
+  }
+
   Future<bool> signalerErreurOcr(int factureId, String compteRendu) async {
     final r = await _repo.creerDemandeModification(factureId, compteRendu);
     return r.fold((_) => false, (_) { loadFacturesOcrAVerifier(); loadFacturesEnAttenteModification(); return true; });

@@ -895,11 +895,30 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
     ]))),
     actions: [
       TextButton(
-        onPressed: () {
+        onPressed: () async {
+          final payload = lignes.map((l) => {
+            'id': l.id,
+            'emplacement': emplacementCtrls[l.id]?.text.trim().isEmpty == true ? null : emplacementCtrls[l.id]?.text.trim(),
+          }).toList();
+          await ctrl.enregistrerEmplacementsOcr(facture.id, payload);
           Get.back();
           _showSignalerErreurDialog(context, ctrl, facture);
         },
         child: const Text('Signaler une erreur', style: TextStyle(color: AppColors.danger)),
+      ),
+      TextButton(
+        onPressed: () async {
+          final payload = lignes.map((l) => {
+            'id': l.id,
+            'emplacement': emplacementCtrls[l.id]?.text.trim().isEmpty == true ? null : emplacementCtrls[l.id]?.text.trim(),
+          }).toList();
+          final ok = await ctrl.enregistrerEmplacementsOcr(facture.id, payload);
+          if (ok) {
+            Get.snackbar('Emplacements enregistrés', 'Vous pouvez maintenant confirmer la facture',
+              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+          }
+        },
+        child: const Text('Enregistrer les emplacements'),
       ),
       ElevatedButton(
         onPressed: () async {

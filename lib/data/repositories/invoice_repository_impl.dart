@@ -201,6 +201,18 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     }
   }
 
+
+  @override
+  Future<Either<String, void>> enregistrerEmplacementsOcr(int factureId, List<Map<String, dynamic>> lignes) async {
+    try {
+      final url = AppConfig.factureEmplacementsOcr.replaceAll('{id}', '$factureId');
+      await _dio.put(url, data: {'lignes': lignes});
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
   @override
   Future<Either<String, void>> creerDemandeModification(int factureId, String compteRendu) async {
     try {
