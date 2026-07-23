@@ -1080,9 +1080,33 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
       });
       _demarrerCompteARebours();
       _ecouterAppairage();
+      _sondagePeriodique();
     } catch (_) {
       setState(() => _statut = 'erreur');
     }
+  }
+
+  int? _factureRecueId;
+  Timer? _sondage;
+  void _sondagePeriodique() {
+    _sondage?.cancel();
+    _sondage = Timer.periodic(const Duration(seconds: 2), (t) async {
+      if (!mounted || _code == null || _statut == 'complete') { t.cancel(); return; }
+      try {
+        final r = await ApiClient.instance.dio.get(
+          AppConfig.appairageGenerer.replaceAll('generer', '$_code/statut'));
+        final statut = r.data['statut'] as String?;
+        if (statut == 'scanne' && _statut == 'attente') {
+          _timer?.cancel();
+          setState(() => _statut = 'scanne');
+        } else if (statut == 'complete' && _statut != 'complete') {
+          t.cancel();
+          _timer?.cancel();
+          _factureRecueId = r.data['facture_id'] as int?;
+          setState(() => _statut = 'complete');
+        }
+      } catch (_) {}
+    });
   }
 
   void _demarrerCompteARebours() {
@@ -1105,13 +1129,10 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
       if (statut == 'scanne') {
         _timer?.cancel();
         setState(() => _statut = 'scanne');
-      } else if (statut == 'complete') {
+      } else if (statut == 'complete' && _statut != 'complete') {
         _timer?.cancel();
-        Get.back();
-        final factureId = data['facture_id'] as int?;
-        if (factureId != null) {
-          Get.to(() => FactureDetailScreen(factureId: factureId));
-        }
+        _factureRecueId = data['facture_id'] as int?;
+        setState(() => _statut = 'complete');
       }
     });
   }
@@ -1119,6 +1140,7 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
   @override
   void dispose() {
     _timer?.cancel();
+    _sondage?.cancel();
     _wsSub?.cancel();
     super.dispose();
   }
@@ -1165,9 +1187,26 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
             const Text('Téléphone connecté — en attente de la photo...',
               textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.success)),
           ],
+          if (_statut == 'complete') ...[
+            const Icon(Icons.task_alt_rounded, color: AppColors.success, size: 40),
+            const SizedBox(height: 8),
+            const Text('Facture reçue !', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
+          ],
         ],
       ])),
-      actions: [TextButton(onPressed: () => Get.back(), child: const Text('Annuler'))],
+      actions: _statut == 'complete'
+          ? [
+              TextButton(onPressed: () => Get.back(), child: const Text('Plus tard')),
+              ElevatedButton(
+                onPressed: () async {
+                  Get.back();
+                  final result = await InvoiceRepositoryImpl().getInvoice(_factureRecueId!);
+                  result.fold((_) {}, (invoice) => _showVerifierOcrDialog(context, Get.find<InvoiceController>(), invoice));
+                },
+                child: const Text('Vérifier la facture'),
+              ),
+            ]
+          : [TextButton(onPressed: () => Get.back(), child: const Text('Annuler'))],
     );
   }
 }
