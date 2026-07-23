@@ -35,6 +35,7 @@ class AuthController extends GetxController {
           Get.find<InvoiceController>().loadDemandes();
           Get.find<InvoiceController>().loadFacturesACorriger();
           Get.find<InvoiceController>().loadFacturesEnAttenteModification();
+          Get.find<InvoiceController>().loadFacturesOcrAVerifier();
         }
         if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
       } catch (_) {}
@@ -52,6 +53,7 @@ class AuthController extends GetxController {
         Get.find<InvoiceController>().loadDemandes();
         Get.find<InvoiceController>().loadFacturesACorriger();
         Get.find<InvoiceController>().loadFacturesEnAttenteModification();
+        Get.find<InvoiceController>().loadFacturesOcrAVerifier();
       }
       if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
     });
@@ -216,7 +218,7 @@ class InvoiceController extends GetxController {
 
 
   @override
-  void onInit() { super.onInit(); loadInvoices(); loadDemandes(); loadFacturesACorriger(); loadFacturesEnAttenteModification(); }
+  void onInit() { super.onInit(); loadInvoices(); loadDemandes(); loadFacturesACorriger(); loadFacturesEnAttenteModification(); loadFacturesOcrAVerifier(); }
 
   Future<void> loadInvoices() async {
     isLoading.value = true;
@@ -269,6 +271,22 @@ class InvoiceController extends GetxController {
   
   final RxList<Invoice> facturesACorriger = <Invoice>[].obs;
   final RxList<Invoice> facturesEnAttenteModification = <Invoice>[].obs;
+  final RxList<Invoice> facturesOcrAVerifier = <Invoice>[].obs;
+
+  Future<void> loadFacturesOcrAVerifier() async {
+    final r = await _repo.getFacturesParStatut('ocr_a_verifier');
+    r.fold((_) {}, (l) => facturesOcrAVerifier.assignAll(l));
+  }
+
+  Future<bool> confirmerOcr(int factureId, List<Map<String, dynamic>> lignes) async {
+    final r = await _repo.confirmerOcr(factureId, lignes);
+    return r.fold((_) => false, (_) { loadInvoices(); loadFacturesOcrAVerifier(); return true; });
+  }
+
+  Future<bool> signalerErreurOcr(int factureId, String compteRendu) async {
+    final r = await _repo.creerDemandeModification(factureId, compteRendu);
+    return r.fold((_) => false, (_) { loadFacturesOcrAVerifier(); loadFacturesEnAttenteModification(); return true; });
+  }
 
   Future<void> loadFacturesACorriger() async {
     final r = await _repo.getFacturesParStatut('modification_autorisee');

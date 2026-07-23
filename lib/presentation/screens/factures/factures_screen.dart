@@ -21,6 +21,7 @@ class FacturesScreen extends StatelessWidget {
     final ctrl = Get.find<InvoiceController>();
     ctrl.loadFacturesACorriger();
     ctrl.loadFacturesEnAttenteModification();
+    ctrl.loadFacturesOcrAVerifier();
 
     return Padding(
       padding: const EdgeInsets.all(28),
@@ -41,6 +42,36 @@ class FacturesScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
+          Obx(() {
+            if (ctrl.facturesOcrAVerifier.isEmpty) return const SizedBox.shrink();
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.withOpacity(0.3)),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  const Icon(Icons.fact_check_rounded, color: Colors.blue, size: 18),
+                  const SizedBox(width: 8),
+                  Text('${ctrl.facturesOcrAVerifier.length} facture(s) OCR à vérifier',
+                    style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 13)),
+                ]),
+                const SizedBox(height: 10),
+                ...ctrl.facturesOcrAVerifier.map((f) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(children: [
+                    Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
+                      style: const TextStyle(fontSize: 13))),
+                    SynButton(label: 'Vérifier', icon: Icons.visibility_rounded,
+                      onTap: () => _showVerifierOcrDialog(context, ctrl, f)),
+                  ]),
+                )),
+              ]),
+            );
+          }),
           Obx(() {
             if (ctrl.facturesEnAttenteModification.isEmpty) return const SizedBox.shrink();
             return Container(
@@ -581,7 +612,7 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
           }),
 
         ),
-        if (!_nouveauProduit)
+        if (!_nouveauProduit) ...[
           Autocomplete<Product>(
             displayStringForOption: (p) => p.name,
             optionsBuilder: (v) => v.text.isEmpty ? const Iterable<Product>.empty()
@@ -590,13 +621,22 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
               widget.data['produit_id'] = p.id;
               _designationCtrl.text = p.name;
               widget.data['designation'] = p.name;
+              if (_emplacementCtrl.text.trim().isEmpty && p.lots.isNotEmpty) {
+                final dernierLot = p.lots.reduce((a, b) => a.id > b.id ? a : b);
+                _emplacementCtrl.text = dernierLot.emplacement ?? '';
+                widget.data['nouveau_emplacement'] = _emplacementCtrl.text;
+              }
             }),
             fieldViewBuilder: (context, controller, focusNode, onSubmit) => TextField(
               controller: controller, focusNode: focusNode,
               decoration: const InputDecoration(hintText: 'Rechercher un produit existant...'),
             ),
-          )
-        else ...[
+          ),
+          const SizedBox(height: 6),
+          TextField(controller: _emplacementCtrl,
+            decoration: const InputDecoration(labelText: 'Emplacement de ce lot (pré-rempli, modifiable)'),
+            onChanged: (v) => widget.data['nouveau_emplacement'] = v),
+        ] else ...[
           TextField(
             controller: _designationCtrl,
             decoration: const InputDecoration(labelText: 'Nom du nouveau produit'),
@@ -801,6 +841,120 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
   )));
 }
 
+
+
+void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoice facture) async {
+  final lignesResult = await InvoiceRepositoryImpl().getLignes(facture.id);
+  final lignes = lignesResult.fold((_) => <LigneFacture>[], (l) => l);
+  final stockCtrl = Get.find<StockController>();
+
+  String _dernierEmplacement(int? produitId) {
+    if (produitId == null) return '';
+    final produit = stockCtrl.products.firstWhereOrNull((p) => p.id == produitId);
+    if (produit == null || produit.lots.isEmpty) return '';
+    final dernierLot = produit.lots.reduce((a, b) => a.id > b.id ? a : b);
+    return dernierLot.emplacement ?? '';
+  }
+
+  final emplacementCtrls = {
+    for (var l in lignes)
+      l.id: TextEditingController(text: l.nouveauEmplacement ?? _dernierEmplacement(l.produitId)),
+  };
+
+  Get.dialog(AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: Text('Vérifier la facture OCR #${facture.id}'),
+    content: SizedBox(width: 560, child: SingleChildScrollView(child: Column(
+        mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _champLectureSeule('Fournisseur', facture.supplierName),
+      _champLectureSeule('Date', '${facture.date.year}-${facture.date.month.toString().padLeft(2, '0')}-${facture.date.day.toString().padLeft(2, '0')}'),
+      _champLectureSeule('Montant TTC', formatDA(facture.amountTtc)),
+      const Divider(height: 24),
+      const SectionTitle(title: 'ARTICLES DÉTECTÉS PAR OCR (lecture seule)'),
+      const SizedBox(height: 8),
+      ...lignes.map((l) => Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), borderRadius: BorderRadius.circular(6)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(l.produitNom, style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text('Qté: ${l.quantite} — PU: ${formatDA(l.prixUnitaire)}${l.dateExpiration != null ? ' — Exp: ${l.dateExpiration}' : ''}',
+            style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: emplacementCtrls[l.id],
+            decoration: InputDecoration(
+              labelText: l.produitId == null
+                  ? 'Emplacement (nouveau produit — non fourni par OCR)'
+                  : 'Emplacement de ce lot (pré-rempli, modifiable)',
+              isDense: true,
+            ),
+          ),
+        ]),
+      )),
+    ]))),
+    actions: [
+      TextButton(
+        onPressed: () {
+          Get.back();
+          _showSignalerErreurDialog(context, ctrl, facture);
+        },
+        child: const Text('Signaler une erreur', style: TextStyle(color: AppColors.danger)),
+      ),
+      ElevatedButton(
+        onPressed: () async {
+          final payload = lignes.map((l) => {
+            'id': l.id,
+            'emplacement': emplacementCtrls[l.id]?.text.trim().isEmpty == true ? null : emplacementCtrls[l.id]?.text.trim(),
+          }).toList();
+          final ok = await ctrl.confirmerOcr(facture.id, payload);
+          Get.back();
+          if (ok) {
+            Get.snackbar('Facture confirmée', 'Elle est maintenant en attente de validation par l\'administrateur',
+              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+          }
+        },
+        child: const Text('Confirmer'),
+      ),
+    ],
+  ));
+}
+
+void _showSignalerErreurDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
+  final compteRenduCtrl = TextEditingController();
+  Get.dialog(AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: const Text('Signaler une erreur'),
+    content: SizedBox(width: 420, child: TextField(
+      controller: compteRenduCtrl, maxLines: 4,
+      decoration: const InputDecoration(labelText: 'Décrivez l\'erreur constatée'),
+    )),
+    actions: [
+      TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+      ElevatedButton(
+        onPressed: () async {
+          if (compteRenduCtrl.text.trim().isEmpty) return;
+          final ok = await ctrl.signalerErreurOcr(facture.id, compteRenduCtrl.text.trim());
+          Get.back();
+          if (ok) {
+            Get.snackbar('Demande envoyée', 'En attente d\'approbation par l\'administrateur',
+              backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+          }
+        },
+        child: const Text('Envoyer la demande'),
+      ),
+    ],
+  ));
+}
+
+Widget _champLectureSeule(String label, String value) => Padding(
+  padding: const EdgeInsets.only(bottom: 8),
+  child: Row(children: [
+    SizedBox(width: 120, child: Text(label, style: const TextStyle(color: AppColors.darkTextMuted, fontSize: 12))),
+    Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600))),
+  ]),
+);
+
 void ouvrirNouvelleFacture(BuildContext context, InvoiceController ctrl) {
   Get.dialog(AlertDialog(
     backgroundColor: AppColors.darkCard,
@@ -930,6 +1084,7 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
       if (data['code'] != _code) return;
       final statut = data['statut'] as String?;
       if (statut == 'scanne') {
+        _timer?.cancel();
         setState(() => _statut = 'scanne');
       } else if (statut == 'complete') {
         _timer?.cancel();
@@ -979,7 +1134,8 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
           const SizedBox(height: 14),
           Text(_code!, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: 4)),
           const SizedBox(height: 10),
-          Text('Expire dans ${_secondesRestantes}s', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+          if (_statut == 'attente')
+            Text('Expire dans ${_secondesRestantes}s', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
           const SizedBox(height: 14),
           if (_statut == 'attente')
             const Text('Depuis l\'application mobile : entrez ce code ou scannez le QR.',

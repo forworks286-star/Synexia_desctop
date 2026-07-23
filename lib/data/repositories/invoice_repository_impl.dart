@@ -190,6 +190,27 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     }
   }
 
+  @override
+  Future<Either<String, void>> confirmerOcr(int factureId, List<Map<String, dynamic>> lignes) async {
+    try {
+      final url = AppConfig.factureConfirmerOcr.replaceAll('{id}', '$factureId');
+      await _dio.put(url, data: {'lignes': lignes});
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, void>> creerDemandeModification(int factureId, String compteRendu) async {
+    try {
+      await _dio.post(AppConfig.demandesModification, data: {'facture_id': factureId, 'compte_rendu': compteRendu});
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
   DemandeModification _parseDemande(Map<String, dynamic> data) => DemandeModification(
     id: data['id'] as int, factureId: data['facture_id'] as int,
     demandeurId: data['demandeur_id'] as int, demandeurNom: data['demandeur_nom'] as String?,

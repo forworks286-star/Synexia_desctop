@@ -53,9 +53,11 @@ abstract class InvoiceRepository {
   Future<Either<String, void>> refuserDemande(int id, String? motif);
   Future<Either<String, List<Invoice>>> getFacturesParStatut(String statut);
   Future<Either<String, Invoice>> completerModification({
-    required int factureId, required String fournisseurNom, required String date,
-    required double montantHt, required double montantTva, required double montantTtc,
-    required List<Map<String, dynamic>> lignes});
+      required int factureId, required String fournisseurNom, required String date,
+      required double montantHt, required double montantTva, required double montantTtc,
+      required List<Map<String, dynamic>> lignes});
+  Future<Either<String, void>> confirmerOcr(int factureId, List<Map<String, dynamic>> lignes);
+  Future<Either<String, void>> creerDemandeModification(int factureId, String compteRendu);
 }
 
 abstract class ManufacturingRepository {

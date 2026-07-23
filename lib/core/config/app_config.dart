@@ -75,6 +75,7 @@ class AppConfig {
 
   static String get facturesManuelle => '$apiBase/factures/manuelle';
   static String get factureCompleterModification => '$apiBase/factures/{id}/completer-modification';
+  static String get factureConfirmerOcr => '$apiBase/factures/{id}/confirmer-ocr';
   static String get lotQr => '$apiBase/stock/lots/{id}/qr';
   static String get lotSuggere => '$apiBase/stock/produits/{id}/lot-suggere';
 

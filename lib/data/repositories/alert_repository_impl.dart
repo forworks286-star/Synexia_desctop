@@ -106,9 +106,9 @@ class AlertRepositoryImpl implements AlertRepository {
             }
             if (Get.isRegistered<InvoiceController>()) {
               Get.find<InvoiceController>().loadFacturesEnAttenteModification();
+              Get.find<InvoiceController>().loadFacturesOcrAVerifier();
             }
           }
-
           if (type == 'facture_draft_update') {
             if (Get.isRegistered<InvoiceController>()) {
               Get.find<InvoiceController>().loadInvoices();
