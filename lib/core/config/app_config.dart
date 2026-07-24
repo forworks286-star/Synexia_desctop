@@ -89,5 +89,6 @@ class AppConfig {
   static String get bomAll => '$apiBase/bom';
   static String get bomDuProduit => '$apiBase/bom/produit/{id}';
   static String get ordresFabrication => '$apiBase/bom/ordres-fabrication';
+  static String get bomMaxRealisable => '$apiBase/bom/{id}/max-realisable';
 
 }

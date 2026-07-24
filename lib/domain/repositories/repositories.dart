@@ -65,6 +65,9 @@ abstract class ManufacturingRepository {
   Future<Either<String, List<BomModel>>> getBoms();
   Future<Either<String, BomModel>> getBomDuProduit(int produitFiniId);
   Future<Either<String, BomModel>> creerBom({required int produitFiniId, String? nom, required List<Map<String, dynamic>> lignes});
-  Future<Either<String, Map<String, dynamic>>> creerOrdreFabrication({required int bomId, required double quantiteProduite, String? emplacement});
+  Future<Either<String, Map<String, dynamic>>> creerOrdreFabrication({
+      required int bomId, required double quantiteProduite, String? emplacement,
+      String? dateFabrication, String? dateExpiration, String? numeroLot});
+  Future<Either<String, Map<String, dynamic>>> getMaxRealisable(int bomId);
   Future<Either<String, List<OrdreFabrication>>> getOrdresFabrication();
 }

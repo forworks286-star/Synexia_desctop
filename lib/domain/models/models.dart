@@ -446,10 +446,11 @@ class LigneBom {
   final String composantNom;
   final String? composantUnite;
   final double quantiteNecessaire;
+  final double tauxPerte;
 
   const LigneBom({
     required this.id, required this.composantProduitId, required this.composantNom,
-    this.composantUnite, required this.quantiteNecessaire,
+    this.composantUnite, required this.quantiteNecessaire, this.tauxPerte = 0.0,
   });
 }
 

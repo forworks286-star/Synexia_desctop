@@ -68,7 +68,8 @@ class _BomTab extends StatelessWidget {
               const SizedBox(height: 8),
               ...b.lignes.map((l) => Padding(
                 padding: const EdgeInsets.only(bottom: 4),
-                child: Text('• ${l.quantiteNecessaire} ${l.composantUnite ?? ''} de ${l.composantNom} (par unite)',
+                child: Text('• ${l.quantiteNecessaire} ${l.composantUnite ?? ''} de ${l.composantNom} (par unite)'
+                  '${l.tauxPerte > 0 ? ' — perte ${l.tauxPerte}%' : ''}',
                   style: const TextStyle(fontSize: 12)),
               )),
               const SizedBox(height: 8),
@@ -108,6 +109,12 @@ class _BomTab extends StatelessWidget {
                 keyboardType: TextInputType.number,
                 onChanged: (v) => e.value['quantite_necessaire'] = double.tryParse(v) ?? 0,
               )),
+              const SizedBox(width: 8),
+              Expanded(child: TextField(
+                decoration: const InputDecoration(labelText: '% perte'),
+                keyboardType: TextInputType.number,
+                onChanged: (v) => e.value['taux_perte'] = double.tryParse(v) ?? 0,
+              )),
             ]),
           )),
           Align(alignment: Alignment.centerLeft, child: TextButton.icon(
@@ -127,36 +134,96 @@ class _BomTab extends StatelessWidget {
     }));
   }
 
-  void _showCreerOF(BuildContext context, BomModel bom) {
+  void _showCreerOF(BuildContext context, BomModel bom) async {
     final qteCtrl = TextEditingController();
     final emplacementCtrl = TextEditingController();
-    showDialog(context: context, builder: (_) => AlertDialog(
-      title: Text('Produire : ${bom.produitFiniNom ?? ''}'),
-      content: Column(mainAxisSize: MainAxisSize.min, children: [
-        TextField(controller: qteCtrl, keyboardType: TextInputType.number,
-          decoration: const InputDecoration(labelText: 'Quantité produite')),
-        const SizedBox(height: 10),
-        TextField(controller: emplacementCtrl,
-          decoration: const InputDecoration(labelText: 'Emplacement (optionnel)')),
-      ]),
-      actions: [
-        TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
-        TextButton(onPressed: () async {
-          final qte = double.tryParse(qteCtrl.text) ?? 0;
-          if (qte <= 0) return;
-          final r = await ctrl.creerOrdreFabrication(
-            bomId: bom.id, quantiteProduite: qte,
-            emplacement: emplacementCtrl.text.isEmpty ? null : emplacementCtrl.text,
-          );
-          Get.back();
-          r.fold(
-            (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger, colorText: Colors.white),
-            (res) => Get.snackbar('Production enregistrée',
-              'Lot ${res['numero_lot']} — coût unitaire ${res['cout_revient_unitaire']} DZD',
-              backgroundColor: AppColors.success, colorText: Colors.white),
-          );
-        }, child: const Text('Confirmer la production')),
-      ],
+    final numeroLotCtrl = TextEditingController();
+    DateTime? dateFabrication = DateTime.now();
+    DateTime? dateExpiration;
+    int? maxRealisable;
+    String? goulot;
+
+    final maxResult = await ctrl.getMaxRealisable(bom.id);
+    maxResult.fold((_) {}, (data) {
+      maxRealisable = data['quantite_maximale'] as int?;
+      goulot = data['goulot_etranglement'] as String?;
+    });
+
+    showDialog(context: context, builder: (dialogContext) => StatefulBuilder(
+      builder: (dialogContext, setState) => AlertDialog(
+        title: Text('Produire : ${bom.produitFiniNom ?? ''}'),
+        content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+          if (maxRealisable != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Text(
+                'Quantité maximale réalisable avec le stock actuel : $maxRealisable'
+                '${goulot != null ? ' (limité par : $goulot)' : ''}',
+                style: const TextStyle(fontSize: 12, color: AppColors.warning, fontWeight: FontWeight.w600),
+              ),
+            ),
+          TextField(controller: qteCtrl, keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: 'Quantité produite')),
+          const SizedBox(height: 10),
+          TextField(controller: emplacementCtrl,
+            decoration: const InputDecoration(labelText: 'Emplacement (optionnel)')),
+          const SizedBox(height: 10),
+          TextField(controller: numeroLotCtrl,
+            decoration: const InputDecoration(labelText: 'Numéro de lot (optionnel)')),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () async {
+              final picked = await showDatePicker(context: dialogContext,
+                initialDate: dateFabrication ?? DateTime.now(),
+                firstDate: DateTime(2020), lastDate: DateTime(2100));
+              if (picked != null) setState(() => dateFabrication = picked);
+            },
+            child: InputDecorator(
+              decoration: const InputDecoration(labelText: 'Date de fabrication'),
+              child: Text(dateFabrication != null
+                ? '${dateFabrication!.year}-${dateFabrication!.month.toString().padLeft(2, '0')}-${dateFabrication!.day.toString().padLeft(2, '0')}'
+                : '—'),
+            ),
+          ),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () async {
+              final picked = await showDatePicker(context: dialogContext,
+                initialDate: DateTime.now().add(const Duration(days: 30)),
+                firstDate: DateTime(2020), lastDate: DateTime(2100));
+              if (picked != null) setState(() => dateExpiration = picked);
+            },
+            child: InputDecorator(
+              decoration: const InputDecoration(labelText: 'Date de péremption (recommandé)'),
+              child: Text(dateExpiration != null
+                ? '${dateExpiration!.year}-${dateExpiration!.month.toString().padLeft(2, '0')}-${dateExpiration!.day.toString().padLeft(2, '0')}'
+                : 'Non définie — appuyez pour choisir'),
+            ),
+          ),
+        ])),
+        actions: [
+          TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+          TextButton(onPressed: () async {
+            final qte = double.tryParse(qteCtrl.text) ?? 0;
+            if (qte <= 0) return;
+            String fmt(DateTime d) => '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+            final r = await ctrl.creerOrdreFabrication(
+              bomId: bom.id, quantiteProduite: qte,
+              emplacement: emplacementCtrl.text.isEmpty ? null : emplacementCtrl.text,
+              dateFabrication: dateFabrication != null ? fmt(dateFabrication!) : null,
+              dateExpiration: dateExpiration != null ? fmt(dateExpiration!) : null,
+              numeroLot: numeroLotCtrl.text.isEmpty ? null : numeroLotCtrl.text,
+            );
+            Get.back();
+            r.fold(
+              (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger, colorText: Colors.white),
+              (res) => Get.snackbar('Production enregistrée',
+                'Lot ${res['numero_lot']} — coût unitaire ${res['cout_revient_unitaire']} DZD',
+                backgroundColor: AppColors.success, colorText: Colors.white),
+            );
+          }, child: const Text('Confirmer la production')),
+        ],
+      ),
     ));
   }
 }

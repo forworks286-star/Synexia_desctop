@@ -356,12 +356,18 @@ class ManufacturingController extends GetxController {
     return r.fold((_) => false, (_) { loadBoms(); return true; });
   }
 
-  Future<Either<String, Map<String, dynamic>>> creerOrdreFabrication(
-      {required int bomId, required double quantiteProduite, String? emplacement}) async {
-    final r = await _repo.creerOrdreFabrication(bomId: bomId, quantiteProduite: quantiteProduite, emplacement: emplacement);
-    r.fold((_) {}, (_) { loadOrdres(); if (Get.isRegistered<StockController>()) Get.find<StockController>().loadProducts(); });
+  Future<Either<String, Map<String, dynamic>>> creerOrdreFabrication({
+      required int bomId, required double quantiteProduite, String? emplacement,
+      String? dateFabrication, String? dateExpiration, String? numeroLot}) async {
+    final r = await _repo.creerOrdreFabrication(
+      bomId: bomId, quantiteProduite: quantiteProduite, emplacement: emplacement,
+      dateFabrication: dateFabrication, dateExpiration: dateExpiration, numeroLot: numeroLot,
+    );
+    if (r.isRight()) { loadOrdres(); }
     return r;
   }
+
+  Future<Either<String, Map<String, dynamic>>> getMaxRealisable(int bomId) => _repo.getMaxRealisable(bomId);
 }
 
 

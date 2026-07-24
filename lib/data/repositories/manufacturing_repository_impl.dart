@@ -47,12 +47,26 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
 
   @override
   Future<Either<String, Map<String, dynamic>>> creerOrdreFabrication({
-      required int bomId, required double quantiteProduite, String? emplacement}) async {
+      required int bomId, required double quantiteProduite, String? emplacement,
+      String? dateFabrication, String? dateExpiration, String? numeroLot}) async {
     try {
       final response = await _dio.post(AppConfig.ordresFabrication, data: {
         'bom_id': bomId, 'quantite_produite': quantiteProduite,
         'emplacement_produit_fini': emplacement,
+        'date_fabrication': dateFabrication, 'date_expiration': dateExpiration,
+        'numero_lot_produit_fini': numeroLot,
       });
+      return Right(response.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, Map<String, dynamic>>> getMaxRealisable(int bomId) async {
+    try {
+      final url = AppConfig.bomMaxRealisable.replaceAll('{id}', '$bomId');
+      final response = await _dio.get(url);
       return Right(response.data as Map<String, dynamic>);
     } on DioException catch (e) {
       return Left(_mapError(e));
@@ -92,6 +106,7 @@ class ManufacturingRepositoryImpl implements ManufacturingRepository {
         composantNom: d['composant_nom'] as String? ?? '—',
         composantUnite: d['composant_unite'] as String?,
         quantiteNecessaire: (d['quantite_necessaire'] as num).toDouble(),
+        tauxPerte: (d['taux_perte'] as num?)?.toDouble() ?? 0.0,
       );
     }).toList(),
   );
