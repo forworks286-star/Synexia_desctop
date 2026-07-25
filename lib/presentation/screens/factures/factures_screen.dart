@@ -74,36 +74,6 @@ class FacturesScreen extends StatelessWidget {
             );
           }),
           Obx(() {
-            final estAdmin = Get.find<AuthController>().isManager;
-            if (!estAdmin || ctrl.facturesEcartAValider.isEmpty) return const SizedBox.shrink();
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: Colors.purple.withOpacity(0.08),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.purple.withOpacity(0.3)),
-              ),
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [
-                  const Icon(Icons.rule_folder_rounded, color: Colors.purple, size: 18),
-                  const SizedBox(width: 8),
-                  Text('${ctrl.facturesEcartAValider.length} écart(s) bon de commande à valider',
-                    style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold, fontSize: 13)),
-                ]),
-                const SizedBox(height: 10),
-                ...ctrl.facturesEcartAValider.map((f) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(children: [
-                    Expanded(child: Text('#${f.id} — ${f.supplierName}', style: const TextStyle(fontSize: 13))),
-                    SynButton(label: 'Examiner', icon: Icons.fact_check_rounded,
-                      onTap: () => _showEcartAValiderDialog(context, ctrl, f)),
-                  ]),
-                )),
-              ]),
-            );
-          }),
-          Obx(() {
             if (ctrl.facturesOcrAVerifier.isEmpty) return const SizedBox.shrink();
             return Container(
               margin: const EdgeInsets.only(bottom: 12),
@@ -1026,7 +996,9 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
 String _formatEcarts(List<dynamic> ecarts) {
   return ecarts.map((e) {
     final map = e as Map<String, dynamic>;
-    if (map['type'] == 'produit_non_commande') {
+    if (map['type'] == 'fournisseur_different') {
+      return '⚠ Fournisseur différent : commandé "${map['commande']}" → reçu "${map['recu']}"';
+    } else if (map['type'] == 'produit_non_commande') {
       return '⚠ "${map['designation']}" reçu mais non commandé (qté: ${map['quantite_recue']})';
     } else if (map['type'] == 'produit_manquant') {
       return '⚠ "${map['designation']}" commandé (qté: ${map['quantite_commandee']}) mais non reçu';
@@ -1068,47 +1040,6 @@ void _showEcartASignalerDialog(BuildContext context, InvoiceController ctrl, Inv
           }
         },
         child: const Text('Envoyer à l\'administrateur'),
-      ),
-    ],
-  ));
-}
-
-void _showEcartAValiderDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
-  Get.dialog(AlertDialog(
-    backgroundColor: AppColors.darkCard,
-    title: Text('Écart — Facture #${facture.id}'),
-    content: SizedBox(width: 500, child: SingleChildScrollView(child: Column(
-        mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const SectionTitle(title: 'ÉCARTS DÉTECTÉS'),
-      const SizedBox(height: 6),
-      Text(_formatEcarts(facture.ecartsBc ?? []), style: const TextStyle(fontSize: 13)),
-      const SizedBox(height: 16),
-      const SectionTitle(title: 'COMMENTAIRE'),
-      const SizedBox(height: 6),
-      Text(facture.ecartCompteRendu ?? '—', style: const TextStyle(fontSize: 13)),
-    ]))),
-    actions: [
-      TextButton(
-        onPressed: () async {
-          final ok = await ctrl.rejeterEcart(facture.id);
-          Get.back();
-          if (ok) {
-            Get.snackbar('Rejetée', 'La facture a été annulée',
-              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
-          }
-        },
-        child: const Text('Rejeter', style: TextStyle(color: AppColors.danger)),
-      ),
-      ElevatedButton(
-        onPressed: () async {
-          final ok = await ctrl.approuverEcart(facture.id);
-          Get.back();
-          if (ok) {
-            Get.snackbar('Approuvé', 'La facture reprend son cours normal',
-              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
-          }
-        },
-        child: const Text('Approuver'),
       ),
     ],
   ));
