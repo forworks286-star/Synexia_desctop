@@ -14,6 +14,7 @@ import '../screens/iot/iot_screen.dart';
 import '../screens/securite/securite_screen.dart';
 import '../screens/fabrication/fabrication_screen.dart';
 import '../screens/approbations/approbations_screen.dart';
+import '../screens/bons_commande/bons_commande_screen.dart';
 import '../../domain/models/models.dart';
 
 class MainShell extends StatelessWidget {
@@ -42,6 +43,7 @@ class MainShell extends StatelessWidget {
                 5: const SettingsScreen(),
                 7: const IoTScreen(),
                 8: const SecuriteScreen(),
+                11: const BonsCommandeScreen(),
               };
 
               if (role == UserRole.admin || role == UserRole.manager) {
