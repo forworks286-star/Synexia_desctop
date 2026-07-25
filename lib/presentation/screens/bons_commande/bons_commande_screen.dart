@@ -34,6 +34,7 @@ class BonsCommandeScreen extends StatelessWidget {
               child: ListTile(
                 title: Text('${bc.numeroBc} — ${bc.fournisseurNom ?? "Sans fournisseur"}'),
                 subtitle: Text('${bc.typeStock} — ${bc.lignes.length} article(s)'),
+                onTap: () => _showDetailBC(context, bc),
                 trailing: IconButton(
                   icon: const Icon(Icons.picture_as_pdf_rounded),
                   onPressed: () => _exporterPdf(bc),
@@ -67,6 +68,32 @@ class BonsCommandeScreen extends StatelessWidget {
     ));
     await Printing.layoutPdf(onLayout: (format) => pdf.save());
   }
+
+  void _showDetailBC(BuildContext context, BonCommande bc) {
+  Get.dialog(AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: Text(bc.numeroBc),
+    content: SizedBox(width: 480, child: SingleChildScrollView(child: Column(
+        mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text('Fournisseur : ${bc.fournisseurNom ?? "—"}'),
+      Text('Type : ${bc.typeStock}'),
+      Text('Statut : ${bc.statut}'),
+      const Divider(height: 24),
+      ...bc.lignes.map((l) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Text('• ${l.designation} — Qté: ${l.quantite} — Prix estimé: ${l.prixUnitaireEstime}',
+          style: const TextStyle(fontSize: 13)),
+      )),
+    ]))),
+    actions: [
+      TextButton(onPressed: () => Get.back(), child: const Text('Fermer')),
+      ElevatedButton.icon(
+        icon: const Icon(Icons.picture_as_pdf_rounded), label: const Text('PDF'),
+        onPressed: () => _exporterPdf(bc),
+      ),
+    ],
+  ));
+}
 
   void _showCreerBC(BuildContext context, BonCommandeController ctrl) {
     final fournisseurCtrl = TextEditingController();
