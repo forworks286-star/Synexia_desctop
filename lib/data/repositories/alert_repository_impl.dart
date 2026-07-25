@@ -118,6 +118,9 @@ class AlertRepositoryImpl implements AlertRepository {
               Get.find<InvoiceController>().loadFacturesACorriger();
               Get.find<InvoiceController>().loadFacturesEnAttenteModification();
               Get.find<InvoiceController>().loadFacturesOcrAVerifier();
+              Get.find<InvoiceController>().loadFacturesEcartASignaler();
+              Get.find<InvoiceController>().loadFacturesEcartAValider();
+              Get.find<InvoiceController>().loadDemandes();
             }
           }
 
