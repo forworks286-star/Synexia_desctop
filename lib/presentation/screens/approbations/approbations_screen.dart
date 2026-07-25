@@ -141,9 +141,11 @@ class _DemandeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.find<InvoiceController>();
+    final ecartLie = ctrl.facturesEcartASignaler.any((f) => f.id == demande.factureId)
+        || ctrl.facturesEcartAValider.any((f) => f.id == demande.factureId);
 
     return SynCard(
-      borderLeft: AppColors.warning,
+      borderLeft: ecartLie ? AppColors.darkTextMuted : AppColors.warning,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
           const Icon(Icons.edit_note_rounded, size: 18, color: AppColors.warning),
@@ -163,6 +165,15 @@ class _DemandeCard extends StatelessWidget {
         const SectionTitle(title: 'COMPTE-RENDU'),
         const SizedBox(height: 4),
         Text(demande.compteRendu, style: const TextStyle(fontSize: 13)),
+        if (ecartLie) ...[
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.purple.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+            child: const Text('🔒 Réglez d\'abord l\'écart bon de commande de cette facture (voir ci-dessus)',
+              style: TextStyle(fontSize: 12, color: Colors.purple)),
+          ),
+        ],
         const SizedBox(height: 14),
         Row(children: [
           TextButton.icon(
@@ -173,12 +184,12 @@ class _DemandeCard extends StatelessWidget {
           const Spacer(),
           SynButton(
             label: 'Refuser', outline: true, color: AppColors.danger,
-            onTap: () => _refuser(context, ctrl, demande.id),
+            onTap: ecartLie ? null : () => _refuser(context, ctrl, demande.id),
           ),
           const SizedBox(width: 10),
           SynButton(
             label: 'Approuver', color: AppColors.success,
-            onTap: () => ctrl.approuverDemande(demande.id),
+            onTap: ecartLie ? null : () => ctrl.approuverDemande(demande.id),
           ),
         ]),
       ]),
