@@ -107,7 +107,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
       required String typeStock, required double montantHt, required double montantTva,
       required double montantTtc, String? fournisseurNif, String? fournisseurNis, String? fournisseurRc,
       required String motifCreationManuelle,
-      required List<Map<String, dynamic>> lignes, String? compteRenduDemande}) async {
+      required List<Map<String, dynamic>> lignes, String? compteRenduDemande, int? bonCommandeId}) async {
     try {
       final response = await _dio.post(AppConfig.facturesManuelle, data: {
         'fournisseur_nom': fournisseurNom, 'date': date, 'type_facture': typeFacture,
@@ -117,6 +117,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
         'motif_creation_manuelle': motifCreationManuelle,
         'lignes': lignes,
         if (compteRenduDemande != null) 'compte_rendu_demande': compteRenduDemande,
+        'bon_commande_id': bonCommandeId,
       });
       return Right(_parseInvoice(response.data as Map<String, dynamic>));
     } on DioException catch (e) {
@@ -223,6 +224,39 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     }
   }
 
+  @override
+  Future<Either<String, void>> envoyerEcart(int factureId, String compteRendu) async {
+    try {
+      final url = AppConfig.factureEnvoyerEcart.replaceAll('{id}', '$factureId');
+      await _dio.put(url, data: {'compte_rendu': compteRendu});
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, void>> approuverEcart(int factureId) async {
+    try {
+      final url = AppConfig.factureApprouverEcart.replaceAll('{id}', '$factureId');
+      await _dio.put(url);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, void>> rejeterEcart(int factureId) async {
+    try {
+      final url = AppConfig.factureRejeterEcart.replaceAll('{id}', '$factureId');
+      await _dio.put(url);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
   DemandeModification _parseDemande(Map<String, dynamic> data) => DemandeModification(
     id: data['id'] as int, factureId: data['facture_id'] as int,
     demandeurId: data['demandeur_id'] as int, demandeurNom: data['demandeur_nom'] as String?,
@@ -287,6 +321,9 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     typeFacture:        (data['type_facture'] as String?) ?? 'achat',
     creeParId:          data['cree_par_id'] as int?,
     motifCreationManuelle: data['motif_creation_manuelle'] as String?,
+    bonCommandeId: data['bon_commande_id'] as int?,
+    ecartsBc: data['ecarts_bc'] as List<dynamic>?,
+    ecartCompteRendu: data['ecart_compte_rendu'] as String?,
   );
 
   LigneFacture _parseLigne(Map<String, dynamic> data) => LigneFacture(
@@ -322,6 +359,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     switch (status) {
       case 'validated': return InvoiceStatus.validated;
       case 'rejected': return InvoiceStatus.rejected;
+      case 'annulee': return InvoiceStatus.annulee;
       default: return InvoiceStatus.pending;
     }
   }

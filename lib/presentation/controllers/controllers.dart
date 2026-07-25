@@ -35,6 +35,8 @@ class AuthController extends GetxController {
           Get.find<InvoiceController>().loadDemandes();
           Get.find<InvoiceController>().loadFacturesACorriger();
           Get.find<InvoiceController>().loadFacturesEnAttenteModification();
+          Get.find<InvoiceController>().loadFacturesEcartASignaler();
+          Get.find<InvoiceController>().loadFacturesEcartAValider();
           Get.find<InvoiceController>().loadFacturesOcrAVerifier();
         }
         if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
@@ -53,6 +55,8 @@ class AuthController extends GetxController {
         Get.find<InvoiceController>().loadDemandes();
         Get.find<InvoiceController>().loadFacturesACorriger();
         Get.find<InvoiceController>().loadFacturesEnAttenteModification();
+        Get.find<InvoiceController>().loadFacturesEcartASignaler();
+        Get.find<InvoiceController>().loadFacturesEcartAValider();
         Get.find<InvoiceController>().loadFacturesOcrAVerifier();
       }
       if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
@@ -218,7 +222,7 @@ class InvoiceController extends GetxController {
 
 
   @override
-  void onInit() { super.onInit(); loadInvoices(); loadDemandes(); loadFacturesACorriger(); loadFacturesEnAttenteModification(); loadFacturesOcrAVerifier(); }
+  void onInit() { super.onInit(); loadInvoices(); loadDemandes(); loadFacturesACorriger(); loadFacturesEnAttenteModification(); loadFacturesOcrAVerifier(); loadFacturesEcartASignaler(); loadFacturesEcartAValider(); }
 
   Future<void> loadInvoices() async {
     isLoading.value = true;
@@ -242,15 +246,43 @@ class InvoiceController extends GetxController {
       required double montantTva, required double montantTtc,
       String? fournisseurNif, String? fournisseurNis, String? fournisseurRc,
       required String motifCreationManuelle,
-      required List<Map<String, dynamic>> lignes, String? compteRenduDemande}) async {
+      required List<Map<String, dynamic>> lignes, String? compteRenduDemande, int? bonCommandeId}) async {
     final r = await _repo.creerFactureManuelle(
       fournisseurNom: fournisseurNom, date: date, typeFacture: typeFacture, typeStock: typeStock,
       montantHt: montantHt, montantTva: montantTva, montantTtc: montantTtc,
       fournisseurNif: fournisseurNif, fournisseurNis: fournisseurNis, fournisseurRc: fournisseurRc,
       motifCreationManuelle: motifCreationManuelle, lignes: lignes,
-      compteRenduDemande: compteRenduDemande,
+      compteRenduDemande: compteRenduDemande, bonCommandeId: bonCommandeId,
     );
-    return r.fold((_) => false, (_) { loadInvoices(); loadDemandes(); loadFacturesEnAttenteModification(); return true; });
+    return r.fold((_) => false, (_) { loadInvoices(); loadDemandes(); loadFacturesEnAttenteModification(); loadFacturesEcartASignaler(); return true; });
+  }
+
+  final RxList<Invoice> facturesEcartASignaler = <Invoice>[].obs;
+  final RxList<Invoice> facturesEcartAValider = <Invoice>[].obs;
+
+  Future<void> loadFacturesEcartASignaler() async {
+    final r = await _repo.getFacturesParStatut('ecart_a_signaler');
+    r.fold((_) {}, (l) => facturesEcartASignaler.assignAll(l));
+  }
+
+  Future<void> loadFacturesEcartAValider() async {
+    final r = await _repo.getFacturesParStatut('ecart_a_valider');
+    r.fold((_) {}, (l) => facturesEcartAValider.assignAll(l));
+  }
+
+  Future<bool> envoyerEcart(int factureId, String compteRendu) async {
+    final r = await _repo.envoyerEcart(factureId, compteRendu);
+    return r.fold((_) => false, (_) { loadFacturesEcartASignaler(); return true; });
+  }
+
+  Future<bool> approuverEcart(int factureId) async {
+    final r = await _repo.approuverEcart(factureId);
+    return r.fold((_) => false, (_) { loadFacturesEcartAValider(); loadFacturesOcrAVerifier(); loadInvoices(); return true; });
+  }
+
+  Future<bool> rejeterEcart(int factureId) async {
+    final r = await _repo.rejeterEcart(factureId);
+    return r.fold((_) => false, (_) { loadFacturesEcartAValider(); return true; });
   }
 
   Future<void> loadDemandes() async {
@@ -458,4 +490,26 @@ class AppSettingsController extends GetxController {
     final map = {'fr': const Locale('fr'), 'ar': const Locale('ar'), 'en': const Locale('en')};
     return map[locale.value] ?? const Locale('fr');
   }
+}
+
+
+class BonCommandeController extends GetxController {
+  final BonCommandeRepository _repo;
+  BonCommandeController(this._repo);
+
+  final RxList<BonCommande> bonsCommandeOuverts = <BonCommande>[].obs;
+
+  Future<void> loadBonsOuverts({String? typeStock}) async {
+    final r = await _repo.getBonsCommande(typeStock: typeStock, statut: 'ouvert');
+    r.fold((_) {}, (l) => bonsCommandeOuverts.assignAll(l));
+  }
+
+  Future<Either<String, BonCommande>> creerBonCommande({
+      required String typeStock, String? fournisseurNom, required List<Map<String, dynamic>> lignes}) async {
+    final r = await _repo.creerBonCommande(typeStock: typeStock, fournisseurNom: fournisseurNom, lignes: lignes);
+    if (r.isRight()) loadBonsOuverts();
+    return r;
+  }
+
+  Future<Either<String, BonCommande>> getDetail(int id) => _repo.getBonCommandeDetail(id);
 }

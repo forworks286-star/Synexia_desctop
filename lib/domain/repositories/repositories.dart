@@ -47,7 +47,7 @@ abstract class InvoiceRepository {
   Future<Either<String, LigneFacture>> addLigne(int factureId, {int? produitId, String? designation, String? typeStock, required double quantite, required double prixUnitaire, double? prixVente, String? dateFabrication, String? dateExpiration});
   Future<Either<String, void>> deleteLigne(int ligneId);
   Future<Either<String, HistoriquePrixProduit>> getHistoriquePrix(int produitId);
-  Future<Either<String, Invoice>> creerFactureManuelle({required String fournisseurNom, required String date, required String typeFacture, required String typeStock, required double montantHt, required double montantTva, required double montantTtc, String? fournisseurNif, String? fournisseurNis, String? fournisseurRc, required String motifCreationManuelle, required List<Map<String, dynamic>> lignes, String? compteRenduDemande});
+  Future<Either<String, Invoice>> creerFactureManuelle({required String fournisseurNom, required String date, required String typeFacture, required String typeStock, required double montantHt, required double montantTva, required double montantTtc, String? fournisseurNif, String? fournisseurNis, String? fournisseurRc, required String motifCreationManuelle, required List<Map<String, dynamic>> lignes, String? compteRenduDemande, int? bonCommandeId});
   Future<Either<String, List<DemandeModification>>> getDemandes({String statut = 'pending'});
   Future<Either<String, void>> approuverDemande(int id);
   Future<Either<String, void>> refuserDemande(int id, String? motif);
@@ -59,6 +59,16 @@ abstract class InvoiceRepository {
   Future<Either<String, void>> confirmerOcr(int factureId, List<Map<String, dynamic>> lignes);
   Future<Either<String, void>> enregistrerEmplacementsOcr(int factureId, List<Map<String, dynamic>> lignes);
   Future<Either<String, void>> creerDemandeModification(int factureId, String compteRendu);
+  Future<Either<String, void>> envoyerEcart(int factureId, String compteRendu);
+  Future<Either<String, void>> approuverEcart(int factureId);
+  Future<Either<String, void>> rejeterEcart(int factureId);
+}
+
+abstract class BonCommandeRepository {
+  Future<Either<String, List<BonCommande>>> getBonsCommande({String? typeStock, String statut});
+  Future<Either<String, BonCommande>> getBonCommandeDetail(int id);
+  Future<Either<String, BonCommande>> creerBonCommande({
+      required String typeStock, String? fournisseurNom, required List<Map<String, dynamic>> lignes});
 }
 
 abstract class ManufacturingRepository {

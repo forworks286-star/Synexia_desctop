@@ -402,6 +402,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
       case InvoiceStatus.validated: return 'Validée';
       case InvoiceStatus.rejected: return 'Rejetée';
       case InvoiceStatus.pending: return 'En attente';
+      case InvoiceStatus.annulee: return 'Annulée';
     }
   }
 }

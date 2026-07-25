@@ -107,13 +107,17 @@ class AlertRepositoryImpl implements AlertRepository {
             if (Get.isRegistered<InvoiceController>()) {
               Get.find<InvoiceController>().loadFacturesEnAttenteModification();
               Get.find<InvoiceController>().loadFacturesOcrAVerifier();
+              Get.find<InvoiceController>().loadFacturesEcartASignaler();
+              Get.find<InvoiceController>().loadFacturesEcartAValider();
             }
           }
+
           if (type == 'facture_draft_update') {
             if (Get.isRegistered<InvoiceController>()) {
               Get.find<InvoiceController>().loadInvoices();
               Get.find<InvoiceController>().loadFacturesACorriger();
               Get.find<InvoiceController>().loadFacturesEnAttenteModification();
+              Get.find<InvoiceController>().loadFacturesOcrAVerifier();
             }
           }
 

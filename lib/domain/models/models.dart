@@ -169,7 +169,7 @@ class Movement extends Equatable {
 
 enum MovementType { entry, exit, returnType }
 
-enum InvoiceStatus { pending, validated, rejected }
+enum InvoiceStatus { pending, validated, rejected, annulee }
 
 class Alert extends Equatable {
   final int id;
@@ -339,6 +339,9 @@ class Invoice extends Equatable {
   final bool incoherenceDetectee;
   final int? creeParId;
   final String? motifCreationManuelle;
+  final int? bonCommandeId;
+  final List<dynamic>? ecartsBc;
+  final String? ecartCompteRendu;
 
   const Invoice({
     required this.id,
@@ -363,6 +366,9 @@ class Invoice extends Equatable {
     this.incoherenceDetectee = false,
     this.creeParId,
     this.motifCreationManuelle,
+    this.bonCommandeId,
+    this.ecartsBc,
+    this.ecartCompteRendu,
   });
 
   @override
@@ -503,6 +509,35 @@ class HistoriquePrixProduit {
   const HistoriquePrixProduit({
     required this.produitId, required this.produitNom, required this.historique,
     this.prixAchatMoyen, this.prixVenteMoyen, this.margePercent,
+  });
+}
+
+class LigneBonCommande {
+  final int id;
+  final int? produitId;
+  final String designation;
+  final double quantite;
+  final double prixUnitaireEstime;
+
+  const LigneBonCommande({
+    required this.id, this.produitId, required this.designation,
+    required this.quantite, this.prixUnitaireEstime = 0.0,
+  });
+}
+
+class BonCommande {
+  final int id;
+  final String numeroBc;
+  final String typeStock;
+  final String? fournisseurNom;
+  final String statut;
+  final DateTime dateCreation;
+  final List<LigneBonCommande> lignes;
+
+  const BonCommande({
+    required this.id, required this.numeroBc, required this.typeStock,
+    this.fournisseurNom, required this.statut, required this.dateCreation,
+    this.lignes = const [],
   });
 }
 

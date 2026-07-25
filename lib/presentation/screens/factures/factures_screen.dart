@@ -22,7 +22,8 @@ class FacturesScreen extends StatelessWidget {
     ctrl.loadFacturesACorriger();
     ctrl.loadFacturesEnAttenteModification();
     ctrl.loadFacturesOcrAVerifier();
-
+    ctrl.loadFacturesEcartASignaler();
+    ctrl.loadFacturesEcartAValider();
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(
@@ -41,7 +42,67 @@ class FacturesScreen extends StatelessWidget {
                 onTap: () => ouvrirNouvelleFacture(context, ctrl)),
             ],
           ),
+
           const SizedBox(height: 20),
+          Obx(() {
+            if (ctrl.facturesEcartASignaler.isEmpty) return const SizedBox.shrink();
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 18),
+                  const SizedBox(width: 8),
+                  Text('${ctrl.facturesEcartASignaler.length} facture(s) ne correspondent pas au bon de commande',
+                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13)),
+                ]),
+                const SizedBox(height: 10),
+                ...ctrl.facturesEcartASignaler.map((f) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(children: [
+                    Expanded(child: Text('#${f.id} — ${f.supplierName}', style: const TextStyle(fontSize: 13))),
+                    SynButton(label: 'Voir et signaler', icon: Icons.compare_arrows_rounded,
+                      onTap: () => _showEcartASignalerDialog(context, ctrl, f)),
+                  ]),
+                )),
+              ]),
+            );
+          }),
+          Obx(() {
+            final estAdmin = Get.find<AuthController>().isManager;
+            if (!estAdmin || ctrl.facturesEcartAValider.isEmpty) return const SizedBox.shrink();
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.purple.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.purple.withOpacity(0.3)),
+              ),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  const Icon(Icons.rule_folder_rounded, color: Colors.purple, size: 18),
+                  const SizedBox(width: 8),
+                  Text('${ctrl.facturesEcartAValider.length} écart(s) bon de commande à valider',
+                    style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold, fontSize: 13)),
+                ]),
+                const SizedBox(height: 10),
+                ...ctrl.facturesEcartAValider.map((f) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(children: [
+                    Expanded(child: Text('#${f.id} — ${f.supplierName}', style: const TextStyle(fontSize: 13))),
+                    SynButton(label: 'Examiner', icon: Icons.fact_check_rounded,
+                      onTap: () => _showEcartAValiderDialog(context, ctrl, f)),
+                  ]),
+                )),
+              ]),
+            );
+          }),
           Obx(() {
             if (ctrl.facturesOcrAVerifier.isEmpty) return const SizedBox.shrink();
             return Container(
@@ -264,6 +325,7 @@ class _InvoiceRow extends StatelessWidget {
       case InvoiceStatus.validated: return 'Validée';
       case InvoiceStatus.rejected: return 'Rejetée';
       case InvoiceStatus.pending: return 'En attente';
+      case InvoiceStatus.annulee: return 'Annulée';
     }
   }
 
@@ -356,6 +418,8 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
   String typeFacture = 'achat';
   String typeStock = typeStockInitial ?? 'marchandise';
   final lignes = <Map<String, dynamic>>[_ligneVide()];
+  int? bonCommandeId;
+  Get.find<BonCommandeController>().loadBonsOuverts(typeStock: typeStock);
 
   Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
     backgroundColor: AppColors.darkCard,
@@ -393,9 +457,26 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             DropdownMenuItem(value: 'produit_fini', child: Text('Produit fini')),
             DropdownMenuItem(value: 'consommable', child: Text('Consommable')),
           ],
-          onChanged: (v) => setState(() => typeStock = v ?? 'marchandise'),
+          onChanged: (v) {
+            setState(() => typeStock = v ?? 'marchandise');
+            Get.find<BonCommandeController>().loadBonsOuverts(typeStock: typeStock);
+          },
         )),
       ]),
+      const SizedBox(height: 10),
+      Obx(() {
+        final bonsDisponibles = Get.find<BonCommandeController>().bonsCommandeOuverts;
+        return DropdownButtonFormField<int?>(
+          value: bonCommandeId,
+          decoration: const InputDecoration(labelText: 'Bon de commande (optionnel)'),
+          items: [
+            const DropdownMenuItem<int?>(value: null, child: Text('Aucun')),
+            ...bonsDisponibles.map((bc) => DropdownMenuItem<int?>(
+              value: bc.id, child: Text('${bc.numeroBc} — ${bc.fournisseurNom ?? ""}'))),
+          ],
+          onChanged: (v) => setState(() => bonCommandeId = v),
+        );
+      }),
       const SizedBox(height: 10),
       TextField(controller: fournisseurCtrl, decoration: const InputDecoration(labelText: 'Fournisseur / Client')),
       const SizedBox(height: 10),
@@ -496,6 +577,7 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             motifCreationManuelle: motifCtrl.text.trim(),
             lignes: lignesPourEnvoi,
             compteRenduDemande: compteRenduDemandeCtrl.text.trim(),
+            bonCommandeId: bonCommandeId,
           );
           Get.back();
           if (ok) {
@@ -543,6 +625,7 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             fournisseurRc: rcCtrl.text.trim().isEmpty ? null : rcCtrl.text.trim(),
             motifCreationManuelle: motifCtrl.text.trim(),
             lignes: lignesPourEnvoi,
+            bonCommandeId: bonCommandeId,
           );
           Get.back();
           if (ok) {
@@ -939,6 +1022,98 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
   ));
 }
 
+
+String _formatEcarts(List<dynamic> ecarts) {
+  return ecarts.map((e) {
+    final map = e as Map<String, dynamic>;
+    if (map['type'] == 'produit_non_commande') {
+      return '⚠ "${map['designation']}" reçu mais non commandé (qté: ${map['quantite_recue']})';
+    } else if (map['type'] == 'produit_manquant') {
+      return '⚠ "${map['designation']}" commandé (qté: ${map['quantite_commandee']}) mais non reçu';
+    } else {
+      final details = <String>[];
+      if (map['quantite'] != null) {
+        details.add('quantité commandée ${map['quantite']['commandee']} → reçue ${map['quantite']['recue']}');
+      }
+      if (map['prix_unitaire'] != null) {
+        details.add('prix estimé ${map['prix_unitaire']['estime']} → reçu ${map['prix_unitaire']['recu']}');
+      }
+      return '⚠ "${map['designation']}" : ${details.join(', ')}';
+    }
+  }).join('\n');
+}
+
+void _showEcartASignalerDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
+  final compteRenduCtrl = TextEditingController();
+  Get.dialog(AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: Text('Écarts détectés — Facture #${facture.id}'),
+    content: SizedBox(width: 500, child: SingleChildScrollView(child: Column(
+        mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(_formatEcarts(facture.ecartsBc ?? []), style: const TextStyle(fontSize: 13)),
+      const SizedBox(height: 16),
+      TextField(controller: compteRenduCtrl, maxLines: 4,
+        decoration: const InputDecoration(labelText: 'Votre commentaire pour l\'administrateur')),
+    ]))),
+    actions: [
+      TextButton(onPressed: () => Get.back(), child: const Text('Fermer')),
+      ElevatedButton(
+        onPressed: () async {
+          if (compteRenduCtrl.text.trim().isEmpty) return;
+          final ok = await ctrl.envoyerEcart(facture.id, compteRenduCtrl.text.trim());
+          Get.back();
+          if (ok) {
+            Get.snackbar('Envoyé', 'En attente de décision de l\'administrateur',
+              backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+          }
+        },
+        child: const Text('Envoyer à l\'administrateur'),
+      ),
+    ],
+  ));
+}
+
+void _showEcartAValiderDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
+  Get.dialog(AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: Text('Écart — Facture #${facture.id}'),
+    content: SizedBox(width: 500, child: SingleChildScrollView(child: Column(
+        mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const SectionTitle(title: 'ÉCARTS DÉTECTÉS'),
+      const SizedBox(height: 6),
+      Text(_formatEcarts(facture.ecartsBc ?? []), style: const TextStyle(fontSize: 13)),
+      const SizedBox(height: 16),
+      const SectionTitle(title: 'COMMENTAIRE'),
+      const SizedBox(height: 6),
+      Text(facture.ecartCompteRendu ?? '—', style: const TextStyle(fontSize: 13)),
+    ]))),
+    actions: [
+      TextButton(
+        onPressed: () async {
+          final ok = await ctrl.rejeterEcart(facture.id);
+          Get.back();
+          if (ok) {
+            Get.snackbar('Rejetée', 'La facture a été annulée',
+              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+          }
+        },
+        child: const Text('Rejeter', style: TextStyle(color: AppColors.danger)),
+      ),
+      ElevatedButton(
+        onPressed: () async {
+          final ok = await ctrl.approuverEcart(facture.id);
+          Get.back();
+          if (ok) {
+            Get.snackbar('Approuvé', 'La facture reprend son cours normal',
+              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+          }
+        },
+        child: const Text('Approuver'),
+      ),
+    ],
+  ));
+}
+
 void _showSignalerErreurDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
   final compteRenduCtrl = TextEditingController();
   Get.dialog(AlertDialog(
@@ -1008,7 +1183,7 @@ void _choisirType(BuildContext context, InvoiceController ctrl, {required bool v
         onTap: () {
           Get.back();
           if (viaOcr) {
-            Get.dialog(_AttenteAppairageDialog(typeStock: e.key), barrierDismissible: false);
+            _choisirBonCommandePourOcr(context, ctrl, e.key);
           } else {
             _showFactureManuelleDialog(context, ctrl, typeStockInitial: e.key);
           }
@@ -1016,6 +1191,30 @@ void _choisirType(BuildContext context, InvoiceController ctrl, {required bool v
       )).toList(),
     )),
   ));
+}
+
+
+void _choisirBonCommandePourOcr(BuildContext context, InvoiceController ctrl, String typeStock) {
+  final bcCtrl = Get.find<BonCommandeController>();
+  bcCtrl.loadBonsOuverts(typeStock: typeStock);
+  Get.dialog(Obx(() => AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: const Text('Bon de commande (optionnel)'),
+    content: SizedBox(width: 380, child: Column(mainAxisSize: MainAxisSize.min, children: [
+      _ChoixCard(icon: Icons.close_rounded, title: 'Aucun', subtitle: '',
+        onTap: () {
+          Get.back();
+          Get.dialog(_AttenteAppairageDialog(typeStock: typeStock), barrierDismissible: false);
+        }),
+      ...bcCtrl.bonsCommandeOuverts.map((bc) => _ChoixCard(
+        icon: Icons.description_outlined, title: bc.numeroBc, subtitle: bc.fournisseurNom ?? '',
+        onTap: () {
+          Get.back();
+          Get.dialog(_AttenteAppairageDialog(typeStock: typeStock, bonCommandeId: bc.id), barrierDismissible: false);
+        },
+      )),
+    ])),
+  )));
 }
 
 class _ChoixCard extends StatelessWidget {
@@ -1049,7 +1248,8 @@ class _ChoixCard extends StatelessWidget {
 
 class _AttenteAppairageDialog extends StatefulWidget {
   final String typeStock;
-  const _AttenteAppairageDialog({required this.typeStock});
+  final int? bonCommandeId;
+  const _AttenteAppairageDialog({required this.typeStock, this.bonCommandeId});
 
   @override
   State<_AttenteAppairageDialog> createState() => _AttenteAppairageDialogState();
@@ -1073,6 +1273,7 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
     try {
       final response = await ApiClient.instance.dio.post(AppConfig.appairageGenerer, data: {
         'type_stock': widget.typeStock, 'type_facture': 'achat',
+        'bon_commande_id': widget.bonCommandeId,
       });
       setState(() {
         _code = response.data['code'] as String;

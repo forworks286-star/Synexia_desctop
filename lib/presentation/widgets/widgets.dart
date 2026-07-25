@@ -123,6 +123,7 @@ class InvoiceChip extends StatelessWidget {
       case InvoiceStatus.validated: c = AppColors.success; break;
       case InvoiceStatus.rejected: c = AppColors.danger; break;
       case InvoiceStatus.pending: c = AppColors.warning; break;
+      case InvoiceStatus.annulee: c = AppColors.darkTextMuted; break;
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
