@@ -324,6 +324,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
     bonCommandeId: data['bon_commande_id'] as int?,
     ecartsBc: data['ecarts_bc'] as List<dynamic>?,
     ecartCompteRendu: data['ecart_compte_rendu'] as String?,
+    statusRaw: data['status'] as String? ?? 'pending',
   );
 
   LigneFacture _parseLigne(Map<String, dynamic> data) => LigneFacture(

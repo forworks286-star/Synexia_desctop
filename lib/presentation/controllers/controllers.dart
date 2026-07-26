@@ -427,6 +427,15 @@ class AlertController extends GetxController {
 
   void _updateUnread() => unreadCount.value = alerts.where((a) => !a.isRead).length;
 
+  int unreadCountByType(String type) => alerts.where((a) => !a.isRead && a.type == type).length;
+
+  Future<void> markReadByType(String type) async {
+    final aLire = alerts.where((a) => !a.isRead && a.type == type).map((a) => a.id).toList();
+    for (final id in aLire) {
+      await markRead(id);
+    }
+  }
+
   Future<void> markRead(int id) async {
     await _repo.markAsRead(id);
     final i = alerts.indexWhere((a) => a.id == id);

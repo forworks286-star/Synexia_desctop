@@ -342,6 +342,7 @@ class Invoice extends Equatable {
   final int? bonCommandeId;
   final List<dynamic>? ecartsBc;
   final String? ecartCompteRendu;
+  final String statusRaw;
 
   const Invoice({
     required this.id,
@@ -369,8 +370,8 @@ class Invoice extends Equatable {
     this.bonCommandeId,
     this.ecartsBc,
     this.ecartCompteRendu,
+    this.statusRaw = 'pending',
   });
-
   @override
   List<Object?> get props => [id];
 }

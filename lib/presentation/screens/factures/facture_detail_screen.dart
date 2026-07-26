@@ -50,7 +50,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
     setState(() => _loading = false);
   }
 
-  bool get _isPending => _invoice?.status == InvoiceStatus.pending;
+  bool get _isPending => _invoice?.statusRaw == 'pending';
 
   @override
   Widget build(BuildContext context) {

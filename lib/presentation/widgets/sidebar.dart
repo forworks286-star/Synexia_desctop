@@ -18,10 +18,14 @@ class DesktopSidebar extends StatelessWidget {
     final items = [
       _NavItem(icon: Icons.grid_view_rounded,       label: 'Dashboard',   index: 0),
       _NavItem(icon: Icons.inventory_2_outlined,    label: 'Produits',    index: 1),
+      if (role == UserRole.admin || role == UserRole.manager)
+        _NavItem(icon: Icons.precision_manufacturing_outlined, label: 'Fabrication', index: 9),
+      _NavItem(icon: Icons.description_outlined,    label: 'Bons de commande', index: 11),
       // Factures : visible pour tous — chacun ne voit que ses propres factures
       // cote serveur (sauf admin/manager qui voient tout). Voir GET /factures.
       _NavItem(icon: Icons.receipt_long_outlined,   label: 'Factures',    index: 2),
-      _NavItem(icon: Icons.description_outlined,    label: 'Bons de commande', index: 11),
+      if (role == UserRole.admin || role == UserRole.manager)
+        _NavItem(icon: Icons.fact_check_outlined,   label: 'Approbations', index: 10),
       if (role == UserRole.admin || role == UserRole.manager)
         _NavItem(icon: Icons.sensors_rounded,       label: 'IoT',         index: 7),
       _NavItem(icon: Icons.notifications_outlined,  label: 'Alertes',     index: 3),
@@ -29,10 +33,6 @@ class DesktopSidebar extends StatelessWidget {
         _NavItem(icon: Icons.security_rounded,      label: 'Sécurité',    index: 8),
       if (role == UserRole.admin || role == UserRole.manager)
         _NavItem(icon: Icons.bar_chart_rounded,     label: 'Rapports',    index: 4),
-      if (role == UserRole.admin || role == UserRole.manager)
-        _NavItem(icon: Icons.precision_manufacturing_outlined, label: 'Fabrication', index: 9),
-      if (role == UserRole.admin || role == UserRole.manager)
-        _NavItem(icon: Icons.fact_check_outlined,   label: 'Approbations', index: 10),
       if (role == UserRole.admin)
         _NavItem(icon: Icons.admin_panel_settings_outlined, label: 'Admin', index: 6),
       _NavItem(icon: Icons.settings_outlined,       label: 'Paramètres',  index: 5),
@@ -73,8 +73,11 @@ class DesktopSidebar extends StatelessWidget {
               children: items.map((item) {
                 int badge = 0;
                 if (item.index == 3) badge = alerts.unreadCount.value;
+                if (item.index == 2) badge = alerts.unreadCountByType('facture');
+                if (item.index == 1) badge = alerts.unreadCountByType('stock');
                 if (item.index == 10 && Get.isRegistered<InvoiceController>()) {
-                  badge = Get.find<InvoiceController>().demandes.length;
+                  final ic = Get.find<InvoiceController>();
+                  badge = ic.demandes.length + ic.facturesEcartAValider.length;
                 }
                 return _SidebarItem(
                   item:     item,

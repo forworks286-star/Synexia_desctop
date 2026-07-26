@@ -24,6 +24,7 @@ class FacturesScreen extends StatelessWidget {
     ctrl.loadFacturesOcrAVerifier();
     ctrl.loadFacturesEcartASignaler();
     ctrl.loadFacturesEcartAValider();
+    Get.find<AlertController>().markReadByType('facture');
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(
@@ -278,12 +279,12 @@ class _InvoiceRow extends StatelessWidget {
         Expanded(flex: 2, child: InvoiceChip(status: invoice.status, label: _statusLabel(invoice.status))),
         Expanded(flex: 2, child: Builder(builder: (_) {
           if (!Get.find<AuthController>().isManager) return const SizedBox.shrink();
-          if (invoice.status != InvoiceStatus.pending) return const SizedBox.shrink();
+          if (invoice.statusRaw != 'pending') return const SizedBox.shrink();
           return Row(children: [
             SynButton(label: 'Valider', color: AppColors.success, onTap: () => ctrl.validateInvoice(invoice.id)),
             const SizedBox(width: 8),
             SynButton(label: 'Rejeter', outline: true, color: AppColors.danger,
-              onTap: () => Get.to(() => FactureDetailScreen(factureId: invoice.id))),
+              onTap: () => _showRejectDialogInline(context, ctrl, invoice)),
           ]);
         })),
       ]),
@@ -300,6 +301,33 @@ class _InvoiceRow extends StatelessWidget {
   }
 
   String _fmt(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+}
+
+void _showRejectDialogInline(BuildContext context, InvoiceController ctrl, Invoice invoice) {
+  final motifCtrl = TextEditingController();
+  Get.dialog(AlertDialog(
+    backgroundColor: AppColors.darkCard,
+    title: const Text('Motif du rejet'),
+    content: TextField(
+      controller: motifCtrl, maxLines: 3,
+      decoration: const InputDecoration(hintText: 'Expliquez pourquoi cette facture est rejetée...'),
+    ),
+    actions: [
+      TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+      ElevatedButton(
+        onPressed: () async {
+          if (motifCtrl.text.trim().isEmpty) return;
+          final ok = await ctrl.rejectInvoice(invoice.id, motifCtrl.text.trim());
+          Get.back();
+          if (ok) {
+            Get.snackbar('Succès', 'Facture rejetée',
+              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+          }
+        },
+        child: const Text('Confirmer le rejet'),
+      ),
+    ],
+  ));
 }
 
 class _AuthDot extends StatelessWidget {

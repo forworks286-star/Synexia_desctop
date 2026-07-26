@@ -20,6 +20,7 @@ class ProduitsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final stock = Get.find<StockController>();
+    Get.find<AlertController>().markReadByType('stock');
 
     return Padding(
       padding: const EdgeInsets.all(28),
