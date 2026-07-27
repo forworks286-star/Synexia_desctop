@@ -70,7 +70,7 @@ class AuthController extends GetxController {
 
   bool get isAdmin   => user.value?.role == UserRole.admin;
   bool get isManager => user.value?.role == UserRole.manager || isAdmin;
-  bool get canEdit   => isAdmin;
+  bool get canEdit   => isManager;
   bool get isSuperAdmin => user.value?.role == UserRole.admin;
   bool get canManageUsers => isSuperAdmin;
 }

@@ -130,6 +130,13 @@ class AlertRepositoryImpl implements AlertRepository {
             }
           }
 
+          if (type == 'bon_commande_update') {
+            if (Get.isRegistered<BonCommandeController>()) {
+              Get.find<BonCommandeController>().loadBonsOuverts();
+            }
+          }
+
+
           if (type == 'appairage_update') {
             if (Get.isRegistered<AlertController>()) {
               Get.find<AlertController>().pushAppairage(json);
