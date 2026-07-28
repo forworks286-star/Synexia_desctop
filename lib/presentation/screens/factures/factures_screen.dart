@@ -63,14 +63,17 @@ class FacturesScreen extends StatelessWidget {
                     style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
-                ...ctrl.facturesEcartASignaler.map((f) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(children: [
-                    Expanded(child: Text('#${f.id} — ${f.supplierName}', style: const TextStyle(fontSize: 13))),
-                    SynButton(label: 'Voir et signaler', icon: Icons.compare_arrows_rounded,
-                      onTap: () => _showEcartASignalerDialog(context, ctrl, f)),
-                  ]),
-                )),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 160),
+                  child: ListView(shrinkWrap: true, children: ctrl.facturesEcartASignaler.map((f) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(children: [
+                      Expanded(child: Text('#${f.id} — ${f.supplierName}', style: const TextStyle(fontSize: 13))),
+                      SynButton(label: 'Voir et signaler', icon: Icons.compare_arrows_rounded,
+                        onTap: () => _showEcartASignalerDialog(context, ctrl, f)),
+                    ]),
+                  )).toList()),
+                ),
               ]),
             );
           }),
@@ -92,15 +95,18 @@ class FacturesScreen extends StatelessWidget {
                     style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
-                ...ctrl.facturesOcrAVerifier.map((f) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(children: [
-                    Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
-                      style: const TextStyle(fontSize: 13))),
-                    SynButton(label: 'Vérifier', icon: Icons.visibility_rounded,
-                      onTap: () => _showVerifierOcrDialog(context, ctrl, f)),
-                  ]),
-                )),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 160),
+                  child: ListView(shrinkWrap: true, children: ctrl.facturesOcrAVerifier.map((f) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(children: [
+                      Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
+                        style: const TextStyle(fontSize: 13))),
+                      SynButton(label: 'Vérifier', icon: Icons.visibility_rounded,
+                        onTap: () => _showVerifierOcrDialog(context, ctrl, f)),
+                    ]),
+                  )).toList()),
+                ),
               ]),
             );
           }),
@@ -122,16 +128,19 @@ class FacturesScreen extends StatelessWidget {
                     style: const TextStyle(color: AppColors.darkTextMuted, fontWeight: FontWeight.bold, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
-                ...ctrl.facturesEnAttenteModification.map((f) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(children: [
-                    Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
-                      style: const TextStyle(fontSize: 13, color: AppColors.darkTextMuted))),
-                    const Icon(Icons.lock_outline_rounded, size: 16, color: AppColors.darkTextMuted),
-                    const SizedBox(width: 6),
-                    const Text('En attente admin', style: TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
-                  ]),
-                )),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 160),
+                  child: ListView(shrinkWrap: true, children: ctrl.facturesEnAttenteModification.map((f) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(children: [
+                      Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
+                        style: const TextStyle(fontSize: 13, color: AppColors.darkTextMuted))),
+                      const Icon(Icons.lock_outline_rounded, size: 16, color: AppColors.darkTextMuted),
+                      const SizedBox(width: 6),
+                      const Text('En attente admin', style: TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+                    ]),
+                  )).toList()),
+                ),
               ]),
             );
           }),
@@ -153,15 +162,18 @@ class FacturesScreen extends StatelessWidget {
                     style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
-                ...ctrl.facturesACorriger.map((f) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Row(children: [
-                    Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
-                      style: const TextStyle(fontSize: 13))),
-                    SynButton(label: 'Corriger maintenant', icon: Icons.build_rounded,
-                      onTap: () => _showCompleterModificationDialog(context, ctrl, f)),
-                  ]),
-                )),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 160),
+                  child: ListView(shrinkWrap: true, children: ctrl.facturesACorriger.map((f) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(children: [
+                      Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
+                        style: const TextStyle(fontSize: 13))),
+                      SynButton(label: 'Corriger maintenant', icon: Icons.build_rounded,
+                        onTap: () => _showCompleterModificationDialog(context, ctrl, f)),
+                    ]),
+                  )).toList()),
+                ),
               ]),
             );
           }),
@@ -472,7 +484,19 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             ...bonsDisponibles.map((bc) => DropdownMenuItem<int?>(
               value: bc.id, child: Text('${bc.numeroBc} — ${bc.fournisseurNom ?? ""}'))),
           ],
-          onChanged: (v) => setState(() => bonCommandeId = v),
+          onChanged: (v) async {
+            final ancien = bonCommandeId;
+            if (v != null) {
+              final ok = await Get.find<BonCommandeController>().reserver(v);
+              if (!ok) {
+                Get.snackbar('Indisponible', 'Ce bon de commande vient d\'être pris par un autre utilisateur',
+                  backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+                return;
+              }
+            }
+            if (ancien != null) Get.find<BonCommandeController>().liberer(ancien);
+            setState(() => bonCommandeId = v);
+          },
         );
       }),
       const SizedBox(height: 10),
@@ -530,7 +554,10 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
         )),
     ]))),
     actions: [
-      TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+      TextButton(onPressed: () {
+        if (bonCommandeId != null) Get.find<BonCommandeController>().liberer(bonCommandeId!);
+        Get.back();
+      }, child: const Text('Annuler')),
       TextButton(
         onPressed: () async {
           if (compteRenduDemandeCtrl.text.trim().isEmpty) {
@@ -1185,7 +1212,13 @@ void _choisirBonCommandePourOcr(BuildContext context, InvoiceController ctrl, St
         }),
       ...bcCtrl.bonsCommandeOuverts.map((bc) => _ChoixCard(
         icon: Icons.description_outlined, title: bc.numeroBc, subtitle: bc.fournisseurNom ?? '',
-        onTap: () {
+        onTap: () async {
+          final ok = await bcCtrl.reserver(bc.id);
+          if (!ok) {
+            Get.snackbar('Indisponible', 'Ce bon de commande vient d\'être pris par un autre utilisateur',
+              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            return;
+          }
           Get.back();
           Get.dialog(_AttenteAppairageDialog(typeStock: typeStock, bonCommandeId: bc.id), barrierDismissible: false);
         },
@@ -1384,7 +1417,10 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
                 child: const Text('Vérifier la facture'),
               ),
             ]
-          : [TextButton(onPressed: () => Get.back(), child: const Text('Annuler'))],
+          : [TextButton(onPressed: () {
+              if (widget.bonCommandeId != null) Get.find<BonCommandeController>().liberer(widget.bonCommandeId!);
+              Get.back();
+            }, child: const Text('Annuler'))],
     );
   }
 }

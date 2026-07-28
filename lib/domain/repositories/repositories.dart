@@ -69,6 +69,8 @@ abstract class BonCommandeRepository {
   Future<Either<String, BonCommande>> getBonCommandeDetail(int id);
   Future<Either<String, BonCommande>> creerBonCommande({
       required String typeStock, String? fournisseurNom, required List<Map<String, dynamic>> lignes});
+  Future<Either<String, void>> reserverBonCommande(int id);
+  Future<Either<String, void>> libererBonCommande(int id);
 }
 
 abstract class ManufacturingRepository {

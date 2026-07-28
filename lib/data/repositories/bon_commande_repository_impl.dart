@@ -54,6 +54,28 @@ class BonCommandeRepositoryImpl implements BonCommandeRepository {
   }
 
   @override
+  Future<Either<String, void>> reserverBonCommande(int id) async {
+    try {
+      final url = AppConfig.bonCommandeReserver.replaceAll('{id}', '$id');
+      await _dio.put(url);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, void>> libererBonCommande(int id) async {
+    try {
+      final url = AppConfig.bonCommandeLiberer.replaceAll('{id}', '$id');
+      await _dio.put(url);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
   Future<Either<String, BonCommande>> creerBonCommande({
       required String typeStock, String? fournisseurNom, required List<Map<String, dynamic>> lignes}) async {
     try {

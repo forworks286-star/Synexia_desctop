@@ -521,4 +521,13 @@ class BonCommandeController extends GetxController {
   }
 
   Future<Either<String, BonCommande>> getDetail(int id) => _repo.getBonCommandeDetail(id);
+
+  Future<bool> reserver(int id) async {
+    final r = await _repo.reserverBonCommande(id);
+    return r.isRight();
+  }
+
+  Future<void> liberer(int id) async {
+    await _repo.libererBonCommande(id);
+  }
 }

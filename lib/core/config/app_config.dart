@@ -78,6 +78,8 @@ class AppConfig {
   static String get factureConfirmerOcr => '$apiBase/factures/{id}/confirmer-ocr';
   static String get bonsCommande => '$apiBase/bons-commande';
   static String get bonCommandeDetail => '$apiBase/bons-commande/{id}';
+  static String get bonCommandeReserver => '$apiBase/bons-commande/{id}/reserver';
+  static String get bonCommandeLiberer => '$apiBase/bons-commande/{id}/liberer';
   static String get factureEnvoyerEcart => '$apiBase/factures/{id}/envoyer-ecart';
   static String get factureApprouverEcart => '$apiBase/factures/{id}/approuver-ecart';
   static String get factureRejeterEcart => '$apiBase/factures/{id}/rejeter-ecart';
