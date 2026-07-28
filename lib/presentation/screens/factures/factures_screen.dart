@@ -476,14 +476,19 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
       const SizedBox(height: 10),
       Obx(() {
         final bonsDisponibles = Get.find<BonCommandeController>().bonsCommandeOuverts;
+        final items = <DropdownMenuItem<int?>>[
+          const DropdownMenuItem<int?>(value: null, child: Text('Aucun')),
+          ...bonsDisponibles.map((bc) => DropdownMenuItem<int?>(
+            value: bc.id, child: Text('${bc.numeroBc} — ${bc.fournisseurNom ?? ""}'))),
+        ];
+        if (bonCommandeId != null && !items.any((i) => i.value == bonCommandeId)) {
+          items.add(DropdownMenuItem<int?>(
+            value: bonCommandeId, child: Text('Bon de commande #$bonCommandeId (réservé par vous)')));
+        }
         return DropdownButtonFormField<int?>(
           value: bonCommandeId,
           decoration: const InputDecoration(labelText: 'Bon de commande (optionnel)'),
-          items: [
-            const DropdownMenuItem<int?>(value: null, child: Text('Aucun')),
-            ...bonsDisponibles.map((bc) => DropdownMenuItem<int?>(
-              value: bc.id, child: Text('${bc.numeroBc} — ${bc.fournisseurNom ?? ""}'))),
-          ],
+          items: items,
           onChanged: (v) async {
             final ancien = bonCommandeId;
             if (v != null) {
