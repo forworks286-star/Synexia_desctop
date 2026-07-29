@@ -128,7 +128,7 @@ class _BomTab extends StatelessWidget {
           TextButton(onPressed: () {
             if (produitFiniId == null || composants.isEmpty) return;
             ctrl.creerBom(produitFiniId: produitFiniId!, lignes: composants);
-            safeBack();
+            await safeBack();
           }, child: const Text('Créer')),
         ],
       );
@@ -215,7 +215,7 @@ class _BomTab extends StatelessWidget {
               dateExpiration: dateExpiration != null ? fmt(dateExpiration!) : null,
               numeroLot: numeroLotCtrl.text.isEmpty ? null : numeroLotCtrl.text,
             );
-            safeBack();
+            await safeBack();
             r.fold(
               (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger, colorText: Colors.white),
               (res) => Get.snackbar('Production enregistrée',

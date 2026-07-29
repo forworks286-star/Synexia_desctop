@@ -149,7 +149,7 @@ class BonsCommandeScreen extends StatelessWidget {
             fournisseurNom: fournisseurCtrl.text.isEmpty ? null : fournisseurCtrl.text,
             lignes: lignes,
           );
-          safeBack();
+          await safeBack();
           r.fold(
             (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger, colorText: Colors.white),
             (bc) => Get.snackbar('Créé', 'Bon de commande ${bc.numeroBc} créé',

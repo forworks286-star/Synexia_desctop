@@ -271,7 +271,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
           onPressed: () async {
             if (motifCtrl.text.trim().isEmpty) return;
             final r = await _repo.rejectInvoice(invoice.id, motifCtrl.text.trim());
-            safeBack();
+            await safeBack();
             r.fold(
               (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger),
               (_) => _load(),
@@ -367,7 +367,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
                         dateFabrication: dateFabCtrl.text.trim().isEmpty ? null : dateFabCtrl.text.trim(),
                         dateExpiration: dateExpCtrl.text.trim().isEmpty ? null : dateExpCtrl.text.trim()));
             if (r == null) return;
-            safeBack();
+            await safeBack();
             r.fold((e) {}, (_) => _load());
           },
           child: const Text('Ajouter'),
