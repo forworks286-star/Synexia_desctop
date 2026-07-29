@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/utils/get_safe_back.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw; 
 import 'package:printing/printing.dart';

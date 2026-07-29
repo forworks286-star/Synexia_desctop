@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:dartz/dartz.dart' hide State;
 import '../../../data/repositories/stock_repository_impl.dart';
 import 'package:get/get.dart';
+import '../../../core/utils/get_safe_back.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/models/models.dart';

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../core/utils/get_safe_back.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/models/models.dart';
