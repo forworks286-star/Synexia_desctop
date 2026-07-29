@@ -560,7 +560,7 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
         )),
     ]))),
     actions: [
-      TextButton(onPressed: () {
+      TextButton(onPressed: () async {
         if (bonCommandeId != null) Get.find<BonCommandeController>().liberer(bonCommandeId!);
         await safeBack();
       }, child: const Text('Annuler')),
@@ -1212,7 +1212,7 @@ void _choisirBonCommandePourOcr(BuildContext context, InvoiceController ctrl, St
     title: const Text('Bon de commande (optionnel)'),
     content: SizedBox(width: 380, child: Column(mainAxisSize: MainAxisSize.min, children: [
       _ChoixCard(icon: Icons.close_rounded, title: 'Aucun', subtitle: '',
-        onTap: () {
+        onTap: () async {
           await safeBack();
           Get.dialog(_AttenteAppairageDialog(typeStock: typeStock), barrierDismissible: false);
         }),
