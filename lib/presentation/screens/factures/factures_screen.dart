@@ -430,6 +430,8 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
   String typeStock = typeStockInitial ?? 'marchandise';
   final lignes = <Map<String, dynamic>>[_ligneVide()];
   int? bonCommandeId;
+  bool isSubmitting = false;
+  String? errorMessage;
   Get.find<BonCommandeController>().loadBonsOuverts(typeStock: typeStock);
 
   Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
@@ -448,6 +450,17 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             style: TextStyle(fontSize: 11, color: AppColors.warning))),
         ]),
       ),
+      if (errorMessage != null)
+        Container(
+          padding: const EdgeInsets.all(10),
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+          child: Row(children: [
+            const Icon(Icons.error_outline_rounded, size: 16, color: AppColors.danger),
+            const SizedBox(width: 8),
+            Expanded(child: Text(errorMessage!, style: const TextStyle(fontSize: 12, color: AppColors.danger))),
+          ]),
+        ),
       Row(children: [
         Expanded(child: DropdownButtonFormField<String>(
           value: typeFacture,
@@ -495,13 +508,12 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             if (v != null) {
               final ok = await Get.find<BonCommandeController>().reserver(v);
               if (!ok) {
-                Get.snackbar('Indisponible', 'Ce bon de commande vient d\'être pris par un autre utilisateur',
-                  backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+                setState(() => errorMessage = 'Ce bon de commande vient d\'être pris par un autre utilisateur');
                 return;
               }
             }
             if (ancien != null) Get.find<BonCommandeController>().liberer(ancien);
-            setState(() => bonCommandeId = v);
+            setState(() { bonCommandeId = v; errorMessage = null; });
           },
         );
       }),
@@ -565,27 +577,24 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
         await safeBack();
       }, child: const Text('Annuler')),
       TextButton(
-        onPressed: () async {
+        onPressed: isSubmitting ? null : () async {
           if (compteRenduDemandeCtrl.text.trim().isEmpty) {
-            Get.snackbar('Compte-rendu requis', 'Expliquez le problème avant d\'envoyer une demande de modification',
-              backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+            setState(() => errorMessage = 'Expliquez le problème avant d\'envoyer une demande de modification');
             return;
           }
           if (motifCtrl.text.trim().isEmpty) {
-            Get.snackbar('Motif requis', 'Le champ "Motif (obligatoire)" doit être rempli',
-              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            setState(() => errorMessage = 'Le champ "Motif (obligatoire)" doit être rempli');
             return;
           }
           if (fournisseurCtrl.text.trim().isEmpty) {
-            Get.snackbar('Fournisseur requis', 'Le champ "Fournisseur / Client" doit être rempli',
-              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            setState(() => errorMessage = 'Le champ "Fournisseur / Client" doit être rempli');
             return;
           }
           if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
-            Get.snackbar('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0',
-              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            setState(() => errorMessage = 'Chaque article doit avoir une quantité supérieure à 0');
             return;
           }
+          setState(() { isSubmitting = true; errorMessage = null; });
           final lignesPourEnvoi = lignes.map((l) => {
             'produit_id': l['produit_id'],
             'designation': l['designation'],
@@ -619,31 +628,31 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             compteRenduDemande: compteRenduDemandeCtrl.text.trim(),
             bonCommandeId: bonCommandeId,
           );
-          await safeBack();
           if (ok) {
+            await safeBack();
             Get.snackbar('Facture envoyée', 'En confirmation de changement — un administrateur doit valider votre demande',
               backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+          } else {
+            setState(() { isSubmitting = false; errorMessage = 'Échec de l\'envoi. Réessayez.'; });
           }
         },
         child: const Text('Envoyer + demande de modification'),
       ),
       ElevatedButton(
-        onPressed: () async {
+        onPressed: isSubmitting ? null : () async {
           if (motifCtrl.text.trim().isEmpty) {
-            Get.snackbar('Motif requis', 'Le champ "Motif (obligatoire)" doit être rempli',
-              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            setState(() => errorMessage = 'Le champ "Motif (obligatoire)" doit être rempli');
             return;
           }
           if (fournisseurCtrl.text.trim().isEmpty) {
-            Get.snackbar('Fournisseur requis', 'Le champ "Fournisseur / Client" doit être rempli',
-              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            setState(() => errorMessage = 'Le champ "Fournisseur / Client" doit être rempli');
             return;
           }
           if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
-            Get.snackbar('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0',
-              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            setState(() => errorMessage = 'Chaque article doit avoir une quantité supérieure à 0');
             return;
           }
+          setState(() { isSubmitting = true; errorMessage = null; });
           final lignesPourEnvoi = lignes.map((l) => {
             'produit_id': l['produit_id'],
             'designation': l['designation'],
@@ -676,10 +685,12 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             lignes: lignesPourEnvoi,
             bonCommandeId: bonCommandeId,
           );
-          await safeBack();
           if (ok) {
+            await safeBack();
             Get.snackbar('Facture créée', 'En attente de vérification par un administrateur',
               backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+          } else {
+            setState(() { isSubmitting = false; errorMessage = 'Échec de l\'envoi. Réessayez.'; });
           }
         },
         child: const Text('Envoyer'),
