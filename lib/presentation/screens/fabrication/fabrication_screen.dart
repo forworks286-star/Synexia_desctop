@@ -124,11 +124,11 @@ class _BomTab extends StatelessWidget {
           )),
         ])),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+          TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
           TextButton(onPressed: () {
             if (produitFiniId == null || composants.isEmpty) return;
             ctrl.creerBom(produitFiniId: produitFiniId!, lignes: composants);
-            Get.back();
+            safeBack();
           }, child: const Text('Créer')),
         ],
       );
@@ -203,7 +203,7 @@ class _BomTab extends StatelessWidget {
           ),
         ])),
         actions: [
-          TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+          TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
           TextButton(onPressed: () async {
             final qte = double.tryParse(qteCtrl.text) ?? 0;
             if (qte <= 0) return;
@@ -215,7 +215,7 @@ class _BomTab extends StatelessWidget {
               dateExpiration: dateExpiration != null ? fmt(dateExpiration!) : null,
               numeroLot: numeroLotCtrl.text.isEmpty ? null : numeroLotCtrl.text,
             );
-            Get.back();
+            safeBack();
             r.fold(
               (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger, colorText: Colors.white),
               (res) => Get.snackbar('Production enregistrée',

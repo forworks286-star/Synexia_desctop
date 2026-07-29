@@ -68,7 +68,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
       child: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => Get.back()),
+            IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => safeBack()),
             Expanded(child: PageHeader(title: 'Facture ${invoice.numeroFacture ?? '#${invoice.id}'}')),
             InvoiceChip(status: invoice.status, label: _statusLabel(invoice.status)),
           ]),
@@ -266,12 +266,12 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
         decoration: const InputDecoration(hintText: 'Expliquez pourquoi cette facture est rejetée...'),
       ),
       actions: [
-        TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+        TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
         ElevatedButton(
           onPressed: () async {
             if (motifCtrl.text.trim().isEmpty) return;
             final r = await _repo.rejectInvoice(invoice.id, motifCtrl.text.trim());
-            Get.back();
+            safeBack();
             r.fold(
               (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger),
               (_) => _load(),
@@ -347,7 +347,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
         ]),
       ])),
       actions: [
-        TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+        TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
         ElevatedButton(
           onPressed: () async {
             final qty = double.tryParse(qtyCtrl.text) ?? 0;
@@ -367,7 +367,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
                         dateFabrication: dateFabCtrl.text.trim().isEmpty ? null : dateFabCtrl.text.trim(),
                         dateExpiration: dateExpCtrl.text.trim().isEmpty ? null : dateExpCtrl.text.trim()));
             if (r == null) return;
-            Get.back();
+            safeBack();
             r.fold((e) {}, (_) => _load());
           },
           child: const Text('Ajouter'),

@@ -112,7 +112,7 @@ void _showEcartAValiderDialog(BuildContext context, InvoiceController ctrl, Invo
       TextButton(
         onPressed: () async {
           final ok = await ctrl.rejeterEcart(facture.id);
-          Get.back();
+          safeBack();
           if (ok) {
             Get.snackbar('Rejetée', 'La facture a été annulée',
               backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
@@ -123,7 +123,7 @@ void _showEcartAValiderDialog(BuildContext context, InvoiceController ctrl, Invo
       ElevatedButton(
         onPressed: () async {
           final ok = await ctrl.approuverEcart(facture.id);
-          Get.back();
+          safeBack();
           if (ok) {
             Get.snackbar('Approuvé', 'La facture reprend son cours normal',
               backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
@@ -205,12 +205,12 @@ class _DemandeCard extends StatelessWidget {
       content: TextField(controller: motifCtrl, maxLines: 3,
         decoration: const InputDecoration(hintText: 'Pourquoi refuser cette demande ?')),
       actions: [
-        TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+        TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
         TextButton(
           onPressed: () {
             if (motifCtrl.text.trim().isEmpty) return;
             ctrl.refuserDemande(id, motifCtrl.text.trim());
-            Get.back();
+            safeBack();
           },
           child: const Text('Confirmer le refus'),
         ),

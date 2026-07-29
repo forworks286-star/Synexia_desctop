@@ -277,7 +277,7 @@ void _showDetail(Product product) {
                 icon: Icons.show_chart_rounded,
                 outline: true,
                 onTap: () {
-                  Get.back();
+                  safeBack();
                   Get.to(() => HistoriqueProduitScreen(initialProduct: product));
                 },
               ),
@@ -350,11 +350,11 @@ void _showChoixAjout(StockController stock) {
     content: const Text('Choisissez le mode d\'ajout :', style: TextStyle(fontSize: 13)),
     actions: [
       TextButton(
-        onPressed: () { Get.back(); _showAddProduitSimple(stock); },
+        onPressed: () { safeBack(); _showAddProduitSimple(stock); },
         child: const Text('Fiche produit seulement\n(sans stock)', textAlign: TextAlign.center),
       ),
       ElevatedButton(
-        onPressed: () { Get.back(); _showAddProduitComplet(stock); },
+        onPressed: () { safeBack(); _showAddProduitComplet(stock); },
         child: const Text('Avec stock initial\n(facture automatique)', textAlign: TextAlign.center),
       ),
     ],
@@ -431,7 +431,7 @@ void _showAddProduitSimple(StockController stock) {
                   'prix_vente': double.tryParse(prixVenteCtrl.text) ?? 0,
                   'unite_mesure': 'piece', 'devise': 'DZD', 'taux_tva': 19.0,
                 });
-                Get.back();
+                safeBack();
                 await stock.loadProducts();
                 Get.snackbar('Succès', 'Fiche produit créée (stock à 0, en attente de facture)',
                   backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
@@ -563,7 +563,7 @@ void _showAddProduitComplet(StockController stock) {
               r.fold(
                 (e) => setState(() => errorMsg = e),
                 (_) async {
-                  Get.back();
+                  safeBack();
                   await stock.loadProducts();
                   Get.snackbar('Succès', 'Produit + facture d\'ajustement créés',
                     backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
@@ -596,7 +596,7 @@ void _showLotQr(int lotId, String numeroLot) async {
               const Text('Imprimez cette fenêtre (Ctrl+P) et collez le QR sur les cartons du lot.',
                 style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted), textAlign: TextAlign.center),
             ])),
-            actions: [TextButton(onPressed: () => Get.back(), child: const Text('Fermer'))],
+            actions: [TextButton(onPressed: () => safeBack(), child: const Text('Fermer'))],
           ),
         );
       },

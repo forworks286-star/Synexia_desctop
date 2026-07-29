@@ -87,7 +87,7 @@ class BonsCommandeScreen extends StatelessWidget {
       )),
     ]))),
     actions: [
-      TextButton(onPressed: () => Get.back(), child: const Text('Fermer')),
+      TextButton(onPressed: () => safeBack(), child: const Text('Fermer')),
       ElevatedButton.icon(
         icon: const Icon(Icons.picture_as_pdf_rounded), label: const Text('PDF'),
         onPressed: () => _exporterPdf(bc),
@@ -142,14 +142,14 @@ class BonsCommandeScreen extends StatelessWidget {
         )),
       ]))),
       actions: [
-        TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+        TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
         ElevatedButton(onPressed: () async {
           final r = await ctrl.creerBonCommande(
             typeStock: typeStock,
             fournisseurNom: fournisseurCtrl.text.isEmpty ? null : fournisseurCtrl.text,
             lignes: lignes,
           );
-          Get.back();
+          safeBack();
           r.fold(
             (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger, colorText: Colors.white),
             (bc) => Get.snackbar('Créé', 'Bon de commande ${bc.numeroBc} créé',

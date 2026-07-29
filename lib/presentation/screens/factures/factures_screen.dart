@@ -326,12 +326,12 @@ void _showRejectDialogInline(BuildContext context, InvoiceController ctrl, Invoi
       decoration: const InputDecoration(hintText: 'Expliquez pourquoi cette facture est rejetée...'),
     ),
     actions: [
-      TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+      TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
       ElevatedButton(
         onPressed: () async {
           if (motifCtrl.text.trim().isEmpty) return;
           final ok = await ctrl.rejectInvoice(invoice.id, motifCtrl.text.trim());
-          Get.back();
+          safeBack();
           if (ok) {
             Get.snackbar('Succès', 'Facture rejetée',
               backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
@@ -562,7 +562,7 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
     actions: [
       TextButton(onPressed: () {
         if (bonCommandeId != null) Get.find<BonCommandeController>().liberer(bonCommandeId!);
-        Get.back();
+        safeBack();
       }, child: const Text('Annuler')),
       TextButton(
         onPressed: () async {
@@ -619,7 +619,7 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             compteRenduDemande: compteRenduDemandeCtrl.text.trim(),
             bonCommandeId: bonCommandeId,
           );
-          Get.back();
+          safeBack();
           if (ok) {
             Get.snackbar('Facture envoyée', 'En confirmation de changement — un administrateur doit valider votre demande',
               backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
@@ -676,7 +676,7 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             lignes: lignesPourEnvoi,
             bonCommandeId: bonCommandeId,
           );
-          Get.back();
+          safeBack();
           if (ok) {
             Get.snackbar('Facture créée', 'En attente de vérification par un administrateur',
               backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
@@ -931,7 +931,7 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
       )),
     ]))),
     actions: [
-      TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+      TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
       ElevatedButton(
         onPressed: () async {
           if (fournisseurCtrl.text.trim().isEmpty) return;
@@ -961,7 +961,7 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
             montantTtc: double.tryParse(ttcCtrl.text) ?? 0,
             lignes: lignesPourEnvoi,
           );
-          Get.back();
+          safeBack();
           if (ok) {
             Get.snackbar('Facture corrigée', 'La facture est de nouveau en attente de vérification',
               backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
@@ -1033,7 +1033,7 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
             'emplacement': emplacementCtrls[l.id]?.text.trim().isEmpty == true ? null : emplacementCtrls[l.id]?.text.trim(),
           }).toList();
           await ctrl.enregistrerEmplacementsOcr(facture.id, payload);
-          Get.back();
+          safeBack();
           _showSignalerErreurDialog(context, ctrl, facture);
         },
         child: const Text('Signaler une erreur', style: TextStyle(color: AppColors.danger)),
@@ -1059,7 +1059,7 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
             'emplacement': emplacementCtrls[l.id]?.text.trim().isEmpty == true ? null : emplacementCtrls[l.id]?.text.trim(),
           }).toList();
           final ok = await ctrl.confirmerOcr(facture.id, payload);
-          Get.back();
+          safeBack();
           if (ok) {
             Get.snackbar('Facture confirmée', 'Elle est maintenant en attente de validation par l\'administrateur',
               backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
@@ -1107,12 +1107,12 @@ void _showEcartASignalerDialog(BuildContext context, InvoiceController ctrl, Inv
         decoration: const InputDecoration(labelText: 'Votre commentaire pour l\'administrateur')),
     ]))),
     actions: [
-      TextButton(onPressed: () => Get.back(), child: const Text('Fermer')),
+      TextButton(onPressed: () => safeBack(), child: const Text('Fermer')),
       ElevatedButton(
         onPressed: () async {
           if (compteRenduCtrl.text.trim().isEmpty) return;
           final ok = await ctrl.envoyerEcart(facture.id, compteRenduCtrl.text.trim());
-          Get.back();
+          safeBack();
           if (ok) {
             Get.snackbar('Envoyé', 'En attente de décision de l\'administrateur',
               backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
@@ -1134,12 +1134,12 @@ void _showSignalerErreurDialog(BuildContext context, InvoiceController ctrl, Inv
       decoration: const InputDecoration(labelText: 'Décrivez l\'erreur constatée'),
     )),
     actions: [
-      TextButton(onPressed: () => Get.back(), child: const Text('Annuler')),
+      TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
       ElevatedButton(
         onPressed: () async {
           if (compteRenduCtrl.text.trim().isEmpty) return;
           final ok = await ctrl.signalerErreurOcr(facture.id, compteRenduCtrl.text.trim());
-          Get.back();
+          safeBack();
           if (ok) {
             Get.snackbar('Demande envoyée', 'En attente d\'approbation par l\'administrateur',
               backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
@@ -1167,13 +1167,13 @@ void ouvrirNouvelleFacture(BuildContext context, InvoiceController ctrl) {
       _ChoixCard(
         icon: Icons.qr_code_scanner_rounded, title: 'Depuis un téléphone (OCR)',
         subtitle: 'Nécessite l\'application mobile',
-        onTap: () { Get.back(); _choisirType(context, ctrl, viaOcr: true); },
+        onTap: () { safeBack(); _choisirType(context, ctrl, viaOcr: true); },
       ),
       const SizedBox(height: 10),
       _ChoixCard(
         icon: Icons.edit_note_rounded, title: 'Saisie manuelle',
         subtitle: 'Remplir la facture directement ici',
-        onTap: () { Get.back(); _choisirType(context, ctrl, viaOcr: false); },
+        onTap: () { safeBack(); _choisirType(context, ctrl, viaOcr: false); },
       ),
     ])),
   ));
@@ -1191,7 +1191,7 @@ void _choisirType(BuildContext context, InvoiceController ctrl, {required bool v
       children: types.entries.map((e) => _ChoixCard(
         icon: Icons.category_outlined, title: e.value, subtitle: '',
         onTap: () {
-          Get.back();
+          safeBack();
           if (viaOcr) {
             _choisirBonCommandePourOcr(context, ctrl, e.key);
           } else {
@@ -1213,7 +1213,7 @@ void _choisirBonCommandePourOcr(BuildContext context, InvoiceController ctrl, St
     content: SizedBox(width: 380, child: Column(mainAxisSize: MainAxisSize.min, children: [
       _ChoixCard(icon: Icons.close_rounded, title: 'Aucun', subtitle: '',
         onTap: () {
-          Get.back();
+          safeBack();
           Get.dialog(_AttenteAppairageDialog(typeStock: typeStock), barrierDismissible: false);
         }),
       ...bcCtrl.bonsCommandeOuverts.map((bc) => _ChoixCard(
@@ -1225,7 +1225,7 @@ void _choisirBonCommandePourOcr(BuildContext context, InvoiceController ctrl, St
               backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
             return;
           }
-          Get.back();
+          safeBack();
           Get.dialog(_AttenteAppairageDialog(typeStock: typeStock, bonCommandeId: bc.id), barrierDismissible: false);
         },
       )),
@@ -1413,10 +1413,10 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
       ])),
       actions: _statut == 'complete'
           ? [
-              TextButton(onPressed: () => Get.back(), child: const Text('Plus tard')),
+              TextButton(onPressed: () => safeBack(), child: const Text('Plus tard')),
               ElevatedButton(
                 onPressed: () async {
-                  Get.back();
+                  safeBack();
                   final result = await InvoiceRepositoryImpl().getInvoice(_factureRecueId!);
                   result.fold((_) {}, (invoice) => _showVerifierOcrDialog(context, Get.find<InvoiceController>(), invoice));
                 },
@@ -1425,7 +1425,7 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
             ]
           : [TextButton(onPressed: () {
               if (widget.bonCommandeId != null) Get.find<BonCommandeController>().liberer(widget.bonCommandeId!);
-              Get.back();
+              safeBack();
             }, child: const Text('Annuler'))],
     );
   }
