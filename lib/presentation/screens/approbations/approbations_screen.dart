@@ -207,7 +207,7 @@ class _DemandeCard extends StatelessWidget {
       actions: [
         TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
         TextButton(
-          onPressed: () {
+          onPressed: () async {
             if (motifCtrl.text.trim().isEmpty) return;
             ctrl.refuserDemande(id, motifCtrl.text.trim());
             await safeBack();

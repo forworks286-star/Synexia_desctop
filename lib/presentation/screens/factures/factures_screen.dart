@@ -1167,13 +1167,13 @@ void ouvrirNouvelleFacture(BuildContext context, InvoiceController ctrl) {
       _ChoixCard(
         icon: Icons.qr_code_scanner_rounded, title: 'Depuis un téléphone (OCR)',
         subtitle: 'Nécessite l\'application mobile',
-        onTap: () { await safeBack(); _choisirType(context, ctrl, viaOcr: true); },
+        onTap: () async { await safeBack(); _choisirType(context, ctrl, viaOcr: true); },
       ),
       const SizedBox(height: 10),
       _ChoixCard(
         icon: Icons.edit_note_rounded, title: 'Saisie manuelle',
         subtitle: 'Remplir la facture directement ici',
-        onTap: () { await safeBack(); _choisirType(context, ctrl, viaOcr: false); },
+        onTap: () async { await safeBack(); _choisirType(context, ctrl, viaOcr: false); },
       ),
     ])),
   ));
@@ -1190,7 +1190,7 @@ void _choisirType(BuildContext context, InvoiceController ctrl, {required bool v
     content: SizedBox(width: 380, child: Column(mainAxisSize: MainAxisSize.min,
       children: types.entries.map((e) => _ChoixCard(
         icon: Icons.category_outlined, title: e.value, subtitle: '',
-        onTap: () {
+        onTap: () async {
           await safeBack();
           if (viaOcr) {
             _choisirBonCommandePourOcr(context, ctrl, e.key);
@@ -1423,7 +1423,7 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
                 child: const Text('Vérifier la facture'),
               ),
             ]
-          : [TextButton(onPressed: () {
+          : [TextButton(onPressed: () async {
               if (widget.bonCommandeId != null) Get.find<BonCommandeController>().liberer(widget.bonCommandeId!);
               await safeBack();
             }, child: const Text('Annuler'))],

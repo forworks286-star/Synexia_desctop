@@ -276,8 +276,8 @@ void _showDetail(Product product) {
                 label: 'Voir historique des prix',
                 icon: Icons.show_chart_rounded,
                 outline: true,
-                onTap: () {
-                 await safeBack();
+                onTap: () async {
+                  await safeBack();
                   Get.to(() => HistoriqueProduitScreen(initialProduct: product));
                 },
               ),
@@ -350,11 +350,11 @@ void _showChoixAjout(StockController stock) {
     content: const Text('Choisissez le mode d\'ajout :', style: TextStyle(fontSize: 13)),
     actions: [
       TextButton(
-        onPressed: () { await safeBack(); _showAddProduitSimple(stock); },
+        onPressed: () async { await safeBack(); _showAddProduitSimple(stock); },
         child: const Text('Fiche produit seulement\n(sans stock)', textAlign: TextAlign.center),
       ),
       ElevatedButton(
-        onPressed: () { await safeBack(); _showAddProduitComplet(stock); },
+        onPressed: () async { await safeBack(); _showAddProduitComplet(stock); },
         child: const Text('Avec stock initial\n(facture automatique)', textAlign: TextAlign.center),
       ),
     ],

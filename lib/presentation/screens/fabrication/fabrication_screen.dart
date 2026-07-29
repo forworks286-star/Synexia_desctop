@@ -125,7 +125,7 @@ class _BomTab extends StatelessWidget {
         ])),
         actions: [
           TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
-          TextButton(onPressed: () {
+          TextButton(onPressed: () async {
             if (produitFiniId == null || composants.isEmpty) return;
             ctrl.creerBom(produitFiniId: produitFiniId!, lignes: composants);
             await safeBack();
