@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'core/theme/app_theme.dart';
 import 'core/l10n/app_localizations.dart';
 import 'core/config/app_config.dart';
+import 'core/widgets/app_toast.dart';
 import 'data/repositories/auth_repository_impl.dart';
 import 'data/repositories/stock_repository_impl.dart';
 import 'data/repositories/invoice_repository_impl.dart';
@@ -55,6 +56,7 @@ class SynexiaDesktopApp extends StatelessWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      builder: (context, child) => AppToastHost.wrap(child!),
       initialRoute: '/gate',
       getPages: [
         GetPage(name: '/gate', page: () => const ConnectionGateScreen()),

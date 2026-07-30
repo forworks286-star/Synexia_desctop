@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
+import '../../../core/widgets/app_toast.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../controllers/controllers.dart';
@@ -114,8 +115,7 @@ void _showEcartAValiderDialog(BuildContext context, InvoiceController ctrl, Invo
           final ok = await ctrl.rejeterEcart(facture.id);
           await safeBack();
           if (ok) {
-            Get.snackbar('Rejetée', 'La facture a été annulée',
-              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            AppToast.error('Rejetée', 'La facture a été annulée');
           }
         },
         child: const Text('Rejeter', style: TextStyle(color: AppColors.danger)),
@@ -125,8 +125,7 @@ void _showEcartAValiderDialog(BuildContext context, InvoiceController ctrl, Invo
           final ok = await ctrl.approuverEcart(facture.id);
           await safeBack();
           if (ok) {
-            Get.snackbar('Approuvé', 'La facture reprend son cours normal',
-              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+            AppToast.success('Approuvé', 'La facture reprend son cours normal');
           }
         },
         child: const Text('Approuver'),

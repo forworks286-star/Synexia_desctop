@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart' hide State;
 import '../../../data/repositories/stock_repository_impl.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
+import '../../../core/widgets/app_toast.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/models/models.dart';
@@ -433,8 +434,7 @@ void _showAddProduitSimple(StockController stock) {
                 });
                 await safeBack();
                 await stock.loadProducts();
-                Get.snackbar('Succès', 'Fiche produit créée (stock à 0, en attente de facture)',
-                  backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+                AppToast.success('Succès', 'Fiche produit créée (stock à 0, en attente de facture)');
               } catch (e) {
                 setState(() => errorMsg = 'Erreur — SKU ou QR Code déjà utilisé');
               }
@@ -565,8 +565,7 @@ void _showAddProduitComplet(StockController stock) {
                 (_) async {
                   await safeBack();
                   await stock.loadProducts();
-                  Get.snackbar('Succès', 'Produit + facture d\'ajustement créés',
-                    backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+                  AppToast.success('Succès', 'Produit + facture d\'ajustement créés');
                 },
               );
             },

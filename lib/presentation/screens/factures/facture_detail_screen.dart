@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
+import '../../../core/widgets/app_toast.dart';
 import '../../controllers/controllers.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -238,12 +239,11 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
         onTap: () async {
           final r = await _repo.validateInvoice(invoice.id);
           r.fold(
-            (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger),
+            (e) => AppToast.error('Erreur', e),
             (_) {
               _load();
               if (Get.isRegistered<StockController>()) Get.find<StockController>().loadProducts();
-              Get.snackbar('Succès', 'Facture validée — stock mis à jour',
-                backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+              AppToast.success('Succès', 'Facture validée — stock mis à jour');
             },
           );
         },
@@ -273,7 +273,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
             final r = await _repo.rejectInvoice(invoice.id, motifCtrl.text.trim());
             await safeBack();
             r.fold(
-              (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger),
+              (e) => AppToast.error('Erreur', e),
               (_) => _load(),
             );
           },

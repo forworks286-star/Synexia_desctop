@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
+import '../../../core/widgets/app_toast.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw; 
 import 'package:printing/printing.dart';
@@ -151,9 +152,8 @@ class BonsCommandeScreen extends StatelessWidget {
           );
           await safeBack();
           r.fold(
-            (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger, colorText: Colors.white),
-            (bc) => Get.snackbar('Créé', 'Bon de commande ${bc.numeroBc} créé',
-              backgroundColor: AppColors.success, colorText: Colors.white),
+            (e) => AppToast.error('Erreur', e),
+            (bc) => AppToast.success('Créé', 'Bon de commande ${bc.numeroBc} créé'),
           );
         }, child: const Text('Créer')),
       ],

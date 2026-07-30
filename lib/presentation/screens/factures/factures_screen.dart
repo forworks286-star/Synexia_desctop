@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
+import '../../../core/widgets/app_toast.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../domain/models/models.dart';
@@ -333,8 +334,7 @@ void _showRejectDialogInline(BuildContext context, InvoiceController ctrl, Invoi
           final ok = await ctrl.rejectInvoice(invoice.id, motifCtrl.text.trim());
           await safeBack();
           if (ok) {
-            Get.snackbar('Succès', 'Facture rejetée',
-              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+            AppToast.success('Succès', 'Facture rejetée');
           }
         },
         child: const Text('Confirmer le rejet'),
@@ -431,7 +431,6 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
   final lignes = <Map<String, dynamic>>[_ligneVide()];
   int? bonCommandeId;
   bool isSubmitting = false;
-  String? errorMessage;
   Get.find<BonCommandeController>().loadBonsOuverts(typeStock: typeStock);
 
   Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
@@ -450,17 +449,6 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             style: TextStyle(fontSize: 11, color: AppColors.warning))),
         ]),
       ),
-      if (errorMessage != null)
-        Container(
-          padding: const EdgeInsets.all(10),
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-          child: Row(children: [
-            const Icon(Icons.error_outline_rounded, size: 16, color: AppColors.danger),
-            const SizedBox(width: 8),
-            Expanded(child: Text(errorMessage!, style: const TextStyle(fontSize: 12, color: AppColors.danger))),
-          ]),
-        ),
       Row(children: [
         Expanded(child: DropdownButtonFormField<String>(
           value: typeFacture,
@@ -508,12 +496,12 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             if (v != null) {
               final ok = await Get.find<BonCommandeController>().reserver(v);
               if (!ok) {
-                setState(() => errorMessage = 'Ce bon de commande vient d\'être pris par un autre utilisateur');
+                AppToast.warning('Indisponible', 'Ce bon de commande vient d\'être pris par un autre utilisateur');
                 return;
               }
             }
             if (ancien != null) Get.find<BonCommandeController>().liberer(ancien);
-            setState(() { bonCommandeId = v; errorMessage = null; });
+            setState(() => bonCommandeId = v);
           },
         );
       }),
@@ -579,22 +567,22 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
       TextButton(
         onPressed: isSubmitting ? null : () async {
           if (compteRenduDemandeCtrl.text.trim().isEmpty) {
-            setState(() => errorMessage = 'Expliquez le problème avant d\'envoyer une demande de modification');
+            AppToast.warning('Compte-rendu requis', 'Expliquez le problème avant d\'envoyer une demande de modification');
             return;
           }
           if (motifCtrl.text.trim().isEmpty) {
-            setState(() => errorMessage = 'Le champ "Motif (obligatoire)" doit être rempli');
+            AppToast.warning('Motif requis', 'Le champ "Motif (obligatoire)" doit être rempli');
             return;
           }
           if (fournisseurCtrl.text.trim().isEmpty) {
-            setState(() => errorMessage = 'Le champ "Fournisseur / Client" doit être rempli');
+            AppToast.warning('Fournisseur requis', 'Le champ "Fournisseur / Client" doit être rempli');
             return;
           }
           if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
-            setState(() => errorMessage = 'Chaque article doit avoir une quantité supérieure à 0');
+            AppToast.warning('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0');
             return;
           }
-          setState(() { isSubmitting = true; errorMessage = null; });
+          setState(() => isSubmitting = true);
           final lignesPourEnvoi = lignes.map((l) => {
             'produit_id': l['produit_id'],
             'designation': l['designation'],
@@ -630,10 +618,10 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
           );
           if (ok) {
             await safeBack();
-            Get.snackbar('Facture envoyée', 'En confirmation de changement — un administrateur doit valider votre demande',
-              backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+            AppToast.success('Facture envoyée', 'En confirmation de changement — un administrateur doit valider votre demande');
           } else {
-            setState(() { isSubmitting = false; errorMessage = 'Échec de l\'envoi. Réessayez.'; });
+            setState(() => isSubmitting = false);
+            AppToast.error('Échec de l\'envoi', 'Réessayez.');
           }
         },
         child: const Text('Envoyer + demande de modification'),
@@ -641,18 +629,18 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
       ElevatedButton(
         onPressed: isSubmitting ? null : () async {
           if (motifCtrl.text.trim().isEmpty) {
-            setState(() => errorMessage = 'Le champ "Motif (obligatoire)" doit être rempli');
+            AppToast.warning('Motif requis', 'Le champ "Motif (obligatoire)" doit être rempli');
             return;
           }
           if (fournisseurCtrl.text.trim().isEmpty) {
-            setState(() => errorMessage = 'Le champ "Fournisseur / Client" doit être rempli');
+            AppToast.warning('Fournisseur requis', 'Le champ "Fournisseur / Client" doit être rempli');
             return;
           }
           if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
-            setState(() => errorMessage = 'Chaque article doit avoir une quantité supérieure à 0');
+            AppToast.warning('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0');
             return;
           }
-          setState(() { isSubmitting = true; errorMessage = null; });
+          setState(() => isSubmitting = true);
           final lignesPourEnvoi = lignes.map((l) => {
             'produit_id': l['produit_id'],
             'designation': l['designation'],
@@ -687,10 +675,10 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
           );
           if (ok) {
             await safeBack();
-            Get.snackbar('Facture créée', 'En attente de vérification par un administrateur',
-              backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+            AppToast.success('Facture créée', 'En attente de vérification par un administrateur');
           } else {
-            setState(() { isSubmitting = false; errorMessage = 'Échec de l\'envoi. Réessayez.'; });
+            setState(() => isSubmitting = false);
+            AppToast.error('Échec de l\'envoi', 'Réessayez.');
           }
         },
         child: const Text('Envoyer'),
@@ -899,6 +887,7 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
           'nouveau_emplacement': l.nouveauEmplacement ?? '',
         }).toList()
       : <Map<String, dynamic>>[_ligneVide()];
+  bool isSubmitting = false;
 
   Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
     backgroundColor: AppColors.darkCard,
@@ -944,13 +933,16 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
     actions: [
       TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
       ElevatedButton(
-        onPressed: () async {
-          if (fournisseurCtrl.text.trim().isEmpty) return;
-          if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
-            Get.snackbar('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0',
-              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+        onPressed: isSubmitting ? null : () async {
+          if (fournisseurCtrl.text.trim().isEmpty) {
+            AppToast.warning('Fournisseur requis', 'Le champ "Fournisseur / Client" doit être rempli');
             return;
           }
+          if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
+            AppToast.warning('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0');
+            return;
+          }
+          setState(() => isSubmitting = true);
           final lignesPourEnvoi = lignes.map((l) => {
             'produit_id': l['produit_id'],
             'designation': l['designation'],
@@ -972,10 +964,12 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
             montantTtc: double.tryParse(ttcCtrl.text) ?? 0,
             lignes: lignesPourEnvoi,
           );
-          await safeBack();
           if (ok) {
-            Get.snackbar('Facture corrigée', 'La facture est de nouveau en attente de vérification',
-              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+            await safeBack();
+            AppToast.success('Facture corrigée', 'La facture est de nouveau en attente de vérification');
+          } else {
+            setState(() => isSubmitting = false);
+            AppToast.error('Échec', 'La correction n\'a pas pu être envoyée. Réessayez.');
           }
         },
         child: const Text('Envoyer la correction'),
@@ -1057,8 +1051,7 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
           }).toList();
           final ok = await ctrl.enregistrerEmplacementsOcr(facture.id, payload);
           if (ok) {
-            Get.snackbar('Emplacements enregistrés', 'Vous pouvez maintenant confirmer la facture',
-              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+            AppToast.success('Emplacements enregistrés', 'Vous pouvez maintenant confirmer la facture');
           }
         },
         child: const Text('Enregistrer les emplacements'),
@@ -1072,8 +1065,7 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
           final ok = await ctrl.confirmerOcr(facture.id, payload);
           await safeBack();
           if (ok) {
-            Get.snackbar('Facture confirmée', 'Elle est maintenant en attente de validation par l\'administrateur',
-              backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+            AppToast.success('Facture confirmée', 'Elle est maintenant en attente de validation par l\'administrateur');
           }
         },
         child: const Text('Confirmer'),
@@ -1125,8 +1117,7 @@ void _showEcartASignalerDialog(BuildContext context, InvoiceController ctrl, Inv
           final ok = await ctrl.envoyerEcart(facture.id, compteRenduCtrl.text.trim());
           await safeBack();
           if (ok) {
-            Get.snackbar('Envoyé', 'En attente de décision de l\'administrateur',
-              backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+            AppToast.warning('Envoyé', 'En attente de décision de l\'administrateur');
           }
         },
         child: const Text('Envoyer à l\'administrateur'),
@@ -1152,8 +1143,7 @@ void _showSignalerErreurDialog(BuildContext context, InvoiceController ctrl, Inv
           final ok = await ctrl.signalerErreurOcr(facture.id, compteRenduCtrl.text.trim());
           await safeBack();
           if (ok) {
-            Get.snackbar('Demande envoyée', 'En attente d\'approbation par l\'administrateur',
-              backgroundColor: AppColors.warning.withOpacity(0.1), colorText: AppColors.warning);
+            AppToast.warning('Demande envoyée', 'En attente d\'approbation par l\'administrateur');
           }
         },
         child: const Text('Envoyer la demande'),
@@ -1232,8 +1222,7 @@ void _choisirBonCommandePourOcr(BuildContext context, InvoiceController ctrl, St
         onTap: () async {
           final ok = await bcCtrl.reserver(bc.id);
           if (!ok) {
-            Get.snackbar('Indisponible', 'Ce bon de commande vient d\'être pris par un autre utilisateur',
-              backgroundColor: AppColors.danger.withOpacity(0.1), colorText: AppColors.danger);
+            AppToast.warning('Indisponible', 'Ce bon de commande vient d\'être pris par un autre utilisateur');
             return;
           }
           await safeBack();

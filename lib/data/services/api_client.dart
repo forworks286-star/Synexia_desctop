@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:get/get.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../core/widgets/app_toast.dart';
 
 import '../../core/config/app_config.dart';
 
@@ -55,10 +56,10 @@ class ApiClient {
             await storage.deleteAll();
             Get.offAllNamed('/login');
             if (result == _RefreshResult.sessionCompromised) {
-              Get.snackbar('Session terminée',
+              AppToast.error('Session terminée',
                   'Votre session a été fermée pour raison de sécurité. Reconnectez-vous.');
             } else {
-              Get.snackbar('Session expirée',
+              AppToast.error('Session expirée',
                   'Votre session a expiré. Veuillez vous reconnecter.');
             }
           }

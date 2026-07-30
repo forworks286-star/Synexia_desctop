@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
+import '../../../core/widgets/app_toast.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../controllers/controllers.dart';
@@ -217,10 +218,9 @@ class _BomTab extends StatelessWidget {
             );
             await safeBack();
             r.fold(
-              (e) => Get.snackbar('Erreur', e, backgroundColor: AppColors.danger, colorText: Colors.white),
-              (res) => Get.snackbar('Production enregistrée',
-                'Lot ${res['numero_lot']} — coût unitaire ${res['cout_revient_unitaire']} DZD',
-                backgroundColor: AppColors.success, colorText: Colors.white),
+              (e) => AppToast.error('Erreur', e),
+              (res) => AppToast.success('Production enregistrée',
+                'Lot ${res['numero_lot']} — coût unitaire ${res['cout_revient_unitaire']} DZD'),
             );
           }, child: const Text('Confirmer la production')),
         ],
