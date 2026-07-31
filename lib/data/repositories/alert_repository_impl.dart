@@ -167,7 +167,7 @@ class AlertRepositoryImpl implements AlertRepository {
 
   Alert _parseAlert(Map<String, dynamic> data) {
     return Alert(
-      id:           data['id'] as int,
+      id: int.tryParse(data['id']?.toString() ?? '') ?? 0,
       level:        _parseLevel(data['level'] as String? ?? 'info'),
       title:        (data['title'] as String?) ?? '',
       message:      (data['message'] as String?) ?? '',
