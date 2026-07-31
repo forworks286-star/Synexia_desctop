@@ -167,9 +167,9 @@ class AlertRepositoryImpl implements AlertRepository {
     Future.delayed(const Duration(seconds: 8), _connectWebSocket);
   }
 
-  Alert _parseAlert(Map<String, dynamic> data) {
+    Alert _parseAlert(Map<String, dynamic> data) {
     return Alert(
-      iid: int.tryParse(data['id']?.toString() ?? '') ?? 0,
+      id: int.tryParse(data['id']?.toString() ?? '') ?? 0,
       level:        _parseLevel(data['level'] as String? ?? 'info'),
       title:        (data['title'] as String?) ?? '',
       message:      (data['message'] as String?) ?? '',
