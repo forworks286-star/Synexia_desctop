@@ -131,10 +131,12 @@ class AlertRepositoryImpl implements AlertRepository {
           }
 
           if (type == 'iot_update') {
-            if (Get.isRegistered<IoTController>() && data['zone'] != null) {
-              Get.find<IoTController>().mettreAJourZone(data['zone'] as Map<String, dynamic>);
+            if (Get.isRegistered<IoTController>() && json['zone'] != null) {
+              Get.find<IoTController>().mettreAJourZone(json['zone'] as Map<String, dynamic>);
             }
           }
+
+
 
           if (type == 'bon_commande_update') {
             if (Get.isRegistered<BonCommandeController>()) {
@@ -167,7 +169,7 @@ class AlertRepositoryImpl implements AlertRepository {
 
   Alert _parseAlert(Map<String, dynamic> data) {
     return Alert(
-      id: int.tryParse(data['id']?.toString() ?? '') ?? 0,
+      iid: int.tryParse(data['id']?.toString() ?? '') ?? 0,
       level:        _parseLevel(data['level'] as String? ?? 'info'),
       title:        (data['title'] as String?) ?? '',
       message:      (data['message'] as String?) ?? '',
