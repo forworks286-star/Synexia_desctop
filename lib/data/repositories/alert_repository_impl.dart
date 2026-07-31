@@ -130,6 +130,12 @@ class AlertRepositoryImpl implements AlertRepository {
             }
           }
 
+          if (type == 'iot_update') {
+            if (Get.isRegistered<IoTController>() && data['zone'] != null) {
+              Get.find<IoTController>().mettreAJourZone(data['zone'] as Map<String, dynamic>);
+            }
+          }
+
           if (type == 'bon_commande_update') {
             if (Get.isRegistered<BonCommandeController>()) {
               Get.find<BonCommandeController>().loadBonsOuverts();

@@ -19,6 +19,7 @@ import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/setup/admin_setup_screen.dart';
 import 'presentation/screens/super_admin/super_admin_screen.dart';
 import 'presentation/screens/main_shell.dart';
+import 'data/repositories/iot_repository_impl.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ void main() async {
   Get.put(InvoiceController(InvoiceRepositoryImpl()));
   Get.put(AlertController(AlertRepositoryImpl()));
   Get.put(BonCommandeController(BonCommandeRepositoryImpl()));
+  Get.put(IoTController(IoTRepositoryImpl()));
   Get.put(ManufacturingController(ManufacturingRepositoryImpl()));
 
   runApp(const SynexiaDesktopApp());

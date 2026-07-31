@@ -83,3 +83,9 @@ abstract class ManufacturingRepository {
   Future<Either<String, Map<String, dynamic>>> getMaxRealisable(int bomId);
   Future<Either<String, List<OrdreFabrication>>> getOrdresFabrication();
 }
+
+
+abstract class IoTRepository {
+  Future<Either<String, List<IoTZoneState>>> getZones();
+  Future<Either<String, IoTZoneState>> getZoneDetail(String zoneId);
+}

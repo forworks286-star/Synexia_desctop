@@ -531,3 +531,31 @@ class BonCommandeController extends GetxController {
     await _repo.libererBonCommande(id);
   }
 }
+
+
+class IoTController extends GetxController {
+  final IoTRepository _repo;
+  IoTController(this._repo);
+
+  static const _ordrePriorite = {'critique': 0, 'alerte': 1, 'manuel': 2, 'normal': 3};
+
+  final RxList<IoTZoneState> zones = <IoTZoneState>[].obs;
+
+  Future<void> loadZones() async {
+    final r = await _repo.getZones();
+    r.fold((_) {}, (l) {
+      l.sort((a, b) => (_ordrePriorite[a.niveau] ?? 9).compareTo(_ordrePriorite[b.niveau] ?? 9));
+      zones.assignAll(l);
+    });
+  }
+
+  void mettreAJourZone(Map<String, dynamic> data) {
+    final repo = _repo as dynamic;
+    final zone = (repo.parseZone(data)) as IoTZoneState;
+    final idx = zones.indexWhere((z) => z.zoneId == zone.zoneId);
+    if (idx >= 0) { zones[idx] = zone; } else { zones.add(zone); }
+    final liste = zones.toList();
+    liste.sort((a, b) => (_ordrePriorite[a.niveau] ?? 9).compareTo(_ordrePriorite[b.niveau] ?? 9));
+    zones.assignAll(liste);
+  }
+}

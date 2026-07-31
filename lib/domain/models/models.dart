@@ -542,4 +542,21 @@ class BonCommande {
   });
 }
 
+class IoTZoneState {
+  final String zoneId;
+  final String nom;
+  final String profil;
+  final Map<String, dynamic> valeurs;
+  final String niveau;
+  final String libelle;
+  final bool? resoluAuto;
+  final DateTime? derniereMaj;
+
+  const IoTZoneState({
+    required this.zoneId, required this.nom, required this.profil,
+    required this.valeurs, required this.niveau, required this.libelle,
+    this.resoluAuto, this.derniereMaj,
+  });
+}
+
 
