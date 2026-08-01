@@ -193,4 +193,11 @@ class AlertRepositoryImpl implements AlertRepository {
     _channel?.sink.close();
     _streamController.close();
   }
+
+  @override
+  void reconnect() {
+    _channel?.sink.close();
+    _connectWebSocket();
+  }
+  
 }

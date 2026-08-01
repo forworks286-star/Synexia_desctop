@@ -39,7 +39,10 @@ class AuthController extends GetxController {
           Get.find<InvoiceController>().loadFacturesEcartAValider();
           Get.find<InvoiceController>().loadFacturesOcrAVerifier();
         }
-        if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
+        if (Get.isRegistered<AlertController>()) {
+          Get.find<AlertController>().loadAlerts();
+          Get.find<AlertController>().reconnecterTempsReel();
+        }
       } catch (_) {}
     }
   }
@@ -59,7 +62,10 @@ class AuthController extends GetxController {
         Get.find<InvoiceController>().loadFacturesEcartAValider();
         Get.find<InvoiceController>().loadFacturesOcrAVerifier();
       }
-      if (Get.isRegistered<AlertController>())   Get.find<AlertController>().loadAlerts();
+      if (Get.isRegistered<AlertController>()) {
+          Get.find<AlertController>().loadAlerts();
+          Get.find<AlertController>().reconnecterTempsReel();
+        }
     });
     isLoading.value = false;
   }
@@ -424,6 +430,8 @@ class AlertController extends GetxController {
   void _listenRealtime() {
     _repo.alertStream().listen((a) { alerts.insert(0, a); _updateUnread(); });
   }
+
+  void reconnecterTempsReel() => _repo.reconnect();
 
   void _updateUnread() => unreadCount.value = alerts.where((a) => !a.isRead).length;
 

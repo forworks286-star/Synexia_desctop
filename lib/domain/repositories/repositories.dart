@@ -35,6 +35,7 @@ abstract class AlertRepository {
   Stream<Alert> alertStream();
   Future<Either<String, void>> markAsRead(int alertId);
   Future<Either<String, void>> markAllRead();
+  void reconnect(); 
 }
 
 abstract class InvoiceRepository {
