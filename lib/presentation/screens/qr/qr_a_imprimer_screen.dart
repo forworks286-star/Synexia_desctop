@@ -1,7 +1,11 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/widgets.dart' as pw;
 
 import '../../../core/theme/app_theme.dart';
 import '../../controllers/controllers.dart';
@@ -60,6 +64,27 @@ class QrAImprimerScreen extends StatelessWidget {
   }
 }
 
+Future<void> _telechargerQr(Uint8List bytes, String numeroLot) async {
+  final path = await FilePicker.platform.saveFile(
+    dialogTitle: 'Enregistrer le QR',
+    fileName: 'QR_$numeroLot.png',
+    type: FileType.custom,
+    allowedExtensions: ['png'],
+  );
+  if (path == null) return;
+  final file = File(path.endsWith('.png') ? path : '$path.png');
+  await file.writeAsBytes(bytes);
+  Get.snackbar('Téléchargé', 'Enregistré : ${file.path}',
+    backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+}
+
+Future<void> _imprimerQr(Uint8List bytes, String numeroLot) async {
+  final image = pw.MemoryImage(bytes);
+  final doc = pw.Document();
+  doc.addPage(pw.Page(build: (context) => pw.Center(child: pw.Image(image, width: 220, height: 220))));
+  await Printing.layoutPdf(onLayout: (format) async => doc.save(), name: 'QR_$numeroLot');
+}
+
 void showLotQrDialog(int lotId, String numeroLot) {
   Get.dialog(FutureBuilder<Either<String, Uint8List>>(
     future: StockRepositoryImpl().getLotQr(lotId),
@@ -72,13 +97,22 @@ void showLotQrDialog(int lotId, String numeroLot) {
         (e) => AlertDialog(title: const Text('Erreur'), content: Text(e)),
         (bytes) => AlertDialog(
           title: Text('QR — Lot $numeroLot'),
-          content: SizedBox(width: 260, height: 300, child: Column(children: [
-            Image.memory(bytes, width: 220, height: 220),
-            const SizedBox(height: 10),
-            const Text('Imprimez cette fenêtre (Ctrl+P) et collez le QR sur les cartons du lot.',
-              style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted), textAlign: TextAlign.center),
-          ])),
-          actions: [TextButton(onPressed: () => Get.back(), child: const Text('Fermer'))],
+          content: SizedBox(width: 260, height: 260, child: Center(
+            child: Image.memory(bytes, width: 220, height: 220),
+          )),
+          actions: [
+            TextButton.icon(
+              icon: const Icon(Icons.download_rounded, size: 18),
+              label: const Text('Télécharger'),
+              onPressed: () => _telechargerQr(bytes, numeroLot),
+            ),
+            ElevatedButton.icon(
+              icon: const Icon(Icons.print_rounded, size: 18),
+              label: const Text('Imprimer'),
+              onPressed: () => _imprimerQr(bytes, numeroLot),
+            ),
+            TextButton(onPressed: () => Get.back(), child: const Text('Fermer')),
+          ],
         ),
       );
     },
