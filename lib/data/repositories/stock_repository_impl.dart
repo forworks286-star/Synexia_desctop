@@ -281,6 +281,36 @@ class StockRepositoryImpl implements StockRepository {
     }
   }
 
+  @override
+  Future<Either<String, List<QrPrintQueueItem>>> getQrAImprimer() async {
+    try {
+      final response = await _dio.get(AppConfig.qrAImprimer);
+      final list = (response.data['results'] as List).map((e) {
+        final d = e as Map<String, dynamic>;
+        return QrPrintQueueItem(
+          id: d['id'] as int, lotId: d['lot_id'] as int,
+          produitNom: d['produit_nom'] as String? ?? '—',
+          numeroLot: d['numero_lot'] as String?, emplacement: d['emplacement'] as String?,
+          dateAjout: DateTime.tryParse(d['date_ajout']?.toString() ?? '') ?? DateTime.now(),
+        );
+      }).toList();
+      return Right(list);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
+  @override
+  Future<Either<String, void>> supprimerQrAImprimer(int id) async {
+    try {
+      final url = AppConfig.qrAImprimerDelete.replaceAll('{id}', '$id');
+      await _dio.delete(url);
+      return const Right(null);
+    } on DioException catch (e) {
+      return Left(_mapError(e));
+    }
+  }
+
   String _mapError(DioException e) {
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.connectionError) return 'error_network';

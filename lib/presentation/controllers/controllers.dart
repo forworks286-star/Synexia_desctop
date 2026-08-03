@@ -199,6 +199,17 @@ class StockController extends GetxController {
   }
 
   final Rx<String?> typeStockFilter = Rx<String?>(null);
+  final RxList<QrPrintQueueItem> qrAImprimer = <QrPrintQueueItem>[].obs;
+
+  Future<void> loadQrAImprimer() async {
+    final r = await _repo.getQrAImprimer();
+    r.fold((_) {}, (l) => qrAImprimer.assignAll(l));
+  }
+
+  Future<bool> supprimerQrAImprimer(int id) async {
+    final r = await _repo.supprimerQrAImprimer(id);
+    return r.fold((_) => false, (_) { loadQrAImprimer(); return true; });
+  }
 
   List<Product> get filteredProducts {
     return products.toList().where((p) {

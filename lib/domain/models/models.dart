@@ -560,3 +560,21 @@ class IoTZoneState {
 }
 
 
+class QrPrintQueueItem extends Equatable {
+  final int id;
+  final int lotId;
+  final String produitNom;
+  final String? numeroLot;
+  final String? emplacement;
+  final DateTime dateAjout;
+
+  const QrPrintQueueItem({
+    required this.id, required this.lotId, required this.produitNom,
+    this.numeroLot, this.emplacement, required this.dateAjout,
+  });
+
+  @override
+  List<Object?> get props => [id];
+}
+
+

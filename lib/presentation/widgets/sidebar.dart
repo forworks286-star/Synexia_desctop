@@ -21,6 +21,7 @@ class DesktopSidebar extends StatelessWidget {
       if (role == UserRole.admin || role == UserRole.manager)
         _NavItem(icon: Icons.precision_manufacturing_outlined, label: 'Fabrication', index: 9),
       _NavItem(icon: Icons.description_outlined,    label: 'Bons de commande', index: 11),
+      _NavItem(icon: Icons.qr_code_2_rounded,        label: 'Codes QR',     index: 12),
       // Factures : visible pour tous — chacun ne voit que ses propres factures
       // cote serveur (sauf admin/manager qui voient tout). Voir GET /factures.
       _NavItem(icon: Icons.receipt_long_outlined,   label: 'Factures',    index: 2),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../qr/qr_a_imprimer_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
 
@@ -128,6 +129,11 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
                     const SizedBox(width: 3),
                     Expanded(child: Text(lot.emplacement ?? '—', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
                   ])),
+                  IconButton(
+                    icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppColors.primary),
+                    tooltip: 'Imprimer le QR de ce lot',
+                    onPressed: () => showLotQrDialog(lot.id, lot.numeroLot ?? '#${lot.id}'),
+                  ),
                   if (lot.numeroFacture != null && lot.factureId != null)
                     TextButton(
                       onPressed: () => Get.to(() => FactureDetailScreen(factureId: lot.factureId!)),

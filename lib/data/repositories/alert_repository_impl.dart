@@ -144,6 +144,12 @@ class AlertRepositoryImpl implements AlertRepository {
             }
           }
 
+          if (type == 'qr_print_queue_update') {
+            if (Get.isRegistered<StockController>()) {
+              Get.find<StockController>().loadQrAImprimer();
+            }
+          }
+
 
           if (type == 'appairage_update') {
             if (Get.isRegistered<AlertController>()) {

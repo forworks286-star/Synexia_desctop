@@ -87,6 +87,8 @@ class AppConfig {
   static String get factureRejeterEcart => '$apiBase/factures/{id}/rejeter-ecart';
   static String get factureEmplacementsOcr => '$apiBase/factures/{id}/emplacements-ocr';
   static String get lotQr => '$apiBase/stock/lots/{id}/qr';
+  static String get qrAImprimer => '$apiBase/stock/qr-a-imprimer';
+  static String get qrAImprimerDelete => '$apiBase/stock/qr-a-imprimer/{id}';
   static String get lotSuggere => '$apiBase/stock/produits/{id}/lot-suggere';
 
   static String get demandesModification => '$apiBase/demandes/modification';

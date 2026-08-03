@@ -15,6 +15,7 @@ import '../screens/securite/securite_screen.dart';
 import '../screens/fabrication/fabrication_screen.dart';
 import '../screens/approbations/approbations_screen.dart';
 import '../screens/bons_commande/bons_commande_screen.dart';
+import '../screens/qr/qr_a_imprimer_screen.dart';
 import '../../domain/models/models.dart';
 
 class MainShell extends StatelessWidget {
@@ -44,6 +45,7 @@ class MainShell extends StatelessWidget {
                 7: const IoTScreen(),
                 8: const SecuriteScreen(),
                 11: const BonsCommandeScreen(),
+                12: const QrAImprimerScreen(),
               };
 
               if (role == UserRole.admin || role == UserRole.manager) {

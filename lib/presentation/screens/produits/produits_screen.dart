@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../qr/qr_a_imprimer_screen.dart';
 import 'dart:typed_data';
 import 'package:dartz/dartz.dart' hide State;
 import '../../../data/repositories/stock_repository_impl.dart';
@@ -314,7 +315,7 @@ void _showDetail(Product product) {
                     IconButton(
                       icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppColors.primary),
                       tooltip: 'Imprimer le QR de ce lot',
-                      onPressed: () => _showLotQr(l.id, l.numeroLot ?? '#${l.id}'),
+                      onPressed: () => showLotQrDialog(l.id, l.numeroLot ?? '#${l.id}'),
                     ),
                   ]),
                 )).toList(),

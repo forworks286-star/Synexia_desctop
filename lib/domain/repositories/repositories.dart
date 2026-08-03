@@ -29,6 +29,8 @@ abstract class StockRepository {
   Future<Either<String, List<FaceEvent>>> getFaceEvents();
   Future<Either<String, void>> ajoutManuelComplet(Map<String, dynamic> data);
   Future<Either<String, Uint8List>> getLotQr(int lotId);
+  Future<Either<String, List<QrPrintQueueItem>>> getQrAImprimer();
+  Future<Either<String, void>> supprimerQrAImprimer(int id);
 }
 abstract class AlertRepository {
   Future<Either<String, List<Alert>>> getAlerts();
