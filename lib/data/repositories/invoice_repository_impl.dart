@@ -80,7 +80,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   }
 
   @override
-  FFuture<Either<String, LigneFacture>> addLigne(int factureId,
+  Future<Either<String, LigneFacture>> addLigne(int factureId,
       {int? produitId, String? designation, String? typeStock,
       required double quantite, required double prixUnitaire, double? prixTotalLigne,
       double? prixVente, String? dateFabrication, String? dateExpiration}) async {
