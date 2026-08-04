@@ -80,9 +80,9 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
   }
 
   @override
-  Future<Either<String, LigneFacture>> addLigne(int factureId,
+  FFuture<Either<String, LigneFacture>> addLigne(int factureId,
       {int? produitId, String? designation, String? typeStock,
-      required double quantite, required double prixUnitaire,
+      required double quantite, required double prixUnitaire, double? prixTotalLigne,
       double? prixVente, String? dateFabrication, String? dateExpiration}) async {
     try {
       final url = AppConfig.factureLignes.replaceAll('{id}', '$factureId');
@@ -91,6 +91,7 @@ class InvoiceRepositoryImpl implements InvoiceRepository {
         if (designation != null) 'designation': designation,
         if (typeStock != null) 'type_stock': typeStock,
         'quantite': quantite, 'prix_unitaire': prixUnitaire,
+        if (prixTotalLigne != null) 'prix_total_ligne': prixTotalLigne,
         if (prixVente != null) 'prix_vente': prixVente,
         if (dateFabrication != null) 'date_fabrication': dateFabrication,
         if (dateExpiration != null) 'date_expiration': dateExpiration,

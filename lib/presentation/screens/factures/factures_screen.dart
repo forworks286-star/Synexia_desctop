@@ -409,7 +409,7 @@ class _TypeFilterDropdown extends StatelessWidget {
 
 Map<String, dynamic> _ligneVide() => {
   'produit_id': null,
-  'designation': '', 'quantite': '', 'prix_unitaire': '', 'prix_vente': '',
+  'designation': '', 'quantite': '', 'prix_unitaire': '', 'prix_total_ligne': '', 'prix_vente': '',
   'date_fabrication': null, 'date_expiration': null, 'numero_lot_fournisseur': '',
   'nouveau_categorie': '', 'nouveau_code_barre': '', 'nouveau_unite_mesure': '',
   'nouveau_seuil_critique': '', 'nouveau_emplacement': '',
@@ -588,6 +588,8 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             'designation': l['designation'],
             'quantite': double.tryParse(l['quantite'] as String? ?? '') ?? 0,
             'prix_unitaire': double.tryParse(l['prix_unitaire'] as String? ?? '') ?? 0,
+            'prix_total_ligne': (l['prix_total_ligne'] as String?)?.isNotEmpty == true
+                ? double.tryParse(l['prix_total_ligne'] as String) : null,
             'prix_vente': (l['prix_vente'] as String?)?.isNotEmpty == true
                 ? double.tryParse(l['prix_vente'] as String) : null,
             'date_fabrication': l['date_fabrication'],
@@ -646,6 +648,8 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
             'designation': l['designation'],
             'quantite': double.tryParse(l['quantite'] as String? ?? '') ?? 0,
             'prix_unitaire': double.tryParse(l['prix_unitaire'] as String? ?? '') ?? 0,
+            'prix_total_ligne': (l['prix_total_ligne'] as String?)?.isNotEmpty == true
+                ? double.tryParse(l['prix_total_ligne'] as String) : null,
             'prix_vente': (l['prix_vente'] as String?)?.isNotEmpty == true
                 ? double.tryParse(l['prix_vente'] as String) : null,
             'date_fabrication': l['date_fabrication'],
@@ -701,6 +705,7 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
   late final _designationCtrl = TextEditingController(text: widget.data['designation'] as String);
   late final _quantiteCtrl = TextEditingController(text: widget.data['quantite'] as String);
   late final _prixAchatCtrl = TextEditingController(text: widget.data['prix_unitaire'] as String);
+  late final _prixTotalCtrl = TextEditingController(text: widget.data['prix_total_ligne'] as String);
   late final _prixVenteCtrl = TextEditingController(text: widget.data['prix_vente'] as String);
   late final _lotFournisseurCtrl = TextEditingController(text: widget.data['numero_lot_fournisseur'] as String);
   late final _categorieCtrl = TextEditingController(text: widget.data['nouveau_categorie'] as String);
@@ -823,19 +828,33 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
         const SizedBox(height: 6),
         Row(children: [
           Expanded(child: TextField(
-            controller: _prixAchatCtrl,
-            decoration: const InputDecoration(labelText: 'Prix achat'),
+            controller: _prixTotalCtrl,
+            decoration: const InputDecoration(labelText: 'Prix total (tel qu\'écrit sur la facture)'),
             keyboardType: TextInputType.number,
-            onChanged: (v) => widget.data['prix_unitaire'] = v,
+            onChanged: (v) {
+              widget.data['prix_total_ligne'] = v;
+              final total = double.tryParse(v) ?? 0;
+              final qte = double.tryParse(_quantiteCtrl.text) ?? 0;
+              if (total > 0 && qte > 0) {
+                setState(() => _prixAchatCtrl.text = (total / qte).toStringAsFixed(4));
+                widget.data['prix_unitaire'] = _prixAchatCtrl.text;
+              }
+            },
           )),
           const SizedBox(width: 8),
           Expanded(child: TextField(
-            controller: _prixVenteCtrl,
-            decoration: const InputDecoration(labelText: 'Prix vente (optionnel)'),
+            controller: _prixAchatCtrl,
+            decoration: const InputDecoration(labelText: 'Prix unitaire (calculé, modifiable)'),
             keyboardType: TextInputType.number,
-            onChanged: (v) => widget.data['prix_vente'] = v,
+            onChanged: (v) => widget.data['prix_unitaire'] = v,
           )),
         ]),
+        const SizedBox(height: 6),
+        TextField(
+          controller: _prixVenteCtrl,
+          decoration: const InputDecoration(labelText: 'Prix vente (optionnel)'), keyboardType: TextInputType.number,
+          onChanged: (v) => widget.data['prix_vente'] = v,
+        ),
         const SizedBox(height: 6),
         Row(children: [
           Expanded(child: InkWell(
@@ -948,6 +967,8 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
             'designation': l['designation'],
             'quantite': double.tryParse(l['quantite'] as String? ?? '') ?? 0,
             'prix_unitaire': double.tryParse(l['prix_unitaire'] as String? ?? '') ?? 0,
+            'prix_total_ligne': (l['prix_total_ligne'] as String?)?.isNotEmpty == true
+                ? double.tryParse(l['prix_total_ligne'] as String) : null,
             'prix_vente': (l['prix_vente'] as String?)?.isNotEmpty == true
                 ? double.tryParse(l['prix_vente'] as String) : null,
             'date_fabrication': l['date_fabrication'],

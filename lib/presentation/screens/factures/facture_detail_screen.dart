@@ -289,6 +289,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
     final designationCtrl = TextEditingController();
     final qtyCtrl = TextEditingController(text: '1');
     final prixCtrl = TextEditingController();
+    final prixTotalCtrl = TextEditingController();
     final prixVenteCtrl = TextEditingController();
     final dateFabCtrl = TextEditingController();
     final dateExpCtrl = TextEditingController();
@@ -327,12 +328,20 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
           ),
         ],
         const SizedBox(height: 12),
+        TextField(controller: qtyCtrl,
+          decoration: const InputDecoration(labelText: 'Quantité'), keyboardType: TextInputType.number),
+        const SizedBox(height: 12),
         Row(children: [
-          Expanded(child: TextField(controller: qtyCtrl,
-            decoration: const InputDecoration(labelText: 'Quantité'), keyboardType: TextInputType.number)),
+          Expanded(child: TextField(controller: prixTotalCtrl,
+            decoration: const InputDecoration(labelText: 'Prix total (facture)'), keyboardType: TextInputType.number,
+            onChanged: (v) {
+              final total = double.tryParse(v) ?? 0;
+              final qte = double.tryParse(qtyCtrl.text) ?? 0;
+              if (total > 0 && qte > 0) prixCtrl.text = (total / qte).toStringAsFixed(4);
+            })),
           const SizedBox(width: 12),
           Expanded(child: TextField(controller: prixCtrl,
-            decoration: const InputDecoration(labelText: 'Prix d\'achat unitaire'), keyboardType: TextInputType.number)),
+            decoration: const InputDecoration(labelText: 'Prix unitaire (calculé, modifiable)'), keyboardType: TextInputType.number)),
         ]),
         const SizedBox(height: 12),
         TextField(controller: prixVenteCtrl,
@@ -357,13 +366,17 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
             final r = nouveauProduit
                 ? await _repo.addLigne(widget.factureId,
                     designation: designationCtrl.text.trim(), typeStock: selectedTypeStock,
-                    quantite: qty, prixUnitaire: prix, prixVente: prixVente,
+                    quantite: qty, prixUnitaire: prix,
+                    prixTotalLigne: double.tryParse(prixTotalCtrl.text),
+                    prixVente: prixVente,
                     dateFabrication: dateFabCtrl.text.trim().isEmpty ? null : dateFabCtrl.text.trim(),
                     dateExpiration: dateExpCtrl.text.trim().isEmpty ? null : dateExpCtrl.text.trim())
                 : (selectedProduct == null
                     ? null
                     : await _repo.addLigne(widget.factureId,
-                        produitId: selectedProduct!.id, quantite: qty, prixUnitaire: prix, prixVente: prixVente,
+                        produitId: selectedProduct!.id, quantite: qty, prixUnitaire: prix,
+                    prixTotalLigne: double.tryParse(prixTotalCtrl.text),
+                    prixVente: prixVente,
                         dateFabrication: dateFabCtrl.text.trim().isEmpty ? null : dateFabCtrl.text.trim(),
                         dateExpiration: dateExpCtrl.text.trim().isEmpty ? null : dateExpCtrl.text.trim()));
             if (r == null) return;
