@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -20,22 +21,23 @@ class _IoTScreenState extends State<IoTScreen> {
   Widget build(BuildContext context) {
     final ctrl = Get.find<IoTController>();
     ctrl.loadZones();
+    final t = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Expanded(child: PageHeader(title: 'IoT — Zones')),
-          SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, outline: true, onTap: ctrl.loadZones),
+          Expanded(child: PageHeader(title: t.iotZonesTitle)),
+          SynButton(label: t.dashboardRefresh, icon: Icons.refresh_rounded, outline: true, onTap: ctrl.loadZones),
         ]),
         const SizedBox(height: 16),
         Obx(() {
           final zones = ctrl.zones;
           return DropdownButtonFormField<String?>(
             value: _zoneSelectionnee,
-            decoration: const InputDecoration(labelText: 'Zone'),
+            decoration: InputDecoration(labelText: t.iotZoneLabel),
             items: [
-              const DropdownMenuItem<String?>(value: null, child: Text('Toutes les zones')),
+              DropdownMenuItem<String?>(value: null, child: Text(t.iotAllZones)),
               ...zones.map((z) => DropdownMenuItem<String?>(value: z.zoneId, child: Text(z.nom))),
             ],
             onChanged: (v) => setState(() => _zoneSelectionnee = v),
@@ -48,7 +50,7 @@ class _IoTScreenState extends State<IoTScreen> {
               ? toutes
               : toutes.where((z) => z.zoneId == _zoneSelectionnee).toList();
           if (affichees.isEmpty) {
-            return const Center(child: Text('Aucune donnée IoT reçue',
+            return Center(child: Text(t.iotNoData,
               style: TextStyle(color: AppColors.darkTextMuted)));
           }
           return ListView.separated(
@@ -75,17 +77,18 @@ class _ZoneCard extends StatelessWidget {
     }
   }
 
-  String get _libelleNiveau {
+  String _libelleNiveau(AppLocalizations t) {
     switch (zone.niveau) {
-      case 'critique': return 'CRITIQUE';
-      case 'alerte': return 'ALERTE';
-      case 'manuel': return 'MANUEL';
-      default: return 'NORMAL';
+      case 'critique': return t.iotLevelCritical;
+      case 'alerte': return t.iotLevelAlert;
+      case 'manuel': return t.iotLevelManual;
+      default: return t.iotLevelNormal;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
         color: AppColors.darkCard,
@@ -98,7 +101,7 @@ class _ZoneCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(color: _couleur.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
-            child: Text(_libelleNiveau, style: TextStyle(color: _couleur, fontWeight: FontWeight.bold, fontSize: 11)),
+            child: Text(_libelleNiveau(t), style: TextStyle(color: _couleur, fontWeight: FontWeight.bold, fontSize: 11)),
           ),
           const SizedBox(width: 10),
           Expanded(child: Text(zone.nom, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14))),
@@ -109,11 +112,11 @@ class _ZoneCard extends StatelessWidget {
         const SizedBox(height: 8),
         Text(zone.libelle, style: TextStyle(fontSize: 13, color: _couleur, fontWeight: FontWeight.w600)),
         if (zone.resoluAuto == true)
-          const Padding(padding: EdgeInsets.only(top: 4),
-            child: Text('✓ Résolu automatiquement', style: TextStyle(fontSize: 12, color: AppColors.success))),
+          Padding(padding: const EdgeInsets.only(top: 4),
+            child: Text(t.iotAutoResolved, style: TextStyle(fontSize: 12, color: AppColors.success))),
         if (zone.resoluAuto == false)
-          const Padding(padding: EdgeInsets.only(top: 4),
-            child: Text('⚠ Nécessite une intervention manuelle', style: TextStyle(fontSize: 12, color: AppColors.danger))),
+          Padding(padding: const EdgeInsets.only(top: 4),
+            child: Text(t.iotNeedsManual, style: TextStyle(fontSize: 12, color: AppColors.danger))),
         const Divider(height: 20),
         Wrap(spacing: 16, runSpacing: 6, children: zone.valeurs.entries.map((e) => SizedBox(
           width: 220,

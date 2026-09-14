@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../core/theme/app_theme.dart';
+import '../../core/l10n/app_localizations.dart';
 import '../controllers/controllers.dart';
 import '../../domain/models/models.dart';
 
@@ -14,31 +15,31 @@ class DesktopSidebar extends StatelessWidget {
     final auth     = Get.find<AuthController>();
     final alerts   = Get.find<AlertController>();
     final role = auth.user.value?.role;
+    final t = AppLocalizations.of(context);
 
     final items = [
-      _NavItem(icon: Icons.grid_view_rounded,       label: 'Dashboard',   index: 0),
-      _NavItem(icon: Icons.inventory_2_outlined,    label: 'Produits',    index: 1),
+      _NavItem(icon: Icons.grid_view_rounded,       label: t.navDashboard,   index: 0),
+      _NavItem(icon: Icons.inventory_2_outlined,    label: t.homeProducts,    index: 1),
       if (role == UserRole.admin || role == UserRole.manager)
-        _NavItem(icon: Icons.precision_manufacturing_outlined, label: 'Fabrication', index: 9),
-      _NavItem(icon: Icons.description_outlined,    label: 'Bons de commande', index: 11),
-      _NavItem(icon: Icons.qr_code_2_rounded,        label: 'Codes QR',     index: 12),
+        _NavItem(icon: Icons.precision_manufacturing_outlined, label: t.navManufacturing, index: 9),
+      _NavItem(icon: Icons.description_outlined,    label: t.navPurchaseOrders, index: 11),
+      _NavItem(icon: Icons.qr_code_2_rounded,        label: t.navQrCodes,     index: 12),
       // Factures : visible pour tous — chacun ne voit que ses propres factures
       // cote serveur (sauf admin/manager qui voient tout). Voir GET /factures.
-      _NavItem(icon: Icons.receipt_long_outlined,   label: 'Factures',    index: 2),
+      _NavItem(icon: Icons.receipt_long_outlined,   label: t.navInvoices,    index: 2),
       if (role == UserRole.admin || role == UserRole.manager)
-        _NavItem(icon: Icons.fact_check_outlined,   label: 'Approbations', index: 10),
+        _NavItem(icon: Icons.fact_check_outlined,   label: t.navApprovals, index: 10),
       if (role == UserRole.admin || role == UserRole.manager)
-        _NavItem(icon: Icons.sensors_rounded,       label: 'IoT',         index: 7),
-      _NavItem(icon: Icons.notifications_outlined,  label: 'Alertes',     index: 3),
+        _NavItem(icon: Icons.sensors_rounded,       label: t.navIot,         index: 7),
+      _NavItem(icon: Icons.notifications_outlined,  label: t.homeAlerts,     index: 3),
       if (role == UserRole.admin || role == UserRole.manager)
-        _NavItem(icon: Icons.security_rounded,      label: 'Sécurité',    index: 8),
+        _NavItem(icon: Icons.security_rounded,      label: t.navSecurity,    index: 8),
       if (role == UserRole.admin || role == UserRole.manager)
-        _NavItem(icon: Icons.bar_chart_rounded,     label: 'Rapports',    index: 4),
+        _NavItem(icon: Icons.bar_chart_rounded,     label: t.navReports,    index: 4),
       if (role == UserRole.admin)
-        _NavItem(icon: Icons.admin_panel_settings_outlined, label: 'Admin', index: 6),
-      _NavItem(icon: Icons.settings_outlined,       label: 'Paramètres',  index: 5),
+        _NavItem(icon: Icons.admin_panel_settings_outlined, label: t.navAdmin, index: 6),
+      _NavItem(icon: Icons.settings_outlined,       label: t.navSettings,  index: 5),
     ];
-
     return Container(
       width: 200,
       color: AppColors.darkSidebar,
@@ -112,14 +113,14 @@ class DesktopSidebar extends StatelessWidget {
                   Text(auth.user.value?.fullName ?? '',
                     style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
                     overflow: TextOverflow.ellipsis),
-                  Text(_roleLabel(auth.user.value?.role),
+                  Text(_roleLabel(t, auth.user.value?.role),
                     style: const TextStyle(color: AppColors.darkTextMuted, fontSize: 9, letterSpacing: 0.1)),
                 ],
               )),
               IconButton(
                 icon: const Icon(Icons.logout_rounded, size: 14, color: AppColors.darkTextMuted),
                 onPressed: auth.logout,
-                tooltip: 'Déconnexion',
+                tooltip: t.logout,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
               ),
@@ -131,12 +132,12 @@ class DesktopSidebar extends StatelessWidget {
     );
   }
 
-  String _roleLabel(UserRole? role) {
+  String _roleLabel(AppLocalizations t, UserRole? role) {
     switch (role) {
-      case UserRole.admin:      return 'Administrateur';
-      case UserRole.manager:    return 'Manager';
-      case UserRole.stockiste:  return 'Stockiste';
-      case UserRole.agentKiosk: return 'Agent Kiosk';
+      case UserRole.admin:      return t.roleAdmin;
+      case UserRole.manager:    return t.roleManager;
+      case UserRole.stockiste:  return t.roleStockiste;
+      case UserRole.agentKiosk: return t.roleAgentKiosk;
       default:                  return '';
     }
   }

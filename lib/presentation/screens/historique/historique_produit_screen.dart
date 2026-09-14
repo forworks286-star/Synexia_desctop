@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
@@ -51,6 +52,7 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
   @override
   Widget build(BuildContext context) {
     final stock = Get.find<StockController>();
+    final t = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.all(28),
@@ -59,7 +61,7 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
         children: [
           Row(children: [
             IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => Get.back()),
-            const Expanded(child: PageHeader(title: 'Historique Produit')),
+            Expanded(child: PageHeader(title: t.histPageTitle)),
           ]),
           const SizedBox(height: 20),
           SynCard(
@@ -77,9 +79,9 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
                 return TextField(
                   controller: controller,
                   focusNode: focusNode,
-                  decoration: const InputDecoration(
-                    hintText: 'Rechercher un produit par nom ou SKU...',
-                    prefixIcon: Icon(Icons.search_rounded),
+                  decoration: InputDecoration(
+                    hintText: t.histSearchHint,
+                    prefixIcon: const Icon(Icons.search_rounded),
                   ),
                 );
               },
@@ -88,41 +90,41 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
           const SizedBox(height: 20),
           if (_loading) const Expanded(child: Center(child: CircularProgressIndicator(color: AppColors.primary))),
           if (_error != null) Expanded(child: Center(child: Text(_error!, style: const TextStyle(color: AppColors.danger)))),
-          if (!_loading && _error == null && _data != null) Expanded(child: _buildContent(_data!)),
+          if (!_loading && _error == null && _data != null) Expanded(child: _buildContent(t, _data!)),
           if (!_loading && _error == null && _data == null)
-            const Expanded(child: Center(child: Text('Recherchez un produit pour voir son historique',
+            Expanded(child: Center(child: Text(t.histSearchEmpty,
               style: TextStyle(color: AppColors.darkTextMuted)))),
         ],
       ),
     );
   }
 
-  Widget _buildContent(HistoriquePrixProduit data) {
+  Widget _buildContent(AppLocalizations t, HistoriquePrixProduit data) {
     return SingleChildScrollView(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          _MarginCard(label: 'Prix achat moyen', value: data.prixAchatMoyen),
+          _MarginCard(label: t.histAvgPurchasePrice, value: data.prixAchatMoyen),
           const SizedBox(width: 16),
-          _MarginCard(label: 'Prix vente moyen', value: data.prixVenteMoyen),
+          _MarginCard(label: t.histAvgSalePrice, value: data.prixVenteMoyen),
           const SizedBox(width: 16),
-          _MarginCard(label: 'Marge', value: data.margePercent, isPercent: true),
+          _MarginCard(label: t.histMargin, value: data.margePercent, isPercent: true),
         ]),
         const SizedBox(height: 20),
 
         SynCard(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const SectionTitle(title: 'RÉPARTITION DU STOCK PAR LOT'),
+            SectionTitle(title: t.histLotDistributionTitle),
             const SizedBox(height: 12),
             if (_selectedProduct == null || _selectedProduct!.lots.isEmpty)
-              const Text('Aucun lot actif', style: TextStyle(fontSize: 12, color: AppColors.darkTextMuted))
+              Text(t.histNoActiveLot, style: TextStyle(fontSize: 12, color: AppColors.darkTextMuted))
             else
               for (final lot in _selectedProduct!.lots) Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
                 child: Row(children: [
                   Expanded(flex: 2, child: Text(lot.numeroLot ?? '—', style: const TextStyle(fontSize: 12, fontFamily: 'monospace'))),
-                  Expanded(child: Text('${lot.quantiteDisponible} unités', style: const TextStyle(fontSize: 12))),
+                  Expanded(child: Text('${lot.quantiteDisponible} ${t.histUnitsSuffix}', style: const TextStyle(fontSize: 12))),
                   Expanded(child: Text(lot.dateExpiration != null
-                    ? 'Expire: ${lot.dateExpiration!.day}/${lot.dateExpiration!.month}/${lot.dateExpiration!.year}'
+                    ? '${t.histExpiresPrefix} ${lot.dateExpiration!.day}/${lot.dateExpiration!.month}/${lot.dateExpiration!.year}'
                     : '', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
                   Expanded(child: Row(children: [
                     const Icon(Icons.place_outlined, size: 13, color: AppColors.darkTextMuted),
@@ -131,13 +133,13 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
                   ])),
                   IconButton(
                     icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppColors.primary),
-                    tooltip: 'Imprimer le QR de ce lot',
+                    tooltip: t.printLotQrTooltip,
                     onPressed: () => showLotQrDialog(lot.id, lot.numeroLot ?? '#${lot.id}'),
                   ),
                   if (lot.numeroFacture != null && lot.factureId != null)
                     TextButton(
                       onPressed: () => Get.to(() => FactureDetailScreen(factureId: lot.factureId!)),
-                      child: Text('Facture ${lot.numeroFacture} →', style: const TextStyle(fontSize: 11)),
+                      child: Text('${t.histInvoiceWord} ${lot.numeroFacture} →', style: const TextStyle(fontSize: 11)),
                     ),
                 ]),
               ),
@@ -148,7 +150,7 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
         if (data.historique.isNotEmpty) ...[
           SynCard(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const SectionTitle(title: 'ÉVOLUTION DU PRIX D\'ACHAT'),
+              SectionTitle(title: t.histPriceEvolutionTitle),
               const SizedBox(height: 16),
               SizedBox(height: 220, child: _PriceChart(historique: data.historique)),
             ]),
@@ -159,13 +161,13 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
         SynCard(
           padding: EdgeInsets.zero,
           child: Column(children: [
-            const Padding(
-              padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
-              child: SectionTitle(title: 'TOUTES LES FACTURES — CE PRODUIT'),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+              child: SectionTitle(title: t.histAllInvoicesTitle),
             ),
             const Divider(height: 1),
             if (data.historique.isEmpty)
-              const Padding(padding: EdgeInsets.all(20), child: Text('Aucune facture pour ce produit pour le moment',
+              Padding(padding: const EdgeInsets.all(20), child: Text(t.histNoInvoiceYet,
                 style: TextStyle(fontSize: 12, color: AppColors.darkTextMuted))),
             for (final l in data.historique) _HistoriqueRow(ligne: l),
           ]),
@@ -210,13 +212,14 @@ class _PriceChart extends StatelessWidget {
         .reversed
         .toList();
 
+    final t = AppLocalizations(Get.locale ?? const Locale('fr'));
     if (achats.isEmpty) {
-      return const Center(child: Text('Aucun achat validé enregistré pour ce produit',
+      return Center(child: Text(t.histNoValidatedPurchase,
         style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)));
     }
     if (achats.length < 2) {
       return Center(child: Text(
-        'Un seul achat validé (${formatDA(achats.first.prixUnitaire)})\nLe graphique apparaîtra dès qu\'il y aura 2 achats ou plus.',
+        '${t.histSinglePurchasePrefix} (${formatDA(achats.first.prixUnitaire)})\n${t.histChartAppearsNote}',
         textAlign: TextAlign.center,
         style: const TextStyle(color: AppColors.darkTextMuted, fontSize: 12)));
     }
@@ -279,13 +282,14 @@ class _HistoriqueRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final isVente = ligne.typeFacture == 'vente';
     final statusColor = ligne.factureStatus == 'validated' ? AppColors.success
                        : ligne.factureStatus == 'rejected' ? AppColors.danger
                        : AppColors.warning;
-    final statusLabel = ligne.factureStatus == 'validated' ? 'Acceptée'
-                       : ligne.factureStatus == 'rejected' ? 'Rejetée'
-                       : 'En attente';
+    final statusLabel = ligne.factureStatus == 'validated' ? t.histStatusAccepted
+                       : ligne.factureStatus == 'rejected' ? t.pdfStatusRejected
+                       : t.pdfStatusPending;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.darkBorder, width: 0.5))),
@@ -298,7 +302,7 @@ class _HistoriqueRow extends StatelessWidget {
           decoration: BoxDecoration(
             color: (isVente ? AppColors.success : AppColors.primary).withOpacity(0.1),
             borderRadius: BorderRadius.circular(4)),
-          child: Text(isVente ? 'Vente' : 'Achat', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700,
+          child: Text(isVente ? t.histTypeSale : t.histTypePurchase, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700,
             color: isVente ? AppColors.success : AppColors.primary)),
         )),
         Expanded(flex: 2, child: Text(ligne.fournisseurNom, style: const TextStyle(fontSize: 12))),

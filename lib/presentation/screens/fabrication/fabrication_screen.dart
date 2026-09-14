@@ -4,6 +4,7 @@ import '../../../core/utils/get_safe_back.dart';
 import '../../../core/widgets/app_toast.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/models/models.dart';
@@ -22,16 +23,17 @@ class _FabricationScreenState extends State<FabricationScreen> with SingleTicker
   Widget build(BuildContext context) {
     final ctrl = Get.find<ManufacturingController>();
     final stock = Get.find<StockController>();
+    final t = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        PageHeader(title: 'Fabrication (BOM & Ordres)', actions: [
+        PageHeader(title: t.fabPageTitle, actions: [
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: ctrl.loadAll),
         ]),
         TabBar(
           controller: _tab, isScrollable: true, labelColor: AppColors.primary,
-          tabs: const [Tab(text: 'Recettes (BOM)'), Tab(text: 'Ordres de fabrication')],
+          tabs: [Tab(text: t.fabTabRecipes), Tab(text: t.fabTabOrders)],
         ),
         const SizedBox(height: 16),
         Expanded(child: TabBarView(controller: _tab, children: [
@@ -50,15 +52,16 @@ class _BomTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Align(alignment: Alignment.centerRight, child: SynButton(
-        label: 'Nouvelle recette', icon: Icons.add_rounded,
+        label: t.fabNewRecipe, icon: Icons.add_rounded,
         onTap: () => _showCreerBom(context),
       )),
       const SizedBox(height: 12),
       Expanded(child: Obx(() {
         if (ctrl.boms.isEmpty) {
-          return const Center(child: Text('Aucune recette definie', style: TextStyle(color: AppColors.darkTextMuted)));
+          return Center(child: Text(t.fabNoRecipe, style: TextStyle(color: AppColors.darkTextMuted)));
         }
         return ListView.separated(
           itemCount: ctrl.boms.length,
@@ -66,16 +69,16 @@ class _BomTab extends StatelessWidget {
           itemBuilder: (_, i) {
             final b = ctrl.boms[i];
             return SynCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(b.produitFiniNom ?? 'Produit #${b.produitFiniId}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+              Text(b.produitFiniNom ?? '${t.fabProductHashPrefix}${b.produitFiniId}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
               const SizedBox(height: 8),
               ...b.lignes.map((l) => Padding(
                 padding: const EdgeInsets.only(bottom: 4),
-                child: Text('• ${l.quantiteNecessaire} ${l.composantUnite ?? ''} de ${l.composantNom} (par unite)'
-                  '${l.tauxPerte > 0 ? ' — perte ${l.tauxPerte}%' : ''}',
+                child: Text('• ${l.quantiteNecessaire} ${l.composantUnite ?? ''} ${t.formCategory == t.formCategory ? '' : ''}${l.composantNom} ${t.fabPerUnitSuffix}'
+                  '${l.tauxPerte > 0 ? ' ${t.fabLossSuffix} ${l.tauxPerte}%' : ''}',
                   style: const TextStyle(fontSize: 12)),
               )),
               const SizedBox(height: 8),
-              SynButton(label: 'Produire à partir de cette recette', outline: true,
+              SynButton(label: t.fabProduceFromRecipe, outline: true,
                 onTap: () => _showCreerOF(context, b)),
             ]));
           },
@@ -85,14 +88,15 @@ class _BomTab extends StatelessWidget {
   }
 
   void _showCreerBom(BuildContext context) {
+    final t = AppLocalizations.of(context);
     int? produitFiniId;
     final composants = <Map<String, dynamic>>[];
     showDialog(context: context, builder: (_) => StatefulBuilder(builder: (context, setState) {
       return AlertDialog(
-        title: const Text('Nouvelle recette (BOM)'),
+        title: Text(t.fabNewRecipeDialogTitle),
         content: SizedBox(width: 420, child: Column(mainAxisSize: MainAxisSize.min, children: [
           DropdownButtonFormField<int>(
-            decoration: const InputDecoration(labelText: 'Produit fini'),
+            decoration: InputDecoration(labelText: t.fabFinishedProductLabel),
             items: stock.products.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name))).toList(),
             onChanged: (v) => produitFiniId = v,
           ),
@@ -101,36 +105,36 @@ class _BomTab extends StatelessWidget {
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(children: [
               Expanded(flex: 2, child: DropdownButtonFormField<int>(
-                decoration: const InputDecoration(labelText: 'Composant'),
+                decoration: InputDecoration(labelText: t.fabComponentLabel),
                 items: stock.products.map((p) => DropdownMenuItem(value: p.id, child: Text(p.name, overflow: TextOverflow.ellipsis))).toList(),
                 onChanged: (v) => e.value['composant_produit_id'] = v,
               )),
               const SizedBox(width: 8),
               Expanded(child: TextField(
-                decoration: const InputDecoration(labelText: 'Quantité / unité'),
+                decoration: InputDecoration(labelText: t.fabQtyPerUnitLabel),
                 keyboardType: TextInputType.number,
                 onChanged: (v) => e.value['quantite_necessaire'] = double.tryParse(v) ?? 0,
               )),
               const SizedBox(width: 8),
               Expanded(child: TextField(
-                decoration: const InputDecoration(labelText: '% perte'),
+                decoration: InputDecoration(labelText: t.fabLossPercentLabel),
                 keyboardType: TextInputType.number,
                 onChanged: (v) => e.value['taux_perte'] = double.tryParse(v) ?? 0,
               )),
             ]),
           )),
           Align(alignment: Alignment.centerLeft, child: TextButton.icon(
-            icon: const Icon(Icons.add), label: const Text('Ajouter un composant'),
+            icon: const Icon(Icons.add), label: Text(t.fabAddComponent),
             onPressed: () => setState(() => composants.add({})),
           )),
         ])),
         actions: [
-          TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
+          TextButton(onPressed: () => safeBack(), child: Text(t.cancel)),
           TextButton(onPressed: () async {
             if (produitFiniId == null || composants.isEmpty) return;
             ctrl.creerBom(produitFiniId: produitFiniId!, lignes: composants);
             await safeBack();
-          }, child: const Text('Créer')),
+          }, child: Text(t.create)),
         ],
       );
     }));
@@ -151,27 +155,28 @@ class _BomTab extends StatelessWidget {
       goulot = data['goulot_etranglement'] as String?;
     });
 
+    final t = AppLocalizations.of(context);
     showDialog(context: context, builder: (dialogContext) => StatefulBuilder(
       builder: (dialogContext, setState) => AlertDialog(
-        title: Text('Produire : ${bom.produitFiniNom ?? ''}'),
+        title: Text('${t.fabProduceDialogTitlePrefix} ${bom.produitFiniNom ?? ''}'),
         content: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
           if (maxRealisable != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
               child: Text(
-                'Quantité maximale réalisable avec le stock actuel : $maxRealisable'
-                '${goulot != null ? ' (limité par : $goulot)' : ''}',
+                '${t.fabMaxRealisablePrefix} $maxRealisable'
+                '${goulot != null ? ' (${t.fabLimitedByPrefix} $goulot)' : ''}',
                 style: const TextStyle(fontSize: 12, color: AppColors.warning, fontWeight: FontWeight.w600),
               ),
             ),
           TextField(controller: qteCtrl, keyboardType: TextInputType.number,
-            decoration: const InputDecoration(labelText: 'Quantité produite')),
+            decoration: InputDecoration(labelText: t.fabQtyProducedLabel)),
           const SizedBox(height: 10),
           TextField(controller: emplacementCtrl,
-            decoration: const InputDecoration(labelText: 'Emplacement (optionnel)')),
+            decoration: InputDecoration(labelText: t.fabLocationOptionalLabel)),
           const SizedBox(height: 10),
           TextField(controller: numeroLotCtrl,
-            decoration: const InputDecoration(labelText: 'Numéro de lot (optionnel)')),
+            decoration: InputDecoration(labelText: t.fabLotNumberOptionalLabel)),
           const SizedBox(height: 10),
           InkWell(
             onTap: () async {
@@ -181,7 +186,7 @@ class _BomTab extends StatelessWidget {
               if (picked != null) setState(() => dateFabrication = picked);
             },
             child: InputDecorator(
-              decoration: const InputDecoration(labelText: 'Date de fabrication'),
+              decoration: InputDecoration(labelText: t.fabFabricationDateLabel),
               child: Text(dateFabrication != null
                 ? '${dateFabrication!.year}-${dateFabrication!.month.toString().padLeft(2, '0')}-${dateFabrication!.day.toString().padLeft(2, '0')}'
                 : '—'),
@@ -196,15 +201,15 @@ class _BomTab extends StatelessWidget {
               if (picked != null) setState(() => dateExpiration = picked);
             },
             child: InputDecorator(
-              decoration: const InputDecoration(labelText: 'Date de péremption (recommandé)'),
+              decoration: InputDecoration(labelText: t.fabExpirationDateLabel),
               child: Text(dateExpiration != null
                 ? '${dateExpiration!.year}-${dateExpiration!.month.toString().padLeft(2, '0')}-${dateExpiration!.day.toString().padLeft(2, '0')}'
-                : 'Non définie — appuyez pour choisir'),
+                : t.fabNotDefinedPick),
             ),
           ),
         ])),
         actions: [
-          TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
+          TextButton(onPressed: () => safeBack(), child: Text(t.cancel)),
           TextButton(onPressed: () async {
             final qte = double.tryParse(qteCtrl.text) ?? 0;
             if (qte <= 0) return;
@@ -218,11 +223,11 @@ class _BomTab extends StatelessWidget {
             );
             await safeBack();
             r.fold(
-              (e) => AppToast.error('Erreur', e),
-              (res) => AppToast.success('Production enregistrée',
-                'Lot ${res['numero_lot']} — coût unitaire ${res['cout_revient_unitaire']} DZD'),
+              (e) => AppToast.error(t.errorTitle, e),
+              (res) => AppToast.success(t.fabProductionRecordedTitle,
+                '${t.fabLotWord} ${res['numero_lot']} ${t.fabUnitCostSuffix} ${res['cout_revient_unitaire']} DZD'),
             );
-          }, child: const Text('Confirmer la production')),
+          }, child: Text(t.fabConfirmProduction)),
         ],
       ),
     ));
@@ -235,9 +240,10 @@ class _OrdresTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Obx(() {
       if (ctrl.ordres.isEmpty) {
-        return const Center(child: Text('Aucun ordre de fabrication', style: TextStyle(color: AppColors.darkTextMuted)));
+        return Center(child: Text(t.fabNoOrders, style: TextStyle(color: AppColors.darkTextMuted)));
       }
       return ListView.separated(
         itemCount: ctrl.ordres.length,
@@ -248,11 +254,11 @@ class _OrdresTab extends StatelessWidget {
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('${o.numeroOf} — ${o.produitFiniNom ?? ''}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
               const SizedBox(height: 4),
-              Text('Quantité : ${o.quantiteProduite} · Lot : ${o.numeroLot ?? '—'}', style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+              Text('${t.fabQuantityColon} ${o.quantiteProduite} · ${t.fabLotColon} ${o.numeroLot ?? '—'}', style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
             ])),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Text('${o.coutRevientTotal?.toStringAsFixed(2) ?? '—'} DZD', style: const TextStyle(fontWeight: FontWeight.w700)),
-              Text('${o.coutRevientUnitaire?.toStringAsFixed(2) ?? '—'} DZD / unité', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+              Text('${o.coutRevientUnitaire?.toStringAsFixed(2) ?? '—'} ${t.fabPerUnitDzdSuffix}', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
             ]),
           ]));
         },

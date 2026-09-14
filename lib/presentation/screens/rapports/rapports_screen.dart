@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/models/models.dart';
@@ -18,39 +19,41 @@ class RapportsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final stock = Get.find<StockController>();
     final invoices = Get.find<InvoiceController>();
+    final t = AppLocalizations.of(context);
+    final tGlobal = AppLocalizations(Get.locale ?? const Locale('fr'));
 
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const PageHeader(title: 'Rapports'),
+          PageHeader(title: t.navReports),
           const SizedBox(height: 24),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: _ReportCard(
-                title: 'Rapport de stock',
-                description: 'État complet de l\'inventaire avec niveaux critiques et historique des mouvements.',
+                title: t.reportStockTitle,
+                description: t.reportStockDesc,
                 icon: Icons.inventory_2_outlined,
                 color: AppColors.primary,
-                onGenerate: () => _generateStockPdf(stock),
+                onGenerate: () => _generateStockPdf(tGlobal, stock),
               )),
               const SizedBox(width: 20),
               Expanded(child: _ReportCard(
-                title: 'Rapport des factures',
-                description: 'Synthèse des factures validées, rejetées et en attente sur la période sélectionnée.',
+                title: t.reportInvoicesTitle,
+                description: t.reportInvoicesDesc,
                 icon: Icons.receipt_long_outlined,
                 color: AppColors.success,
-                onGenerate: () => _generateFacturesPdf(invoices),
+                onGenerate: () => _generateFacturesPdf(tGlobal, invoices),
               )),
               const SizedBox(width: 20),
               Expanded(child: _ReportCard(
-                title: 'Rapport des alertes',
-                description: 'Journal complet des alertes système, stocks critiques et anomalies détectées.',
+                title: t.reportAlertsTitle,
+                description: t.reportAlertsDesc,
                 icon: Icons.notifications_outlined,
                 color: AppColors.warning,
-                onGenerate: () => _generateAlertesPdf(),
+                onGenerate: () => _generateAlertesPdf(tGlobal),
               )),
             ],
           ),
@@ -59,7 +62,7 @@ class RapportsScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SectionTitle(title: 'RÉSUMÉ GLOBAL'),
+                SectionTitle(title: t.globalSummaryTitle),
                 const SizedBox(height: 20),
                 Obx(() {
                   final s = stock.stats.value;
@@ -67,15 +70,15 @@ class RapportsScreen extends StatelessWidget {
                   final validated = invoices.invoices.where((i) => i.status == InvoiceStatus.validated).length;
                   final critical = stock.products.where((p) => p.status == StockStatus.critical).length;
                   return Row(children: [
-                    Expanded(child: _StatItem(label: 'Total produits', value: '${s?.totalProducts ?? 0}', color: AppColors.primary)),
+                    Expanded(child: _StatItem(label: t.statTotalProducts, value: '${s?.totalProducts ?? 0}', color: AppColors.primary)),
                     _Divider(),
-                    Expanded(child: _StatItem(label: 'Produits critiques', value: '$critical', color: AppColors.danger)),
+                    Expanded(child: _StatItem(label: t.statCriticalProducts, value: '$critical', color: AppColors.danger)),
                     _Divider(),
-                    Expanded(child: _StatItem(label: 'Factures validées', value: '$validated', color: AppColors.success)),
+                    Expanded(child: _StatItem(label: t.statValidatedInvoices, value: '$validated', color: AppColors.success)),
                     _Divider(),
-                    Expanded(child: _StatItem(label: 'Factures en attente', value: '$pending', color: AppColors.warning)),
+                    Expanded(child: _StatItem(label: t.kpiPendingInvoices, value: '$pending', color: AppColors.warning)),
                     _Divider(),
-                    Expanded(child: _StatItem(label: 'Disponibilité système', value: '${s?.availability.toStringAsFixed(1) ?? 0}%', color: AppColors.secondary)),
+                    Expanded(child: _StatItem(label: t.statSystemAvailability, value: '${s?.availability.toStringAsFixed(1) ?? 0}%', color: AppColors.secondary)),
                   ]);
                 }),
               ],
@@ -113,7 +116,7 @@ class _ReportCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(description, style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted, height: 1.5)),
           const SizedBox(height: 20),
-          SynButton(label: 'Générer PDF', icon: Icons.picture_as_pdf_outlined, color: color, onTap: onGenerate),
+          SynButton(label: AppLocalizations.of(context).generatePdfButton, icon: Icons.picture_as_pdf_outlined, color: color, onTap: onGenerate),
         ],
       ),
     );
@@ -143,7 +146,7 @@ class _Divider extends StatelessWidget {
   }
 }
 
-Future<void> _generateStockPdf(StockController stock) async {
+Future<void> _generateStockPdf(AppLocalizations t, StockController stock) async {
   final pdf = pw.Document();
   final now = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
 
@@ -154,22 +157,22 @@ Future<void> _generateStockPdf(StockController stock) async {
       pw.Header(level: 0, child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text('SYNEXIA — Rapport de Stock',
+          pw.Text(t.pdfStockReportTitle,
             style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-          pw.Text('Généré le $now', style: const pw.TextStyle(fontSize: 10)),
+          pw.Text('${t.pdfGeneratedOnPrefix} $now', style: const pw.TextStyle(fontSize: 10)),
         ],
       )),
       pw.SizedBox(height: 20),
       pw.Table.fromTextArray(
-        headers: ['Produit', 'SKU', 'Catégorie', 'Stock dispo', 'Valeur (DZD)', 'Statut'],
+        headers: [t.pdfHeaderProduct, t.thSku, t.thCategory, t.pdfHeaderStockAvailable, t.pdfHeaderValueDzd, t.thStatus],
         data: stock.products.map((p) => [
           p.name,
           p.sku,
           p.categorie ?? '—',
           '${p.stockDisponible}',
           p.valeurStock.toStringAsFixed(0),
-          p.status == StockStatus.critical ? 'Critique'
-              : p.status == StockStatus.low ? 'Bas' : 'Normal',
+          p.status == StockStatus.critical ? t.statusCritical
+              : p.status == StockStatus.low ? t.statusLowShort : t.statusNormal,
         ]).toList(),
         headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
         cellStyle: const pw.TextStyle(fontSize: 9),
@@ -182,7 +185,7 @@ Future<void> _generateStockPdf(StockController stock) async {
       ),
       pw.SizedBox(height: 20),
       pw.Text(
-        'Total valeur stock: ${stock.products.fold<double>(0, (s, p) => s + p.valeurStock).toStringAsFixed(0)} DZD',
+        '${t.pdfTotalStockValuePrefix} ${stock.products.fold<double>(0, (s, p) => s + p.valeurStock).toStringAsFixed(0)} DZD',
         style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 12),
       ),
     ],
@@ -191,7 +194,7 @@ Future<void> _generateStockPdf(StockController stock) async {
   await Printing.layoutPdf(onLayout: (format) => pdf.save());
 }
 
-Future<void> _generateFacturesPdf(InvoiceController invoices) async {
+Future<void> _generateFacturesPdf(AppLocalizations t, InvoiceController invoices) async {
   final pdf = pw.Document();
   final now = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
 
@@ -202,21 +205,21 @@ Future<void> _generateFacturesPdf(InvoiceController invoices) async {
       pw.Header(level: 0, child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text('SYNEXIA — Rapport des Factures',
+          pw.Text(t.pdfInvoicesReportTitle,
             style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-          pw.Text('Généré le $now', style: const pw.TextStyle(fontSize: 10)),
+          pw.Text('${t.pdfGeneratedOnPrefix} $now', style: const pw.TextStyle(fontSize: 10)),
         ],
       )),
       pw.SizedBox(height: 20),
       pw.Table.fromTextArray(
-        headers: ['Fournisseur', 'Date', 'Montant HT', 'Montant TTC', 'Statut'],
+        headers: [t.pdfHeaderSupplier, t.pdfHeaderDate, t.invoiceAmountHt, t.invoiceAmountTtc, t.thStatus],
         data: invoices.invoices.map((f) => [
           f.supplierName,
           DateFormat('dd/MM/yyyy').format(f.date),
           '${f.amountHt.toStringAsFixed(0)} DA',
           '${f.amountTtc.toStringAsFixed(0)} DA',
-          f.status == InvoiceStatus.validated ? 'Validée'
-              : f.status == InvoiceStatus.rejected ? 'Rejetée' : 'En attente',
+          f.status == InvoiceStatus.validated ? t.pdfStatusValidated
+              : f.status == InvoiceStatus.rejected ? t.pdfStatusRejected : t.pdfStatusPending,
         ]).toList(),
         headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
         cellStyle: const pw.TextStyle(fontSize: 9),
@@ -225,15 +228,15 @@ Future<void> _generateFacturesPdf(InvoiceController invoices) async {
       pw.SizedBox(height: 20),
       pw.Row(children: [
         pw.Expanded(child: pw.Text(
-          'Validées: ${invoices.invoices.where((f) => f.status == InvoiceStatus.validated).length}',
+          '${t.pdfValidatedCountPrefix} ${invoices.invoices.where((f) => f.status == InvoiceStatus.validated).length}',
           style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
         )),
         pw.Expanded(child: pw.Text(
-          'En attente: ${invoices.invoices.where((f) => f.status == InvoiceStatus.pending).length}',
+          '${t.pdfPendingCountPrefix} ${invoices.invoices.where((f) => f.status == InvoiceStatus.pending).length}',
           style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
         )),
         pw.Expanded(child: pw.Text(
-          'Rejetées: ${invoices.invoices.where((f) => f.status == InvoiceStatus.rejected).length}',
+          '${t.pdfRejectedCountPrefix} ${invoices.invoices.where((f) => f.status == InvoiceStatus.rejected).length}',
           style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11),
         )),
       ]),
@@ -243,7 +246,7 @@ Future<void> _generateFacturesPdf(InvoiceController invoices) async {
   await Printing.layoutPdf(onLayout: (format) => pdf.save());
 }
 
-Future<void> _generateAlertesPdf() async {
+Future<void> _generateAlertesPdf(AppLocalizations t) async {
   final alerts = Get.find<AlertController>().alerts;
   final pdf = pw.Document();
   final now = DateFormat('dd/MM/yyyy HH:mm').format(DateTime.now());
@@ -255,22 +258,22 @@ Future<void> _generateAlertesPdf() async {
       pw.Header(level: 0, child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
-          pw.Text('SYNEXIA — Rapport des Alertes',
+          pw.Text(t.pdfAlertsReportTitle,
             style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold)),
-          pw.Text('Généré le $now', style: const pw.TextStyle(fontSize: 10)),
+          pw.Text('${t.pdfGeneratedOnPrefix} $now', style: const pw.TextStyle(fontSize: 10)),
         ],
       )),
       pw.SizedBox(height: 20),
       pw.Table.fromTextArray(
-        headers: ['Titre', 'Message', 'Niveau', 'Date', 'Statut'],
+        headers: [t.thTitle, t.thMessage, t.thLevel, t.pdfHeaderDate, t.thStatus],
         data: alerts.map((a) => [
           a.title,
           a.message,
-          a.level == AlertLevel.danger ? 'Critique'
-              : a.level == AlertLevel.warning ? 'Avertissement'
-              : a.level == AlertLevel.success ? 'Succès' : 'Info',
+          a.level == AlertLevel.danger ? t.statusCritical
+              : a.level == AlertLevel.warning ? t.alertLevelWarning
+              : a.level == AlertLevel.success ? t.toastSuccess : t.alertLevelInfo,
           DateFormat('dd/MM/yyyy HH:mm').format(a.createdAt),
-          a.isRead ? 'Lu' : 'Non lu',
+          a.isRead ? t.readLabel : t.pdfUnreadLabel,
         ]).toList(),
         headerStyle: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 9),
         cellStyle: const pw.TextStyle(fontSize: 9),

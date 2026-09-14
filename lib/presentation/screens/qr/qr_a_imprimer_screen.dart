@@ -8,6 +8,7 @@ import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../data/repositories/stock_repository_impl.dart';
@@ -19,18 +20,19 @@ class QrAImprimerScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final stock = Get.find<StockController>();
     stock.loadQrAImprimer();
+    final t = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        PageHeader(title: 'Codes QR à imprimer', actions: [
+        PageHeader(title: t.qrPrintPageTitle, actions: [
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: stock.loadQrAImprimer),
         ]),
         const SizedBox(height: 20),
         Expanded(child: Obx(() {
           final items = stock.qrAImprimer;
           if (items.isEmpty) {
-            return const Center(child: Text('Aucun code QR en attente d\'impression',
+            return Center(child: Text(t.qrNonePending,
               style: TextStyle(color: AppColors.darkTextMuted)));
           }
           return ListView.separated(
@@ -42,17 +44,17 @@ class QrAImprimerScreen extends StatelessWidget {
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text(item.produitNom, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                   const SizedBox(height: 4),
-                  Text('Lot: ${item.numeroLot ?? '—'}  ·  Emplacement: ${item.emplacement ?? '—'}',
+                  Text('${t.qrLotLabel} ${item.numeroLot ?? '—'}  ·  ${t.qrLocationLabel} ${item.emplacement ?? '—'}',
                     style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
                 ])),
                 IconButton(
                   icon: const Icon(Icons.qr_code_2_rounded, color: AppColors.primary),
-                  tooltip: 'Imprimer',
+                  tooltip: t.printTooltip,
                   onPressed: () => showLotQrDialog(item.lotId, item.numeroLot ?? '#${item.lotId}'),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close_rounded, color: AppColors.danger),
-                  tooltip: 'Retirer de la liste',
+                  tooltip: t.removeFromListTooltip,
                   onPressed: () => stock.supprimerQrAImprimer(item.id),
                 ),
               ]));
@@ -65,8 +67,9 @@ class QrAImprimerScreen extends StatelessWidget {
 }
 
 Future<void> _telechargerQr(Uint8List bytes, String numeroLot) async {
+  final t = AppLocalizations(Get.locale ?? const Locale('fr'));
   final path = await FilePicker.platform.saveFile(
-    dialogTitle: 'Enregistrer le QR',
+    dialogTitle: t.saveQrDialogTitle,
     fileName: 'QR_$numeroLot.png',
     type: FileType.custom,
     allowedExtensions: ['png'],
@@ -74,7 +77,7 @@ Future<void> _telechargerQr(Uint8List bytes, String numeroLot) async {
   if (path == null) return;
   final file = File(path.endsWith('.png') ? path : '$path.png');
   await file.writeAsBytes(bytes);
-  Get.snackbar('Téléchargé', 'Enregistré : ${file.path}',
+  Get.snackbar(t.downloadedTitle, '${t.downloadedMsgPrefix} ${file.path}',
     backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
 }
 
@@ -86,6 +89,7 @@ Future<void> _imprimerQr(Uint8List bytes, String numeroLot) async {
 }
 
 void showLotQrDialog(int lotId, String numeroLot) {
+  final t = AppLocalizations(Get.locale ?? const Locale('fr'));
   Get.dialog(FutureBuilder<Either<String, Uint8List>>(
     future: StockRepositoryImpl().getLotQr(lotId),
     builder: (context, snapshot) {
@@ -94,24 +98,24 @@ void showLotQrDialog(int lotId, String numeroLot) {
           child: Center(child: CircularProgressIndicator())));
       }
       return snapshot.data!.fold(
-        (e) => AlertDialog(title: const Text('Erreur'), content: Text(e)),
+        (e) => AlertDialog(title: Text(t.errorTitle), content: Text(e)),
         (bytes) => AlertDialog(
-          title: Text('QR — Lot $numeroLot'),
+          title: Text('${t.qrLotTitle} $numeroLot'),
           content: SizedBox(width: 260, height: 260, child: Center(
             child: Image.memory(bytes, width: 220, height: 220),
           )),
           actions: [
             TextButton.icon(
               icon: const Icon(Icons.download_rounded, size: 18),
-              label: const Text('Télécharger'),
+              label: Text(t.downloadButton),
               onPressed: () => _telechargerQr(bytes, numeroLot),
             ),
             ElevatedButton.icon(
               icon: const Icon(Icons.print_rounded, size: 18),
-              label: const Text('Imprimer'),
+              label: Text(t.printTooltip),
               onPressed: () => _imprimerQr(bytes, numeroLot),
             ),
-            TextButton(onPressed: () => Get.back(), child: const Text('Fermer')),
+            TextButton(onPressed: () => Get.back(), child: Text(t.close)),
           ],
         ),
       );

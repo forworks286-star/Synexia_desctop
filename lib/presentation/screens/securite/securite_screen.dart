@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -13,6 +14,7 @@ class SecuriteScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final stock = Get.find<StockController>();
     final alerts = Get.find<AlertController>();
+    final t = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.all(28),
@@ -20,8 +22,8 @@ class SecuriteScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const Expanded(child: PageHeader(title: 'Sécurité')),
-            SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, outline: true,
+            Expanded(child: PageHeader(title: t.secPageTitle)),
+            SynButton(label: t.dashboardRefresh, icon: Icons.refresh_rounded, outline: true,
               onTap: () { stock.loadIoT(); alerts.loadAlerts(); }),
           ]),
           const SizedBox(height: 20),
@@ -29,9 +31,9 @@ class SecuriteScreen extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(flex: 3, child: _buildFaceEvents(stock)),
+                Expanded(flex: 3, child: _buildFaceEvents(t, stock)),
                 const SizedBox(width: 16),
-                Expanded(flex: 2, child: _buildSecurityAlerts(alerts)),
+                Expanded(flex: 2, child: _buildSecurityAlerts(t, alerts)),
               ],
             ),
           ),
@@ -40,25 +42,25 @@ class SecuriteScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFaceEvents(StockController stock) {
+  Widget _buildFaceEvents(AppLocalizations t, StockController stock) {
     return SynCard(
       padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
-            child: SectionTitle(title: 'CONTRÔLE D\'ACCÈS — FACE ID'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: SectionTitle(title: t.secAccessControlTitle),
           ),
           const Divider(height: 1, color: AppColors.darkBorder),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            child: Row(children: const [
-              Expanded(flex: 3, child: _TH(label: 'PERSONNE')),
-              Expanded(flex: 2, child: _TH(label: 'ZONE')),
-              Expanded(flex: 1, child: _TH(label: 'CONFIANCE')),
-              Expanded(flex: 1, child: _TH(label: 'ACCÈS')),
-              Expanded(flex: 2, child: _TH(label: 'HEURE')),
+            child: Row(children: [
+              Expanded(flex: 3, child: _TH(label: t.secThPerson)),
+              Expanded(flex: 2, child: _TH(label: t.secThZone)),
+              Expanded(flex: 1, child: _TH(label: t.secThConfidence)),
+              Expanded(flex: 1, child: _TH(label: t.secThAccess)),
+              Expanded(flex: 2, child: _TH(label: t.thTime)),
             ]),
           ),
           const Divider(height: 1, color: AppColors.darkBorder),
@@ -66,7 +68,7 @@ class SecuriteScreen extends StatelessWidget {
             child: Obx(() {
               final events = stock.faceEvents;
               if (events.isEmpty) {
-                return const Center(child: Text('Aucun événement Face ID',
+                return Center(child: Text(t.secNoFaceEvent,
                   style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)));
               }
               return ListView.separated(
@@ -81,15 +83,15 @@ class SecuriteScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSecurityAlerts(AlertController alerts) {
+  Widget _buildSecurityAlerts(AppLocalizations t, AlertController alerts) {
     return SynCard(
       padding: EdgeInsets.zero,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.fromLTRB(20, 16, 20, 12),
-            child: SectionTitle(title: 'ALERTES SÉCURITÉ'),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: SectionTitle(title: t.secAlertsTitle),
           ),
           const Divider(height: 1, color: AppColors.darkBorder),
           Expanded(
@@ -101,10 +103,10 @@ class SecuriteScreen extends StatelessWidget {
                                a.type == 'securite' || a.type == 'acces')
                   .toList();
               if (secAlerts.isEmpty) {
-                return const Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Icon(Icons.verified_user_rounded, size: 36, color: AppColors.success),
-                  SizedBox(height: 10),
-                  Text('Aucune alerte sécurité', style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)),
+                return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  const Icon(Icons.verified_user_rounded, size: 36, color: AppColors.success),
+                  const SizedBox(height: 10),
+                  Text(t.secNoSecurityAlert, style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)),
                 ]));
               }
               return ListView.separated(
@@ -144,6 +146,7 @@ class SecuriteScreen extends StatelessWidget {
   }
 }
 
+
 class _FaceRow extends StatelessWidget {
   final FaceEvent event;
   const _FaceRow({required this.event});
@@ -168,7 +171,7 @@ class _FaceRow extends StatelessWidget {
             )),
           ),
           const SizedBox(width: 10),
-          Expanded(child: Text(event.nom ?? 'Inconnu',
+          Expanded(child: Text(event.nom ?? AppLocalizations.of(context).secUnknownPerson,
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
         ])),
         Expanded(flex: 2, child: Text(event.zone ?? '—',
@@ -182,7 +185,7 @@ class _FaceRow extends StatelessWidget {
             color: (autorise ? AppColors.success : AppColors.danger).withOpacity(0.1),
             borderRadius: BorderRadius.circular(4),
           ),
-          child: Text(autorise ? '✓ OK' : '✗ Refusé',
+          child: Text(autorise ? AppLocalizations.of(context).secAccessOk : AppLocalizations.of(context).secAccessDenied,
             style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700,
               color: autorise ? AppColors.success : AppColors.danger)),
         )),

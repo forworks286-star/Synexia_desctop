@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../auth/login_screen.dart';
 
 class AdminSetupScreen extends StatefulWidget {
@@ -27,16 +28,17 @@ class _AdminSetupScreenState extends State<AdminSetupScreen> {
     final password = _passwordCtrl.text;
     final confirm  = _confirmCtrl.text;
 
+    final t = AppLocalizations.of(context);
     if (fullName.isEmpty || username.isEmpty || password.isEmpty) {
-      setState(() => _error = 'Veuillez remplir tous les champs');
+      setState(() => _error = t.setupFillAllFields);
       return;
     }
     if (password != confirm) {
-      setState(() => _error = 'Les mots de passe ne correspondent pas');
+      setState(() => _error = t.setupPasswordsMismatch);
       return;
     }
     if (password.length < 6) {
-      setState(() => _error = 'Mot de passe trop court (minimum 6 caractères)');
+      setState(() => _error = t.setupPasswordTooShort);
       return;
     }
     setState(() { _loading = true; _error = null; });
@@ -54,19 +56,21 @@ class _AdminSetupScreenState extends State<AdminSetupScreen> {
       Get.offAll(() => const LoginScreen());
     } on DioException catch (e) {
       final detail = e.response?.data?['detail'];
+      final t = AppLocalizations.of(context);
       setState(() {
         _loading = false;
         _error = detail == 'setup_already_done'
-            ? 'Configuration déjà effectuée'
+            ? t.setupAlreadyDone
             : detail == 'error_password_too_short'
-                ? 'Mot de passe trop court'
-                : 'Erreur serveur';
+                ? t.setupPasswordTooShortServer
+                : t.setupServerError;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       body: Center(
         child: SizedBox(
@@ -89,25 +93,25 @@ class _AdminSetupScreenState extends State<AdminSetupScreen> {
                 Text('Synexia.Dz', style: Theme.of(context).textTheme.displayMedium),
               ]),
               const SizedBox(height: 32),
-              Text('Configuration initiale', style: Theme.of(context).textTheme.titleLarge),
+              Text(t.setupInitialConfigTitle, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 6),
-              const Text(
-                'Créez le compte administrateur de votre entrepôt.\nCette étape n\'apparaîtra qu\'une seule fois.',
+              Text(
+                t.setupInitialConfigDesc,
                 style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted, height: 1.5),
               ),
               const SizedBox(height: 28),
               TextField(controller: _fullNameCtrl,
-                decoration: const InputDecoration(labelText: 'Nom complet'),
+                decoration: InputDecoration(labelText: t.setupFullNameLabel),
                 textInputAction: TextInputAction.next),
               const SizedBox(height: 14),
               TextField(controller: _usernameCtrl,
-                decoration: const InputDecoration(labelText: 'Nom d\'utilisateur'),
+                decoration: InputDecoration(labelText: t.loginUsername),
                 textInputAction: TextInputAction.next),
               const SizedBox(height: 14),
               TextField(
                 controller: _passwordCtrl, obscureText: _obscure,
                 decoration: InputDecoration(
-                  labelText: 'Mot de passe',
+                  labelText: t.loginPassword,
                   suffixIcon: IconButton(
                     icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 16),
                     onPressed: () => setState(() => _obscure = !_obscure),
@@ -118,7 +122,7 @@ class _AdminSetupScreenState extends State<AdminSetupScreen> {
               const SizedBox(height: 14),
               TextField(
                 controller: _confirmCtrl, obscureText: _obscure,
-                decoration: const InputDecoration(labelText: 'Confirmer le mot de passe'),
+                decoration: InputDecoration(labelText: t.setupConfirmPasswordLabel),
                 textInputAction: TextInputAction.done,
                 onSubmitted: (_) => _submit(),
               ),
@@ -146,7 +150,7 @@ class _AdminSetupScreenState extends State<AdminSetupScreen> {
                   child: _loading
                       ? const SizedBox(width: 18, height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Créer le compte administrateur'),
+                      : Text(t.setupCreateAdminButton),
                 ),
               ),
             ],

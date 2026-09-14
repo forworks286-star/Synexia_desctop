@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -12,6 +13,7 @@ class AlertesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.find<AlertController>();
+    final t = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.all(28),
@@ -19,20 +21,20 @@ class AlertesScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Obx(() => PageHeader(
-            title: 'Alertes',
+            title: t.homeAlerts,
             actions: [
               if (ctrl.unreadCount.value > 0) ...[
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.12), borderRadius: BorderRadius.circular(6)),
-                  child: Text('${ctrl.unreadCount.value} non lues', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.danger)),
+                  child: Text('${ctrl.unreadCount.value} ${t.kpiUnread}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.danger)),
                 ),
                 const SizedBox(width: 10),
                 if (Get.find<AuthController>().isAdmin)
-                  SynButton(label: 'Tout marquer lu', icon: Icons.done_all_rounded, onTap: ctrl.markAllRead, outline: true),
+                  SynButton(label: t.markAllRead, icon: Icons.done_all_rounded, onTap: ctrl.markAllRead, outline: true),
               ],
               const SizedBox(width: 10),
-              SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, onTap: ctrl.loadAlerts, outline: true),
+              SynButton(label: t.dashboardRefresh, icon: Icons.refresh_rounded, onTap: ctrl.loadAlerts, outline: true),
             ],
           )),
           const SizedBox(height: 20),
@@ -46,11 +48,11 @@ class AlertesScreen extends StatelessWidget {
                   Expanded(
                     child: Obx(() {
                       if (ctrl.alerts.isEmpty) {
-                        return const Center(
+                        return Center(
                           child: Column(mainAxisSize: MainAxisSize.min, children: [
-                            Icon(Icons.notifications_none_rounded, size: 40, color: AppColors.darkTextMuted),
-                            SizedBox(height: 10),
-                            Text('Aucune alerte', style: TextStyle(color: AppColors.darkTextMuted)),
+                            const Icon(Icons.notifications_none_rounded, size: 40, color: AppColors.darkTextMuted),
+                            const SizedBox(height: 10),
+                            Text(t.noAlerts, style: TextStyle(color: AppColors.darkTextMuted)),
                           ]),
                         );
                       }
@@ -74,15 +76,16 @@ class AlertesScreen extends StatelessWidget {
 class _TableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Row(children: const [
-        SizedBox(width: 20),
-        _TH(label: 'TITRE', flex: 3),
-        _TH(label: 'MESSAGE', flex: 5),
-        _TH(label: 'NIVEAU', flex: 1),
-        _TH(label: 'HEURE', flex: 2),
-        _TH(label: 'STATUT', flex: 1),
+      child: Row(children: [
+        const SizedBox(width: 20),
+        _TH(label: t.thTitle, flex: 3),
+        _TH(label: t.thMessage, flex: 5),
+        _TH(label: t.thLevel, flex: 1),
+        _TH(label: t.thTime, flex: 2),
+        _TH(label: t.thStatus, flex: 1),
       ]),
     );
   }
@@ -113,17 +116,18 @@ class _AlertRow extends StatelessWidget {
     }
   }
 
-  String get _levelLabel {
+  String _levelLabel(AppLocalizations t) {
     switch (alert.level) {
-      case AlertLevel.danger: return 'Critique';
-      case AlertLevel.warning: return 'Avertissement';
-      case AlertLevel.success: return 'Succès';
-      case AlertLevel.info: return 'Info';
+      case AlertLevel.danger: return t.statusCritical;
+      case AlertLevel.warning: return t.alertLevelWarning;
+      case AlertLevel.success: return t.toastSuccess;
+      case AlertLevel.info: return t.alertLevelInfo;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -143,25 +147,25 @@ class _AlertRow extends StatelessWidget {
           Expanded(flex: 1, child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(color: _levelColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-            child: Text(_levelLabel, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: _levelColor)),
+            child: Text(_levelLabel(t), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: _levelColor)),
           )),
-          Expanded(flex: 2, child: Text(_timeAgo(alert.createdAt), style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
+          Expanded(flex: 2, child: Text(_timeAgo(t, alert.createdAt), style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
           Expanded(flex: 1, child: alert.isRead
-              ? const Text('Lu', style: TextStyle(fontSize: 10, color: AppColors.darkTextMuted))
+              ? Text(t.readLabel, style: const TextStyle(fontSize: 10, color: AppColors.darkTextMuted))
               : Container(
                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                  child: const Text('Nouveau', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                  child: Text(t.newLabel, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.primary)),
                 )),
         ]),
       ),
     );
   }
 
-  String _timeAgo(DateTime dt) {
+  String _timeAgo(AppLocalizations t, DateTime dt) {
     final diff = DateTime.now().difference(dt);
-    if (diff.inMinutes < 60) return 'Il y a ${diff.inMinutes} min';
-    if (diff.inHours < 24) return 'Il y a ${diff.inHours}h';
+    if (diff.inMinutes < 60) return t.minutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return t.hoursAgo(diff.inHours);
     return '${dt.day.toString().padLeft(2, '0')}/${dt.month.toString().padLeft(2, '0')}/${dt.year}';
   }
 }

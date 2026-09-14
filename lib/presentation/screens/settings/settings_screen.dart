@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/models/models.dart';
@@ -15,13 +16,14 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = Get.find<AppSettingsController>();
     final auth = Get.find<AuthController>();
+    final t = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const PageHeader(title: 'Paramètres'),
+          PageHeader(title: t.navSettings),
           const SizedBox(height: 24),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,17 +51,17 @@ class _AppearanceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(title: 'APPARENCE'),
+          SectionTitle(title: AppLocalizations.of(context).settingsAppearanceTitle),
           const SizedBox(height: 20),
-          const Text('Thème', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+          Text(AppLocalizations.of(context).settingsThemeLabel, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
           const SizedBox(height: 10),
           Obx(() => Row(children: [
-            _ThemeOption(label: 'Sombre', icon: Icons.dark_mode_outlined, selected: settings.isDark.value, onTap: () { if (!settings.isDark.value) settings.toggleTheme(); }),
+            _ThemeOption(label: AppLocalizations.of(context).settingsDark, icon: Icons.dark_mode_outlined, selected: settings.isDark.value, onTap: () { if (!settings.isDark.value) settings.toggleTheme(); }),
             const SizedBox(width: 10),
-            _ThemeOption(label: 'Clair', icon: Icons.light_mode_outlined, selected: !settings.isDark.value, onTap: () { if (settings.isDark.value) settings.toggleTheme(); }),
+            _ThemeOption(label: AppLocalizations.of(context).settingsLight, icon: Icons.light_mode_outlined, selected: !settings.isDark.value, onTap: () { if (settings.isDark.value) settings.toggleTheme(); }),
           ])),
           const SizedBox(height: 24),
-          const Text('Langue', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+          Text(AppLocalizations.of(context).settingsLanguageLabel, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
           const SizedBox(height: 10),
           Obx(() => Row(children: [
             for (final l in [('fr', 'Français'), ('ar', 'العربية'), ('en', 'English')])
@@ -84,7 +86,7 @@ class _AccountCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(title: 'COMPTE'),
+          SectionTitle(title: AppLocalizations.of(context).settingsAccountTitle),
           const SizedBox(height: 20),
           Obx(() {
             final user = auth.user.value;
@@ -108,14 +110,14 @@ class _AccountCard extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.12), borderRadius: BorderRadius.circular(4)),
-                      child: Text(_roleLabel(user.role), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                      child: Text(_roleLabel(AppLocalizations.of(context), user.role), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primary)),
                     ),
                   ]),
                 ]),
                 const SizedBox(height: 20),
                 const Divider(color: AppColors.darkBorder),
                 const SizedBox(height: 16),
-                SynButton(label: 'Déconnexion', outline: true, color: AppColors.danger, icon: Icons.logout_rounded, onTap: auth.logout),
+                SynButton(label: AppLocalizations.of(context).logout, outline: true, color: AppColors.danger, icon: Icons.logout_rounded, onTap: auth.logout),
               ],
             );
           }),
@@ -132,15 +134,15 @@ class _ConnectionCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(title: 'CONNEXION SERVEUR'),
+          SectionTitle(title: AppLocalizations.of(context).settingsConnectionTitle),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: AppColors.success.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.success.withOpacity(0.2))),
-            child: Row(children: const [
-              Icon(Icons.circle, size: 8, color: AppColors.success),
-              SizedBox(width: 8),
-              Text('Connecté au serveur local', style: TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600)),
+            child: Row(children: [
+              const Icon(Icons.circle, size: 8, color: AppColors.success),
+              const SizedBox(width: 8),
+              Text(AppLocalizations.of(context).settingsConnectedLocal, style: const TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600)),
             ]),
           ),
         ],
@@ -218,11 +220,11 @@ class _LangOption extends StatelessWidget {
   }
 }
 
-String _roleLabel(UserRole role) {
+String _roleLabel(AppLocalizations t, UserRole role) {
   switch (role) {
-    case UserRole.admin:      return 'Administrateur';
-    case UserRole.manager:    return 'Manager';
-    case UserRole.stockiste:  return 'Stockiste';
-    case UserRole.agentKiosk: return 'Agent Kiosk';
+    case UserRole.admin:      return t.roleAdmin;
+    case UserRole.manager:    return t.roleManager;
+    case UserRole.stockiste:  return t.roleStockiste;
+    case UserRole.agentKiosk: return t.roleAgentKiosk;
   }
 }

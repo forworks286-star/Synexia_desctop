@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -15,6 +16,7 @@ class DashboardScreen extends StatelessWidget {
     final stock = Get.find<StockController>();
     final alerts = Get.find<AlertController>();
     final invoices = Get.find<InvoiceController>();
+    final t = AppLocalizations.of(context);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(28),
@@ -22,9 +24,9 @@ class DashboardScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const Expanded(child: PageHeader(title: 'Dashboard')),
+            Expanded(child: PageHeader(title: t.navDashboard)),
             SynButton(
-              label: 'Actualiser',
+              label: t.dashboardRefresh,
               icon: Icons.refresh_rounded,
               outline: true,
               onTap: () {
@@ -35,23 +37,23 @@ class DashboardScreen extends StatelessWidget {
             ),
           ]),
           const SizedBox(height: 24),
-          Obx(() => _buildKpis(stock.stats.value, alerts.unreadCount.value, invoices.invoices.where((i) => i.status == InvoiceStatus.pending).length)),
+          Obx(() => _buildKpis(t, stock.stats.value, alerts.unreadCount.value, invoices.invoices.where((i) => i.status == InvoiceStatus.pending).length)),
           const SizedBox(height: 24),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(flex: 3, child: _buildMovementsChart(stock)),
+              Expanded(flex: 3, child: _buildMovementsChart(t, stock)),
               const SizedBox(width: 20),
-              Expanded(flex: 2, child: _buildAlertsPanel(alerts)),
+              Expanded(flex: 2, child: _buildAlertsPanel(t, alerts)),
             ],
           ),
           const SizedBox(height: 20),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(flex: 2, child: _buildCriticalStock(stock)),
+              Expanded(flex: 2, child: _buildCriticalStock(t, stock)),
               const SizedBox(width: 20),
-              Expanded(flex: 3, child: _buildRecentMovements(stock)),
+              Expanded(flex: 3, child: _buildRecentMovements(t, stock)),
             ],
           ),
         ],
@@ -59,7 +61,7 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildKpis(DashboardStats? s, int alertCount, int pendingInvoices) {
+  Widget _buildKpis(AppLocalizations t, DashboardStats? s, int alertCount, int pendingInvoices) {
     final valeur = s != null
         ? (s.valeurStockTotal >= 1000000
             ? '${(s.valeurStockTotal / 1000000).toStringAsFixed(1)}M'
@@ -68,21 +70,21 @@ class DashboardScreen extends StatelessWidget {
                 : s.valeurStockTotal.toStringAsFixed(0))
         : '--';
     return Row(children: [
-      Expanded(child: KpiCard(value: s != null ? '${s.totalProducts}' : '--', label: 'Produits', icon: Icons.inventory_2_outlined)),
+      Expanded(child: KpiCard(value: s != null ? '${s.totalProducts}' : '--', label: t.homeProducts, icon: Icons.inventory_2_outlined)),
       const SizedBox(width: 14),
-      Expanded(child: KpiCard(value: s != null ? '${s.todayEntries}' : '--', label: 'Entrées / auj.', icon: Icons.arrow_downward_rounded, valueColor: AppColors.success)),
+      Expanded(child: KpiCard(value: s != null ? '${s.todayEntries}' : '--', label: t.kpiEntriesToday, icon: Icons.arrow_downward_rounded, valueColor: AppColors.success)),
       const SizedBox(width: 14),
-      Expanded(child: KpiCard(value: s != null ? '${s.todayExits}' : '--', label: 'Sorties / auj.', icon: Icons.arrow_upward_rounded, valueColor: AppColors.danger)),
+      Expanded(child: KpiCard(value: s != null ? '${s.todayExits}' : '--', label: t.kpiExitsToday, icon: Icons.arrow_upward_rounded, valueColor: AppColors.danger)),
       const SizedBox(width: 14),
-      Expanded(child: KpiCard(value: '$alertCount', label: 'Alertes actives', icon: Icons.notifications_outlined, valueColor: alertCount > 0 ? AppColors.warning : null, trend: alertCount > 0 ? 'non lues' : null, trendUp: false)),
+      Expanded(child: KpiCard(value: '$alertCount', label: t.kpiActiveAlerts, icon: Icons.notifications_outlined, valueColor: alertCount > 0 ? AppColors.warning : null, trend: alertCount > 0 ? t.kpiUnread : null, trendUp: false)),
       const SizedBox(width: 14),
-      Expanded(child: KpiCard(value: '$pendingInvoices', label: 'Factures en attente', icon: Icons.receipt_long_outlined, valueColor: pendingInvoices > 0 ? AppColors.warning : null)),
+      Expanded(child: KpiCard(value: '$pendingInvoices', label: t.kpiPendingInvoices, icon: Icons.receipt_long_outlined, valueColor: pendingInvoices > 0 ? AppColors.warning : null)),
       const SizedBox(width: 14),
-      Expanded(child: KpiCard(value: '$valeur DZD', label: 'Valeur stock total', icon: Icons.account_balance_wallet_outlined, valueColor: AppColors.info)),
+      Expanded(child: KpiCard(value: '$valeur DZD', label: t.kpiTotalStockValue, icon: Icons.account_balance_wallet_outlined, valueColor: AppColors.info)),
     ]);
   }
 
-  Widget _buildMovementsChart(StockController stock) {
+  Widget _buildMovementsChart(AppLocalizations t, StockController stock) {
     return Obx(() {
       final points = stock.chartPoints;
       final barGroups = List.generate(points.length, (i) {
@@ -107,17 +109,17 @@ class DashboardScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              const SectionTitle(title: 'MOUVEMENTS — 7 DERNIERS JOURS'),
+              SectionTitle(title: t.chartMovementsTitle),
               const SizedBox(width: 20),
-              _Legend(color: AppColors.primary, label: 'Entrées'),
+              _Legend(color: AppColors.primary, label: t.homeEntries),
               const SizedBox(width: 12),
-              _Legend(color: AppColors.success, label: 'Sorties'),
+              _Legend(color: AppColors.success, label: t.homeExits),
             ]),
             const SizedBox(height: 20),
             SizedBox(
               height: 200,
               child: points.isEmpty
-                  ? const Center(child: Text('Aucune donnée', style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)))
+                  ? Center(child: Text(t.chartNoData, style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)))
                   : BarChart(BarChartData(
                       barGroups: barGroups,
                       gridData: FlGridData(
@@ -149,7 +151,7 @@ class DashboardScreen extends StatelessWidget {
                         touchTooltipData: BarTouchTooltipData(
                           getTooltipColor: (_) => AppColors.darkCard,
                           getTooltipItem: (group, _, rod, rodIndex) => BarTooltipItem(
-                            '${rodIndex == 0 ? "Entrées" : "Sorties"}: ${rod.toY.toInt()}',
+                            '${rodIndex == 0 ? t.homeEntries : t.homeExits}: ${rod.toY.toInt()}',
                             const TextStyle(color: Colors.white, fontSize: 11)),
                         ),
                       ),
@@ -161,13 +163,13 @@ class DashboardScreen extends StatelessWidget {
     });
   }
 
-  Widget _buildAlertsPanel(AlertController alerts) {
+  Widget _buildAlertsPanel(AppLocalizations t, AlertController alerts) {
     return SynCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SectionTitle(
-            title: 'ALERTES RÉCENTES',
+            title: t.recentAlertsTitle,
             action: Obx(() => alerts.unreadCount.value > 0
                 ? Container(
                     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
@@ -179,7 +181,7 @@ class DashboardScreen extends StatelessWidget {
           const SizedBox(height: 14),
           Obx(() {
             if (alerts.alerts.isEmpty) {
-              return const Padding(padding: EdgeInsets.symmetric(vertical: 20), child: Center(child: Text('Aucune alerte', style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12))));
+              return Padding(padding: const EdgeInsets.symmetric(vertical: 20), child: Center(child: Text(t.noAlerts, style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12))));
             }
             return Column(
               children: alerts.alerts.take(6).map((a) => _AlertRow(alert: a, onTap: () => alerts.markRead(a.id))).toList(),
@@ -190,16 +192,16 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildCriticalStock(StockController stock) {
+  Widget _buildCriticalStock(AppLocalizations t, StockController stock) {
     return SynCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(title: 'STOCK CRITIQUE'),
+          SectionTitle(title: t.criticalStockTitle),
           const SizedBox(height: 14),
           Obx(() {
             final critical = stock.products.where((p) => p.status != StockStatus.normal).take(5).toList();
-            if (critical.isEmpty) return const Center(child: Text('Tout est normal', style: TextStyle(color: AppColors.success, fontSize: 12)));
+            if (critical.isEmpty) return Center(child: Text(t.allNormal, style: TextStyle(color: AppColors.success, fontSize: 12)));
             return Column(
               children: critical.map((p) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 8),
@@ -225,21 +227,21 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildRecentMovements(StockController stock) {
+  Widget _buildRecentMovements(AppLocalizations t, StockController stock) {
     return SynCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SectionTitle(title: 'DERNIERS MOUVEMENTS'),
+          SectionTitle(title: t.recentMovementsTitle),
           const SizedBox(height: 14),
           Obx(() {
-            if (stock.movements.isEmpty) return const Center(child: Text('Aucun mouvement', style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)));
+            if (stock.movements.isEmpty) return Center(child: Text(t.noMovements, style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)));
             return Column(
               children: [
                 Row(children: [
-                  Expanded(child: Text('PRODUIT', style: TextStyle(fontSize: 10, color: AppColors.darkTextMuted, fontWeight: FontWeight.w600, letterSpacing: 0.08))),
-                  SizedBox(width: 80, child: Text('QTÉ', style: TextStyle(fontSize: 10, color: AppColors.darkTextMuted, fontWeight: FontWeight.w600, letterSpacing: 0.08))),
-                  SizedBox(width: 100, child: Text('TYPE', style: TextStyle(fontSize: 10, color: AppColors.darkTextMuted, fontWeight: FontWeight.w600, letterSpacing: 0.08))),
+                  Expanded(child: Text(t.tableProduct, style: TextStyle(fontSize: 10, color: AppColors.darkTextMuted, fontWeight: FontWeight.w600, letterSpacing: 0.08))),
+                  SizedBox(width: 80, child: Text(t.tableQty, style: TextStyle(fontSize: 10, color: AppColors.darkTextMuted, fontWeight: FontWeight.w600, letterSpacing: 0.08))),
+                  SizedBox(width: 100, child: Text(t.tableType, style: TextStyle(fontSize: 10, color: AppColors.darkTextMuted, fontWeight: FontWeight.w600, letterSpacing: 0.08))),
                 ]),
                 const SizedBox(height: 8),
                 ...stock.movements.take(6).map((m) => Padding(
@@ -257,7 +259,7 @@ class DashboardScreen extends StatelessWidget {
                           color: (m.type == MovementType.entry ? AppColors.success : AppColors.danger).withOpacity(0.1),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: Text(m.type == MovementType.entry ? 'Entrée' : 'Sortie', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: m.type == MovementType.entry ? AppColors.success : AppColors.danger)),
+                        child: Text(m.type == MovementType.entry ? t.movementEntry : t.movementExit, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: m.type == MovementType.entry ? AppColors.success : AppColors.danger)),
                       )),
                     ],
                   ),

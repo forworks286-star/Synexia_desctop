@@ -4,6 +4,7 @@ import '../../../core/utils/get_safe_back.dart';
 import '../../../core/widgets/app_toast.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -27,21 +28,22 @@ class FacturesScreen extends StatelessWidget {
     ctrl.loadFacturesEcartASignaler();
     ctrl.loadFacturesEcartAValider();
     Get.find<AlertController>().markReadByType('facture');
+    final t = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           PageHeader(
-            title: 'Factures',
+            title: t.navInvoices,
             actions: [
               _FilterDropdown(ctrl: ctrl),
               const SizedBox(width: 12),
               _TypeFilterDropdown(ctrl: ctrl),
               const SizedBox(width: 12),
-              SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, onTap: ctrl.loadInvoices, outline: true),
+              SynButton(label: t.dashboardRefresh, icon: Icons.refresh_rounded, onTap: ctrl.loadInvoices, outline: true),
               const SizedBox(width: 12),
-              SynButton(label: 'Nouvelle facture', icon: Icons.add_rounded,
+              SynButton(label: t.invPageActionsNewInvoice, icon: Icons.add_rounded,
                 onTap: () => ouvrirNouvelleFacture(context, ctrl)),
             ],
           ),
@@ -61,7 +63,7 @@ class FacturesScreen extends StatelessWidget {
                 Row(children: [
                   const Icon(Icons.warning_amber_rounded, color: Colors.red, size: 18),
                   const SizedBox(width: 8),
-                  Text('${ctrl.facturesEcartASignaler.length} facture(s) ne correspondent pas au bon de commande',
+                  Text(t.invBannerMismatchCount(ctrl.facturesEcartASignaler.length),
                     style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
@@ -71,7 +73,7 @@ class FacturesScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(children: [
                       Expanded(child: Text('#${f.id} — ${f.supplierName}', style: const TextStyle(fontSize: 13))),
-                      SynButton(label: 'Voir et signaler', icon: Icons.compare_arrows_rounded,
+                      SynButton(label: t.invViewAndReport, icon: Icons.compare_arrows_rounded,
                         onTap: () => _showEcartASignalerDialog(context, ctrl, f)),
                     ]),
                   )).toList()),
@@ -93,7 +95,7 @@ class FacturesScreen extends StatelessWidget {
                 Row(children: [
                   const Icon(Icons.fact_check_rounded, color: Colors.blue, size: 18),
                   const SizedBox(width: 8),
-                  Text('${ctrl.facturesOcrAVerifier.length} facture(s) OCR à vérifier',
+                  Text(t.invBannerOcrCount(ctrl.facturesOcrAVerifier.length),
                     style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
@@ -104,7 +106,7 @@ class FacturesScreen extends StatelessWidget {
                     child: Row(children: [
                       Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
                         style: const TextStyle(fontSize: 13))),
-                      SynButton(label: 'Vérifier', icon: Icons.visibility_rounded,
+                      SynButton(label: t.invVerifyButton, icon: Icons.visibility_rounded,
                         onTap: () => _showVerifierOcrDialog(context, ctrl, f)),
                     ]),
                   )).toList()),
@@ -126,7 +128,7 @@ class FacturesScreen extends StatelessWidget {
                 Row(children: [
                   const Icon(Icons.lock_clock_rounded, color: AppColors.darkTextMuted, size: 18),
                   const SizedBox(width: 8),
-                  Text('${ctrl.facturesEnAttenteModification.length} demande(s) de modification en attente d\'approbation',
+                  Text(t.invBannerPendingModCount(ctrl.facturesEnAttenteModification.length),
                     style: const TextStyle(color: AppColors.darkTextMuted, fontWeight: FontWeight.bold, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
@@ -139,7 +141,7 @@ class FacturesScreen extends StatelessWidget {
                         style: const TextStyle(fontSize: 13, color: AppColors.darkTextMuted))),
                       const Icon(Icons.lock_outline_rounded, size: 16, color: AppColors.darkTextMuted),
                       const SizedBox(width: 6),
-                      const Text('En attente admin', style: TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+                      Text(t.invPendingAdmin, style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
                     ]),
                   )).toList()),
                 ),
@@ -160,7 +162,7 @@ class FacturesScreen extends StatelessWidget {
                 Row(children: [
                   const Icon(Icons.edit_note_rounded, color: AppColors.warning, size: 18),
                   const SizedBox(width: 8),
-                  Text('${ctrl.facturesACorriger.length} facture(s) à corriger — votre demande a été approuvée',
+                  Text(t.invBannerToCorrectCount(ctrl.facturesACorriger.length),
                     style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
@@ -171,7 +173,7 @@ class FacturesScreen extends StatelessWidget {
                     child: Row(children: [
                       Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
                         style: const TextStyle(fontSize: 13))),
-                      SynButton(label: 'Corriger maintenant', icon: Icons.build_rounded,
+                      SynButton(label: t.invCorrectNow, icon: Icons.build_rounded,
                         onTap: () => _showCompleterModificationDialog(context, ctrl, f)),
                     ]),
                   )).toList()),
@@ -224,9 +226,9 @@ class _TableHeader extends StatelessWidget {
         _TH(label: 'DATE', flex: 2),
         _TH(label: 'MONTANT HT', flex: 2),
         _TH(label: 'MONTANT TTC', flex: 2),
-        _TH(label: 'AUTHENTIFICATION', flex: 2),
-        _TH(label: 'STATUT', flex: 2),
-        _TH(label: 'ACTIONS', flex: 2),
+        _TH(label: AppLocalizations.of(context).thAuthentication, flex: 2),
+        _TH(label: AppLocalizations.of(context).thStatus, flex: 2),
+        _TH(label: AppLocalizations.of(context).thTitle == AppLocalizations.of(context).thTitle ? 'ACTIONS' : 'ACTIONS', flex: 2),
       ]),
     );
   }
@@ -259,7 +261,7 @@ class _InvoiceRow extends StatelessWidget {
           style: const TextStyle(fontSize: 12, fontFamily: 'monospace'))),
         Expanded(flex: 1, child: IconButton(
           icon: const Icon(Icons.info_outline_rounded, size: 18),
-          tooltip: 'Voir la facture',
+          tooltip: AppLocalizations.of(context).viewInvoiceButton,
           onPressed: () => Get.to(() => FactureDetailScreen(factureId: invoice.id)),
         )),
         Expanded(flex: 3, child: Column(
@@ -275,7 +277,7 @@ class _InvoiceRow extends StatelessWidget {
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Text(
-                invoice.typeFacture == 'vente' ? 'Vente' : 'Achat',
+                invoice.typeFacture == 'vente' ? AppLocalizations.of(context).histTypeSale : AppLocalizations.of(context).histTypePurchase,
                 style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700,
                   color: invoice.typeFacture == 'vente' ? AppColors.success : AppColors.primary),
               ),
@@ -286,18 +288,18 @@ class _InvoiceRow extends StatelessWidget {
         Expanded(flex: 2, child: Text(formatDA(invoice.amountHt), style: const TextStyle(fontSize: 12))),
         Expanded(flex: 2, child: Text(formatDA(invoice.amountTtc), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
         Expanded(flex: 2, child: Row(children: [
-          _AuthDot(detected: invoice.stampDetected, label: 'Cachet'),
+          _AuthDot(detected: invoice.stampDetected, label: AppLocalizations.of(context).stampLabel),
           const SizedBox(width: 8),
-          _AuthDot(detected: invoice.signatureDetected, label: 'Sign.'),
+          _AuthDot(detected: invoice.signatureDetected, label: AppLocalizations.of(context).signatureShortLabel),
         ])),
-        Expanded(flex: 2, child: InvoiceChip(status: invoice.status, label: _statusLabel(invoice.status))),
+        Expanded(flex: 2, child: InvoiceChip(status: invoice.status, label: _statusLabel(AppLocalizations.of(context), invoice.status))),
         Expanded(flex: 2, child: Builder(builder: (_) {
           if (!Get.find<AuthController>().isManager) return const SizedBox.shrink();
           if (invoice.statusRaw != 'pending') return const SizedBox.shrink();
           return Row(children: [
-            SynButton(label: 'Valider', color: AppColors.success, onTap: () => ctrl.validateInvoice(invoice.id)),
+            SynButton(label: AppLocalizations.of(context).invValidateButton, color: AppColors.success, onTap: () => ctrl.validateInvoice(invoice.id)),
             const SizedBox(width: 8),
-            SynButton(label: 'Rejeter', outline: true, color: AppColors.danger,
+            SynButton(label: AppLocalizations.of(context).rejectButton, outline: true, color: AppColors.danger,
               onTap: () => _showRejectDialogInline(context, ctrl, invoice)),
           ]);
         })),
@@ -305,12 +307,12 @@ class _InvoiceRow extends StatelessWidget {
     );
   }
 
-  String _statusLabel(InvoiceStatus s) {
+  String _statusLabel(AppLocalizations t, InvoiceStatus s) {
     switch (s) {
-      case InvoiceStatus.validated: return 'Validée';
-      case InvoiceStatus.rejected: return 'Rejetée';
-      case InvoiceStatus.pending: return 'En attente';
-      case InvoiceStatus.annulee: return 'Annulée';
+      case InvoiceStatus.validated: return t.pdfStatusValidated;
+      case InvoiceStatus.rejected: return t.pdfStatusRejected;
+      case InvoiceStatus.pending: return t.pdfStatusPending;
+      case InvoiceStatus.annulee: return t.invoiceCancelled;
     }
   }
 
@@ -318,26 +320,27 @@ class _InvoiceRow extends StatelessWidget {
 }
 
 void _showRejectDialogInline(BuildContext context, InvoiceController ctrl, Invoice invoice) {
+  final t = AppLocalizations.of(context);
   final motifCtrl = TextEditingController();
   Get.dialog(AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: const Text('Motif du rejet'),
+    title: Text(t.motifRejetTitle),
     content: TextField(
       controller: motifCtrl, maxLines: 3,
-      decoration: const InputDecoration(hintText: 'Expliquez pourquoi cette facture est rejetée...'),
+      decoration: InputDecoration(hintText: t.motifRejetHint),
     ),
     actions: [
-      TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
+      TextButton(onPressed: () => safeBack(), child: Text(t.cancel)),
       ElevatedButton(
         onPressed: () async {
           if (motifCtrl.text.trim().isEmpty) return;
           final ok = await ctrl.rejectInvoice(invoice.id, motifCtrl.text.trim());
           await safeBack();
           if (ok) {
-            AppToast.success('Succès', 'Facture rejetée');
+            AppToast.success(t.toastSuccess, t.invoiceRejectedToast);
           }
         },
-        child: const Text('Confirmer le rejet'),
+        child: Text(t.confirmRejectButton),
       ),
     ],
   ));
@@ -368,14 +371,14 @@ class _FilterDropdown extends StatelessWidget {
     return Obx(() => DropdownButtonHideUnderline(
       child: DropdownButton<InvoiceStatus?>(
         value: ctrl.statusFilter.value,
-        hint: const Text('Tous les statuts', style: TextStyle(fontSize: 12)),
+        hint: Text(AppLocalizations.of(context).filterAllStatus, style: const TextStyle(fontSize: 12)),
         style: const TextStyle(fontSize: 12),
         dropdownColor: AppColors.darkCard,
-        items: const [
-          DropdownMenuItem(value: null, child: Text('Tous les statuts')),
-          DropdownMenuItem(value: InvoiceStatus.pending, child: Text('En attente')),
-          DropdownMenuItem(value: InvoiceStatus.validated, child: Text('Validées')),
-          DropdownMenuItem(value: InvoiceStatus.rejected, child: Text('Rejetées')),
+        items: [
+          DropdownMenuItem(value: null, child: Text(AppLocalizations.of(context).filterAllStatus)),
+          DropdownMenuItem(value: InvoiceStatus.pending, child: Text(AppLocalizations.of(context).pdfStatusPending)),
+          DropdownMenuItem(value: InvoiceStatus.validated, child: Text(AppLocalizations.of(context).statusValidatedPlural)),
+          DropdownMenuItem(value: InvoiceStatus.rejected, child: Text(AppLocalizations.of(context).statusRejectedPlural)),
         ],
         onChanged: (v) => ctrl.statusFilter.value = v,
       ),
@@ -393,13 +396,13 @@ class _TypeFilterDropdown extends StatelessWidget {
     return Obx(() => DropdownButtonHideUnderline(
       child: DropdownButton<String?>(
         value: ctrl.typeFilter.value,
-        hint: const Text('Tous les types', style: TextStyle(fontSize: 12)),
+        hint: Text(AppLocalizations.of(context).filterAllTypes, style: const TextStyle(fontSize: 12)),
         style: const TextStyle(fontSize: 12),
         dropdownColor: AppColors.darkCard,
-        items: const [
-          DropdownMenuItem(value: null,      child: Text('Tous les types')),
-          DropdownMenuItem(value: 'achat',   child: Text('Achats')),
-          DropdownMenuItem(value: 'vente',   child: Text('Ventes')),
+        items: [
+          DropdownMenuItem(value: null,      child: Text(AppLocalizations.of(context).filterAllTypes)),
+          DropdownMenuItem(value: 'achat',   child: Text(AppLocalizations.of(context).typePurchases)),
+          DropdownMenuItem(value: 'vente',   child: Text(AppLocalizations.of(context).typeSales)),
         ],
         onChanged: (v) => ctrl.typeFilter.value = v,
       ),
@@ -416,6 +419,7 @@ Map<String, dynamic> _ligneVide() => {
 };
 
 void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {String? typeStockInitial}) {
+  final t = AppLocalizations.of(context);
   final fournisseurCtrl = TextEditingController();
   DateTime factureDate = DateTime.now();
   final htCtrl = TextEditingController();
@@ -435,39 +439,39 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
 
   Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: const Text('Nouvelle facture manuelle'),
+    title: Text(t.newManualInvoiceTitle),
     content: SizedBox(width: 560, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
       Container(
         padding: const EdgeInsets.all(10),
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
-        child: const Row(children: [
-          Icon(Icons.info_outline_rounded, size: 16, color: AppColors.warning),
-          SizedBox(width: 8),
-          Expanded(child: Text('Une facture créée manuellement reste en attente jusqu\'à vérification par un administrateur.',
-            style: TextStyle(fontSize: 11, color: AppColors.warning))),
+        child: Row(children: [
+          const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.warning),
+          const SizedBox(width: 8),
+          Expanded(child: Text(t.manualInvoiceNotice,
+            style: const TextStyle(fontSize: 11, color: AppColors.warning))),
         ]),
       ),
       Row(children: [
         Expanded(child: DropdownButtonFormField<String>(
           value: typeFacture,
-          decoration: const InputDecoration(labelText: 'Type'),
-          items: const [
-            DropdownMenuItem(value: 'achat', child: Text('Achat')),
-            DropdownMenuItem(value: 'vente', child: Text('Vente')),
+          decoration: InputDecoration(labelText: t.typeLabel),
+          items: [
+            DropdownMenuItem(value: 'achat', child: Text(t.histTypePurchase)),
+            DropdownMenuItem(value: 'vente', child: Text(t.histTypeSale)),
           ],
           onChanged: (v) => setState(() => typeFacture = v ?? 'achat'),
         )),
         const SizedBox(width: 10),
         Expanded(child: DropdownButtonFormField<String>(
           value: typeStock,
-          decoration: const InputDecoration(labelText: 'Catégorie'),
-          items: const [
-            DropdownMenuItem(value: 'marchandise', child: Text('Marchandise')),
-            DropdownMenuItem(value: 'matiere_premiere', child: Text('Matière première')),
-            DropdownMenuItem(value: 'produit_fini', child: Text('Produit fini')),
-            DropdownMenuItem(value: 'consommable', child: Text('Consommable')),
+          decoration: InputDecoration(labelText: t.categoryLabel),
+          items: [
+            DropdownMenuItem(value: 'marchandise', child: Text(t.filterTypeMerchandise)),
+            DropdownMenuItem(value: 'matiere_premiere', child: Text(t.filterTypeRawMaterial)),
+            DropdownMenuItem(value: 'produit_fini', child: Text(t.filterTypeFinishedProduct)),
+            DropdownMenuItem(value: 'consommable', child: Text(t.filterTypeConsumable)),
           ],
           onChanged: (v) {
             setState(() => typeStock = v ?? 'marchandise');
@@ -479,24 +483,24 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
       Obx(() {
         final bonsDisponibles = Get.find<BonCommandeController>().bonsCommandeOuverts;
         final items = <DropdownMenuItem<int?>>[
-          const DropdownMenuItem<int?>(value: null, child: Text('Aucun')),
+          DropdownMenuItem<int?>(value: null, child: Text(t.poNone)),
           ...bonsDisponibles.map((bc) => DropdownMenuItem<int?>(
             value: bc.id, child: Text('${bc.numeroBc} — ${bc.fournisseurNom ?? ""}'))),
         ];
         if (bonCommandeId != null && !items.any((i) => i.value == bonCommandeId)) {
           items.add(DropdownMenuItem<int?>(
-            value: bonCommandeId, child: Text('Bon de commande #$bonCommandeId (réservé par vous)')));
+            value: bonCommandeId, child: Text('${t.poReservedByYouPrefix}$bonCommandeId ${t.poReservedByYouSuffix}')));
         }
         return DropdownButtonFormField<int?>(
           value: bonCommandeId,
-          decoration: const InputDecoration(labelText: 'Bon de commande (optionnel)'),
+          decoration: InputDecoration(labelText: t.poOptionalLabel),
           items: items,
           onChanged: (v) async {
             final ancien = bonCommandeId;
             if (v != null) {
               final ok = await Get.find<BonCommandeController>().reserver(v);
               if (!ok) {
-                AppToast.warning('Indisponible', 'Ce bon de commande vient d\'être pris par un autre utilisateur');
+                AppToast.warning(t.poUnavailableTitle, t.poUnavailableMsg);
                 return;
               }
             }
@@ -506,14 +510,14 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
         );
       }),
       const SizedBox(height: 10),
-      TextField(controller: fournisseurCtrl, decoration: const InputDecoration(labelText: 'Fournisseur / Client')),
+      TextField(controller: fournisseurCtrl, decoration: InputDecoration(labelText: t.supplierClientLabel)),
       const SizedBox(height: 10),
       Row(children: [
-        Expanded(child: TextField(controller: nifCtrl, decoration: const InputDecoration(labelText: 'NIF (optionnel)'))),
+        Expanded(child: TextField(controller: nifCtrl, decoration: InputDecoration(labelText: t.nifOptionalLabel))),
         const SizedBox(width: 8),
-        Expanded(child: TextField(controller: nisCtrl, decoration: const InputDecoration(labelText: 'NIS (optionnel)'))),
+        Expanded(child: TextField(controller: nisCtrl, decoration: InputDecoration(labelText: t.nisOptionalLabel))),
         const SizedBox(width: 8),
-        Expanded(child: TextField(controller: rcCtrl, decoration: const InputDecoration(labelText: 'RC (optionnel)'))),
+        Expanded(child: TextField(controller: rcCtrl, decoration: InputDecoration(labelText: t.rcOptionalLabel))),
       ]),
       const SizedBox(height: 10),
       InkWell(
@@ -525,23 +529,23 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
           if (picked != null) setState(() => factureDate = picked);
         },
         child: InputDecorator(
-          decoration: const InputDecoration(labelText: 'Date de la facture'),
+          decoration: InputDecoration(labelText: t.invoiceDateLabel),
           child: Text('${factureDate.year}-${factureDate.month.toString().padLeft(2, '0')}-${factureDate.day.toString().padLeft(2, '0')}'),
         ),
       ),
       const SizedBox(height: 10),
       Row(children: [
-        Expanded(child: TextField(controller: htCtrl, decoration: const InputDecoration(labelText: 'Montant HT'), keyboardType: TextInputType.number)),
+        Expanded(child: TextField(controller: htCtrl, decoration: InputDecoration(labelText: t.amountHtLabel), keyboardType: TextInputType.number)),
         const SizedBox(width: 8),
-        Expanded(child: TextField(controller: tvaCtrl, decoration: const InputDecoration(labelText: 'TVA'), keyboardType: TextInputType.number)),
+        Expanded(child: TextField(controller: tvaCtrl, decoration: InputDecoration(labelText: t.tvaLabel), keyboardType: TextInputType.number)),
         const SizedBox(width: 8),
-        Expanded(child: TextField(controller: ttcCtrl, decoration: const InputDecoration(labelText: 'TTC'), keyboardType: TextInputType.number)),
+        Expanded(child: TextField(controller: ttcCtrl, decoration: InputDecoration(labelText: t.amountTtcLabel), keyboardType: TextInputType.number)),
       ]),
       const SizedBox(height: 10),
       TextField(controller: motifCtrl, maxLines: 2,
-        decoration: const InputDecoration(labelText: 'Motif (obligatoire)', hintText: 'Pourquoi une saisie manuelle ?')),
+        decoration: InputDecoration(labelText: t.reasonRequiredLabel, hintText: t.reasonHint)),
       const Divider(height: 28),
-      const SectionTitle(title: 'ARTICLES'),
+      SectionTitle(title: t.articlesTitle),
       const SizedBox(height: 8),
       ...lignes.asMap().entries.map((entry) => _LigneManuelleRow(
         data: entry.value,
@@ -549,37 +553,37 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
         onChanged: () => setState(() {}),
       )),
       Align(alignment: Alignment.centerLeft, child: TextButton.icon(
-        icon: const Icon(Icons.add), label: const Text('Ajouter un article'),
+        icon: const Icon(Icons.add), label: Text(t.addArticleButton),
         onPressed: () => setState(() => lignes.add(_ligneVide())),
       )),
       const Divider(height: 28),
       TextField(controller: compteRenduDemandeCtrl, maxLines: 3,
-        decoration: const InputDecoration(
-          labelText: 'Problème constaté (optionnel)',
-          hintText: 'Laissez les champs concernés vides, et expliquez ici précisément ce qui manque ou est incorrect.',
+        decoration: InputDecoration(
+          labelText: t.problemOptionalLabel,
+          hintText: t.problemHint,
         )),
     ]))),
     actions: [
       TextButton(onPressed: () async {
         if (bonCommandeId != null) Get.find<BonCommandeController>().liberer(bonCommandeId!);
         await safeBack();
-      }, child: const Text('Annuler')),
+      }, child: Text(t.cancel)),
       TextButton(
         onPressed: isSubmitting ? null : () async {
           if (compteRenduDemandeCtrl.text.trim().isEmpty) {
-            AppToast.warning('Compte-rendu requis', 'Expliquez le problème avant d\'envoyer une demande de modification');
+            AppToast.warning(t.reportRequiredTitle, t.reportRequiredMsg);
             return;
           }
           if (motifCtrl.text.trim().isEmpty) {
-            AppToast.warning('Motif requis', 'Le champ "Motif (obligatoire)" doit être rempli');
+            AppToast.warning(t.reasonRequiredTitle, t.reasonRequiredMsg);
             return;
           }
           if (fournisseurCtrl.text.trim().isEmpty) {
-            AppToast.warning('Fournisseur requis', 'Le champ "Fournisseur / Client" doit être rempli');
+            AppToast.warning(t.supplierRequiredTitle, t.supplierRequiredMsg);
             return;
           }
           if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
-            AppToast.warning('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0');
+            AppToast.warning(t.qtyMissingTitle, t.qtyMissingMsg);
             return;
           }
           setState(() => isSubmitting = true);
@@ -620,26 +624,26 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
           );
           if (ok) {
             await safeBack();
-            AppToast.success('Facture envoyée', 'En confirmation de changement — un administrateur doit valider votre demande');
+            AppToast.success(t.invoiceSentTitle, t.invoiceSentMsg);
           } else {
             setState(() => isSubmitting = false);
-            AppToast.error('Échec de l\'envoi', 'Réessayez.');
+            AppToast.error(t.sendFailedTitle, t.sendFailedMsg);
           }
         },
-        child: const Text('Envoyer + demande de modification'),
+        child: Text(t.sendModificationRequestButton),
       ),
       ElevatedButton(
         onPressed: isSubmitting ? null : () async {
           if (motifCtrl.text.trim().isEmpty) {
-            AppToast.warning('Motif requis', 'Le champ "Motif (obligatoire)" doit être rempli');
+            AppToast.warning(t.reasonRequiredTitle, t.reasonRequiredMsg);
             return;
           }
           if (fournisseurCtrl.text.trim().isEmpty) {
-            AppToast.warning('Fournisseur requis', 'Le champ "Fournisseur / Client" doit être rempli');
+            AppToast.warning(t.supplierRequiredTitle, t.supplierRequiredMsg);
             return;
           }
           if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
-            AppToast.warning('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0');
+            AppToast.warning(t.qtyMissingTitle, t.qtyMissingMsg);
             return;
           }
           setState(() => isSubmitting = true);
@@ -679,13 +683,13 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
           );
           if (ok) {
             await safeBack();
-            AppToast.success('Facture créée', 'En attente de vérification par un administrateur');
+            AppToast.success(t.invoiceCreatedTitle, t.invoiceCreatedMsg);
           } else {
             setState(() => isSubmitting = false);
-            AppToast.error('Échec de l\'envoi', 'Réessayez.');
+            AppToast.error(t.sendFailedTitle, t.sendFailedMsg);
           }
         },
-        child: const Text('Envoyer'),
+        child: Text(t.sendButton),
       ),
     ],
   )));
@@ -740,7 +744,7 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
           dense: true,
-          title: const Text('Produit inexistant (nouveau)', style: TextStyle(fontSize: 12)),
+          title: Text(AppLocalizations.of(context).newProductSwitchLabel, style: const TextStyle(fontSize: 12)),
           value: _nouveauProduit,
           onChanged: (v) => setState(() {
             _nouveauProduit = v;
@@ -765,42 +769,42 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
             }),
             fieldViewBuilder: (context, controller, focusNode, onSubmit) => TextField(
               controller: controller, focusNode: focusNode,
-              decoration: const InputDecoration(hintText: 'Rechercher un produit existant...'),
+              decoration: InputDecoration(hintText: AppLocalizations.of(context).searchExistingProductHint),
             ),
           ),
           const SizedBox(height: 6),
           TextField(controller: _emplacementCtrl,
-            decoration: const InputDecoration(labelText: 'Emplacement de ce lot (pré-rempli, modifiable)'),
+            decoration: InputDecoration(labelText: AppLocalizations.of(context).lotLocationPrefilledLabel),
             onChanged: (v) => widget.data['nouveau_emplacement'] = v),
         ] else ...[
           TextField(
             controller: _designationCtrl,
-            decoration: const InputDecoration(labelText: 'Nom du nouveau produit'),
+            decoration: InputDecoration(labelText: AppLocalizations.of(context).newProductNameLabel),
             onChanged: (v) => widget.data['designation'] = v,
           ),
           const SizedBox(height: 6),
           Row(children: [
             Expanded(child: TextField(controller: _categorieCtrl,
-              decoration: const InputDecoration(labelText: 'Catégorie'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).formCategory),
               onChanged: (v) => widget.data['nouveau_categorie'] = v)),
             const SizedBox(width: 8),
             Expanded(child: TextField(controller: _codeBarreCtrl,
-              decoration: const InputDecoration(labelText: 'Code-barres'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).barcodeLabel),
               onChanged: (v) => widget.data['nouveau_code_barre'] = v)),
           ]),
           const SizedBox(height: 6),
           Row(children: [
             Expanded(child: TextField(controller: _uniteMesureCtrl,
-              decoration: const InputDecoration(labelText: 'Unité (kg, litre, pièce...)'),
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).unitLabel),
               onChanged: (v) => widget.data['nouveau_unite_mesure'] = v)),
             const SizedBox(width: 8),
             Expanded(child: TextField(controller: _seuilCritiqueCtrl,
-              decoration: const InputDecoration(labelText: 'Seuil critique'), keyboardType: TextInputType.number,
+              decoration: InputDecoration(labelText: AppLocalizations.of(context).criticalThresholdLabel), keyboardType: TextInputType.number,
               onChanged: (v) => widget.data['nouveau_seuil_critique'] = v)),
           ]),
           const SizedBox(height: 6),
           TextField(controller: _emplacementCtrl,
-            decoration: const InputDecoration(labelText: 'Emplacement'),
+            decoration: InputDecoration(labelText: AppLocalizations.of(context).locationLabel),
             onChanged: (v) => widget.data['nouveau_emplacement'] = v),
         ],
         const SizedBox(height: 6),
@@ -808,7 +812,7 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
           Expanded(child: TextField(
             controller: _designationCtrl,
             enabled: false,
-            decoration: const InputDecoration(labelText: 'Désignation retenue'),
+            decoration: InputDecoration(labelText: AppLocalizations.of(context).designationRetainedLabel),
           )),
         ]),
         const SizedBox(height: 6),
@@ -816,8 +820,8 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
           Expanded(child: TextField(
             controller: _quantiteCtrl,
             decoration: InputDecoration(
-              labelText: 'Qté *',
-              errorText: quantiteVide ? 'Requis' : null,
+              labelText: AppLocalizations.of(context).qtyStarLabel,
+              errorText: quantiteVide ? AppLocalizations.of(context).requiredLabel : null,
             ),
             keyboardType: TextInputType.number,
             onChanged: (v) => setState(() => widget.data['quantite'] = v),
@@ -829,7 +833,7 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
         Row(children: [
           Expanded(child: TextField(
             controller: _prixTotalCtrl,
-            decoration: const InputDecoration(labelText: 'Prix total (tel qu\'écrit sur la facture)'),
+            decoration: InputDecoration(labelText: AppLocalizations.of(context).lineTotalPriceLabel),
             keyboardType: TextInputType.number,
             onChanged: (v) {
               widget.data['prix_total_ligne'] = v;
@@ -844,7 +848,7 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
           const SizedBox(width: 8),
           Expanded(child: TextField(
             controller: _prixAchatCtrl,
-            decoration: const InputDecoration(labelText: 'Prix unitaire (calculé, modifiable)'),
+            decoration: InputDecoration(labelText: AppLocalizations.of(context).unitPriceCalcLabel),
             keyboardType: TextInputType.number,
             onChanged: (v) => widget.data['prix_unitaire'] = v,
           )),
@@ -852,27 +856,27 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
         const SizedBox(height: 6),
         TextField(
           controller: _prixVenteCtrl,
-          decoration: const InputDecoration(labelText: 'Prix vente (optionnel)'), keyboardType: TextInputType.number,
+          decoration: InputDecoration(labelText: AppLocalizations.of(context).salePriceOptionalLabel), keyboardType: TextInputType.number,
           onChanged: (v) => widget.data['prix_vente'] = v,
         ),
         const SizedBox(height: 6),
         Row(children: [
           Expanded(child: InkWell(
             onTap: () => _pickDate(context, 'date_fabrication'),
-            child: InputDecorator(decoration: const InputDecoration(labelText: 'Fabrication'),
+            child: InputDecorator(decoration: InputDecoration(labelText: AppLocalizations.of(context).manufacturingLabel),
               child: Text(widget.data['date_fabrication'] as String? ?? '—', style: const TextStyle(fontSize: 12))),
           )),
           const SizedBox(width: 8),
           Expanded(child: InkWell(
             onTap: () => _pickDate(context, 'date_expiration'),
-            child: InputDecorator(decoration: const InputDecoration(labelText: 'Expiration'),
+            child: InputDecorator(decoration: InputDecoration(labelText: AppLocalizations.of(context).expirationLabel),
               child: Text(widget.data['date_expiration'] as String? ?? '—', style: const TextStyle(fontSize: 12))),
           )),
         ]),
         const SizedBox(height: 6),
         TextField(
           controller: _lotFournisseurCtrl,
-          decoration: const InputDecoration(labelText: 'N° de lot fabricant (si imprimé sur le produit)'),
+          decoration: InputDecoration(labelText: AppLocalizations.of(context).manufacturerLotLabel),
           onChanged: (v) => widget.data['numero_lot_fournisseur'] = v,
         ),
       ]),
@@ -908,12 +912,13 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
       : <Map<String, dynamic>>[_ligneVide()];
   bool isSubmitting = false;
 
+  final t = AppLocalizations.of(context);
   Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: Text('Corriger la facture #${facture.id}'),
+    title: Text('${t.correctInvoiceTitlePrefix}${facture.id}'),
     content: SizedBox(width: 560, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-      TextField(controller: fournisseurCtrl, decoration: const InputDecoration(labelText: 'Fournisseur / Client')),
+      TextField(controller: fournisseurCtrl, decoration: InputDecoration(labelText: t.supplierClientLabel)),
       const SizedBox(height: 10),
       InkWell(
         onTap: () async {
@@ -924,20 +929,20 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
           if (picked != null) setState(() => factureDate = picked);
         },
         child: InputDecorator(
-          decoration: const InputDecoration(labelText: 'Date de la facture'),
+          decoration: InputDecoration(labelText: t.invoiceDateLabel),
           child: Text('${factureDate.year}-${factureDate.month.toString().padLeft(2, '0')}-${factureDate.day.toString().padLeft(2, '0')}'),
         ),
       ),
       const SizedBox(height: 10),
       Row(children: [
-        Expanded(child: TextField(controller: htCtrl, decoration: const InputDecoration(labelText: 'Montant HT'), keyboardType: TextInputType.number)),
+        Expanded(child: TextField(controller: htCtrl, decoration: InputDecoration(labelText: t.amountHtLabel), keyboardType: TextInputType.number)),
         const SizedBox(width: 8),
-        Expanded(child: TextField(controller: tvaCtrl, decoration: const InputDecoration(labelText: 'TVA'), keyboardType: TextInputType.number)),
+        Expanded(child: TextField(controller: tvaCtrl, decoration: InputDecoration(labelText: t.tvaLabel), keyboardType: TextInputType.number)),
         const SizedBox(width: 8),
-        Expanded(child: TextField(controller: ttcCtrl, decoration: const InputDecoration(labelText: 'TTC'), keyboardType: TextInputType.number)),
+        Expanded(child: TextField(controller: ttcCtrl, decoration: InputDecoration(labelText: t.amountTtcLabel), keyboardType: TextInputType.number)),
       ]),
       const Divider(height: 28),
-      const SectionTitle(title: 'ARTICLES CORRIGÉS'),
+      SectionTitle(title: t.correctedArticlesTitle),
       const SizedBox(height: 8),
       ...lignes.asMap().entries.map((entry) => _LigneManuelleRow(
         data: entry.value,
@@ -945,20 +950,20 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
         onChanged: () => setState(() {}),
       )),
       Align(alignment: Alignment.centerLeft, child: TextButton.icon(
-        icon: const Icon(Icons.add), label: const Text('Ajouter un article'),
+        icon: const Icon(Icons.add), label: Text(t.addArticleButton),
         onPressed: () => setState(() => lignes.add(_ligneVide())),
       )),
     ]))),
     actions: [
-      TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
+      TextButton(onPressed: () => safeBack(), child: Text(t.cancel)),
       ElevatedButton(
         onPressed: isSubmitting ? null : () async {
           if (fournisseurCtrl.text.trim().isEmpty) {
-            AppToast.warning('Fournisseur requis', 'Le champ "Fournisseur / Client" doit être rempli');
+            AppToast.warning(t.supplierRequiredTitle, t.supplierRequiredMsg);
             return;
           }
           if (lignes.any((l) => (double.tryParse(l['quantite'] as String? ?? '') ?? 0) <= 0)) {
-            AppToast.warning('Quantité manquante', 'Chaque article doit avoir une quantité supérieure à 0');
+            AppToast.warning(t.qtyMissingTitle, t.qtyMissingMsg);
             return;
           }
           setState(() => isSubmitting = true);
@@ -987,13 +992,13 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
           );
           if (ok) {
             await safeBack();
-            AppToast.success('Facture corrigée', 'La facture est de nouveau en attente de vérification');
+            AppToast.success(t.invoiceCorrectedTitle, t.invoiceCorrectedMsg);
           } else {
             setState(() => isSubmitting = false);
-            AppToast.error('Échec', 'La correction n\'a pas pu être envoyée. Réessayez.');
+            AppToast.error(t.correctionFailedTitle, t.correctionFailedMsg);
           }
         },
-        child: const Text('Envoyer la correction'),
+        child: Text(t.sendCorrectionButton),
       ),
     ],
   )));
@@ -1019,16 +1024,17 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
       l.id: TextEditingController(text: l.nouveauEmplacement ?? _dernierEmplacement(l.produitId)),
   };
 
+  final t = AppLocalizations.of(context);
   Get.dialog(AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: Text('Vérifier la facture OCR #${facture.id}'),
+    title: Text('${t.verifyOcrTitlePrefix}${facture.id}'),
     content: SizedBox(width: 560, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _champLectureSeule('Fournisseur', facture.supplierName),
-      _champLectureSeule('Date', '${facture.date.year}-${facture.date.month.toString().padLeft(2, '0')}-${facture.date.day.toString().padLeft(2, '0')}'),
-      _champLectureSeule('Montant TTC', formatDA(facture.amountTtc)),
+      _champLectureSeule(t.pdfHeaderSupplier, facture.supplierName),
+      _champLectureSeule(t.pdfHeaderDate, '${facture.date.year}-${facture.date.month.toString().padLeft(2, '0')}-${facture.date.day.toString().padLeft(2, '0')}'),
+      _champLectureSeule(t.invoiceAmountTtc, formatDA(facture.amountTtc)),
       const Divider(height: 24),
-      const SectionTitle(title: 'ARTICLES DÉTECTÉS PAR OCR (lecture seule)'),
+      SectionTitle(title: t.ocrDetectedArticlesTitle),
       const SizedBox(height: 8),
       ...lignes.map((l) => Container(
         margin: const EdgeInsets.only(bottom: 10),
@@ -1036,15 +1042,15 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
         decoration: BoxDecoration(color: Colors.white.withOpacity(0.03), borderRadius: BorderRadius.circular(6)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(l.produitNom, style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text('Qté: ${l.quantite} — PU: ${formatDA(l.prixUnitaire)}${l.dateExpiration != null ? ' — Exp: ${l.dateExpiration}' : ''}',
+          Text('${t.poQuantityShort} ${l.quantite}${t.puLabel} ${formatDA(l.prixUnitaire)}${l.dateExpiration != null ? '${t.expInlineLabel} ${l.dateExpiration}' : ''}',
             style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
           const SizedBox(height: 6),
           TextField(
             controller: emplacementCtrls[l.id],
             decoration: InputDecoration(
               labelText: l.produitId == null
-                  ? 'Emplacement (nouveau produit — non fourni par OCR)'
-                  : 'Emplacement de ce lot (pré-rempli, modifiable)',
+                  ? t.newProductLocationHint
+                  : t.lotLocationPrefilledLabel,
               isDense: true,
             ),
           ),
@@ -1062,7 +1068,7 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
           await safeBack();
           _showSignalerErreurDialog(context, ctrl, facture);
         },
-        child: const Text('Signaler une erreur', style: TextStyle(color: AppColors.danger)),
+        child: Text(t.reportErrorButton, style: const TextStyle(color: AppColors.danger)),
       ),
       TextButton(
         onPressed: () async {
@@ -1072,10 +1078,10 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
           }).toList();
           final ok = await ctrl.enregistrerEmplacementsOcr(facture.id, payload);
           if (ok) {
-            AppToast.success('Emplacements enregistrés', 'Vous pouvez maintenant confirmer la facture');
+            AppToast.success(t.locationsSavedTitle, t.locationsSavedMsg);
           }
         },
-        child: const Text('Enregistrer les emplacements'),
+        child: Text(t.saveLocationsButton),
       ),
       ElevatedButton(
         onPressed: () async {
@@ -1086,88 +1092,90 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
           final ok = await ctrl.confirmerOcr(facture.id, payload);
           await safeBack();
           if (ok) {
-            AppToast.success('Facture confirmée', 'Elle est maintenant en attente de validation par l\'administrateur');
+            AppToast.success(t.invoiceConfirmedTitle, t.invoiceConfirmedMsg);
           }
         },
-        child: const Text('Confirmer'),
+        child: Text(t.confirmButtonWord),
       ),
     ],
   ));
 }
 
 
-String _formatEcarts(List<dynamic> ecarts) {
+String _formatEcarts(AppLocalizations t, List<dynamic> ecarts) {
   return ecarts.map((e) {
     final map = e as Map<String, dynamic>;
     if (map['type'] == 'fournisseur_different') {
-      return '⚠ Fournisseur différent : commandé "${map['commande']}" → reçu "${map['recu']}"';
+      return t.ecartFournisseurDifferent('${map['commande']}', '${map['recu']}');
     } else if (map['type'] == 'produit_non_commande') {
-      return '⚠ "${map['designation']}" reçu mais non commandé (qté: ${map['quantite_recue']})';
+      return t.ecartProduitNonCommande('${map['designation']}', '${map['quantite_recue']}');
     } else if (map['type'] == 'produit_manquant') {
-      return '⚠ "${map['designation']}" commandé (qté: ${map['quantite_commandee']}) mais non reçu';
+      return t.ecartProduitManquant('${map['designation']}', '${map['quantite_commandee']}');
     } else {
       final details = <String>[];
       if (map['quantite'] != null) {
-        details.add('quantité commandée ${map['quantite']['commandee']} → reçue ${map['quantite']['recue']}');
+        details.add(t.ecartQuantiteDetail('${map['quantite']['commandee']}', '${map['quantite']['recue']}'));
       }
       if (map['prix_unitaire'] != null) {
-        details.add('prix estimé ${map['prix_unitaire']['estime']} → reçu ${map['prix_unitaire']['recu']}');
+        details.add(t.ecartPrixDetail('${map['prix_unitaire']['estime']}', '${map['prix_unitaire']['recu']}'));
       }
-      return '⚠ "${map['designation']}" : ${details.join(', ')}';
+      return t.ecartGenericPrefix('${map['designation']}', details.join(', '));
     }
   }).join('\n');
 }
 
 void _showEcartASignalerDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
+  final t = AppLocalizations.of(context);
   final compteRenduCtrl = TextEditingController();
   Get.dialog(AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: Text('Écarts détectés — Facture #${facture.id}'),
+    title: Text('${t.gapsDetectedTitlePrefix}${facture.id}'),
     content: SizedBox(width: 500, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(_formatEcarts(facture.ecartsBc ?? []), style: const TextStyle(fontSize: 13)),
+      Text(_formatEcarts(t, facture.ecartsBc ?? []), style: const TextStyle(fontSize: 13)),
       const SizedBox(height: 16),
       TextField(controller: compteRenduCtrl, maxLines: 4,
-        decoration: const InputDecoration(labelText: 'Votre commentaire pour l\'administrateur')),
+        decoration: InputDecoration(labelText: t.yourCommentLabel)),
     ]))),
     actions: [
-      TextButton(onPressed: () => safeBack(), child: const Text('Fermer')),
+      TextButton(onPressed: () => safeBack(), child: Text(t.close)),
       ElevatedButton(
         onPressed: () async {
           if (compteRenduCtrl.text.trim().isEmpty) return;
           final ok = await ctrl.envoyerEcart(facture.id, compteRenduCtrl.text.trim());
           await safeBack();
           if (ok) {
-            AppToast.warning('Envoyé', 'En attente de décision de l\'administrateur');
+            AppToast.warning(t.sentTitle, t.sentAwaitingAdminMsg);
           }
         },
-        child: const Text('Envoyer à l\'administrateur'),
+        child: Text(t.sendToAdminButton),
       ),
     ],
   ));
 }
 
 void _showSignalerErreurDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
+  final t = AppLocalizations.of(context);
   final compteRenduCtrl = TextEditingController();
   Get.dialog(AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: const Text('Signaler une erreur'),
+    title: Text(t.reportErrorTitle),
     content: SizedBox(width: 420, child: TextField(
       controller: compteRenduCtrl, maxLines: 4,
-      decoration: const InputDecoration(labelText: 'Décrivez l\'erreur constatée'),
+      decoration: InputDecoration(labelText: t.describeErrorLabel),
     )),
     actions: [
-      TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
+      TextButton(onPressed: () => safeBack(), child: Text(t.cancel)),
       ElevatedButton(
         onPressed: () async {
           if (compteRenduCtrl.text.trim().isEmpty) return;
           final ok = await ctrl.signalerErreurOcr(facture.id, compteRenduCtrl.text.trim());
           await safeBack();
           if (ok) {
-            AppToast.warning('Demande envoyée', 'En attente d\'approbation par l\'administrateur');
+            AppToast.warning(t.requestSentTitle, t.requestSentMsg);
           }
         },
-        child: const Text('Envoyer la demande'),
+        child: Text(t.sendRequestButton),
       ),
     ],
   ));
@@ -1182,19 +1190,20 @@ Widget _champLectureSeule(String label, String value) => Padding(
 );
 
 void ouvrirNouvelleFacture(BuildContext context, InvoiceController ctrl) {
+  final t = AppLocalizations.of(context);
   Get.dialog(AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: const Text('Nouvelle facture'),
+    title: Text(t.newInvoiceTitle),
     content: SizedBox(width: 400, child: Column(mainAxisSize: MainAxisSize.min, children: [
       _ChoixCard(
-        icon: Icons.qr_code_scanner_rounded, title: 'Depuis un téléphone (OCR)',
-        subtitle: 'Nécessite l\'application mobile',
+        icon: Icons.qr_code_scanner_rounded, title: t.fromPhoneOcrTitle,
+        subtitle: t.fromPhoneOcrSubtitle,
         onTap: () async { await safeBack(); _choisirType(context, ctrl, viaOcr: true); },
       ),
       const SizedBox(height: 10),
       _ChoixCard(
-        icon: Icons.edit_note_rounded, title: 'Saisie manuelle',
-        subtitle: 'Remplir la facture directement ici',
+        icon: Icons.edit_note_rounded, title: t.manualEntryTitle,
+        subtitle: t.manualEntrySubtitle,
         onTap: () async { await safeBack(); _choisirType(context, ctrl, viaOcr: false); },
       ),
     ])),
@@ -1202,13 +1211,14 @@ void ouvrirNouvelleFacture(BuildContext context, InvoiceController ctrl) {
 }
 
 void _choisirType(BuildContext context, InvoiceController ctrl, {required bool viaOcr}) {
-  const types = {
-    'marchandise': 'Marchandise', 'matiere_premiere': 'Matière première',
-    'produit_fini': 'Produit fini', 'consommable': 'Consommable',
+  final t = AppLocalizations.of(context);
+  final types = {
+    'marchandise': t.filterTypeMerchandise, 'matiere_premiere': t.filterTypeRawMaterial,
+    'produit_fini': t.filterTypeFinishedProduct, 'consommable': t.filterTypeConsumable,
   };
   Get.dialog(AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: const Text('Catégorie de la facture'),
+    title: Text(t.invoiceCategoryTitle),
     content: SizedBox(width: 380, child: Column(mainAxisSize: MainAxisSize.min,
       children: types.entries.map((e) => _ChoixCard(
         icon: Icons.category_outlined, title: e.value, subtitle: '',
@@ -1227,13 +1237,14 @@ void _choisirType(BuildContext context, InvoiceController ctrl, {required bool v
 
 
 void _choisirBonCommandePourOcr(BuildContext context, InvoiceController ctrl, String typeStock) {
+  final t = AppLocalizations.of(context);
   final bcCtrl = Get.find<BonCommandeController>();
   bcCtrl.loadBonsOuverts(typeStock: typeStock);
   Get.dialog(Obx(() => AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: const Text('Bon de commande (optionnel)'),
+    title: Text(t.poChoiceTitle),
     content: SizedBox(width: 380, child: Column(mainAxisSize: MainAxisSize.min, children: [
-      _ChoixCard(icon: Icons.close_rounded, title: 'Aucun', subtitle: '',
+      _ChoixCard(icon: Icons.close_rounded, title: t.noneWord, subtitle: '',
         onTap: () async {
           await safeBack();
           Get.dialog(_AttenteAppairageDialog(typeStock: typeStock), barrierDismissible: false);
@@ -1243,7 +1254,7 @@ void _choisirBonCommandePourOcr(BuildContext context, InvoiceController ctrl, St
         onTap: () async {
           final ok = await bcCtrl.reserver(bc.id);
           if (!ok) {
-            AppToast.warning('Indisponible', 'Ce bon de commande vient d\'être pris par un autre utilisateur');
+            AppToast.warning(t.poUnavailableTitle, t.poUnavailableMsg);
             return;
           }
           await safeBack();
@@ -1385,22 +1396,23 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return AlertDialog(
       backgroundColor: AppColors.darkCard,
-      title: const Text('Recevoir depuis un téléphone'),
+      title: Text(t.receiveFromPhoneTitle),
       content: SizedBox(width: 340, child: Column(mainAxisSize: MainAxisSize.min, children: [
         if (_statut == 'expire') ...[
           const Icon(Icons.timer_off_rounded, size: 48, color: AppColors.warning),
           const SizedBox(height: 12),
-          const Text('Code expiré', style: TextStyle(fontWeight: FontWeight.w700)),
+          Text(t.codeExpiredTitle, style: const TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
-          SynButton(label: 'Générer un nouveau code', onTap: _genererCode),
+          SynButton(label: t.generateNewCodeButton, onTap: _genererCode),
         ] else if (_statut == 'erreur') ...[
           const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.danger),
           const SizedBox(height: 12),
-          const Text('Erreur de connexion au serveur'),
+          Text(t.serverConnectionError),
           const SizedBox(height: 12),
-          SynButton(label: 'Réessayer', onTap: _genererCode),
+          SynButton(label: t.retry, onTap: _genererCode),
         ] else if (_code == null) ...[
           const SizedBox(height: 40),
           const CircularProgressIndicator(),
@@ -1414,40 +1426,40 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
           Text(_code!, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: 4)),
           const SizedBox(height: 10),
           if (_statut == 'attente')
-            Text('Expire dans ${_secondesRestantes}s', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+            Text('${t.expiresInPrefix} ${_secondesRestantes}s', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
           const SizedBox(height: 14),
           if (_statut == 'attente')
-            const Text('Depuis l\'application mobile : entrez ce code ou scannez le QR.',
-              textAlign: TextAlign.center, style: TextStyle(fontSize: 12)),
+            Text(t.mobileInstructions,
+              textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
           if (_statut == 'scanne') ...[
             const Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 28),
             const SizedBox(height: 6),
-            const Text('Téléphone connecté — en attente de la photo...',
-              textAlign: TextAlign.center, style: TextStyle(fontSize: 12, color: AppColors.success)),
+            Text(t.phoneConnectedMsg,
+              textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: AppColors.success)),
           ],
           if (_statut == 'complete') ...[
             const Icon(Icons.task_alt_rounded, color: AppColors.success, size: 40),
             const SizedBox(height: 8),
-            const Text('Facture reçue !', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
+            Text(t.invoiceReceivedMsg, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
           ],
         ],
       ])),
       actions: _statut == 'complete'
           ? [
-              TextButton(onPressed: () => safeBack(), child: const Text('Plus tard')),
+              TextButton(onPressed: () => safeBack(), child: Text(t.laterButton)),
               ElevatedButton(
                 onPressed: () async {
                   await safeBack();
                   final result = await InvoiceRepositoryImpl().getInvoice(_factureRecueId!);
                   result.fold((_) {}, (invoice) => _showVerifierOcrDialog(context, Get.find<InvoiceController>(), invoice));
                 },
-                child: const Text('Vérifier la facture'),
+                child: Text(t.verifyInvoiceButton),
               ),
             ]
           : [TextButton(onPressed: () async {
               if (widget.bonCommandeId != null) Get.find<BonCommandeController>().liberer(widget.bonCommandeId!);
               await safeBack();
-            }, child: const Text('Annuler'))],
+            }, child: Text(t.cancel))],
     );
   }
 }

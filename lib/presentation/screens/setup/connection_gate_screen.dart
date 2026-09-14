@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import 'server_setup_screen.dart';
 import 'admin_setup_screen.dart';
 import '../auth/login_screen.dart';
@@ -81,7 +82,7 @@ class _ConnectionGateScreenState extends State<ConnectionGateScreen> {
             const SizedBox(height: 24),
             const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColors.primary)),
             const SizedBox(height: 16),
-            const Text('Connexion au serveur...', style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
+            Text(AppLocalizations.of(context).gateConnecting, style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
           ],
         ),
       ),

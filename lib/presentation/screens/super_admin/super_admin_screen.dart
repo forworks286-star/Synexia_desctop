@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../data/services/api_client.dart';
 
 
@@ -33,7 +34,8 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
       final token = response.data['access'] as String;
       setState(() { _verified = true; _loading = false; _adminToken = token; });
     } on DioException catch (_) {
-      setState(() { _loading = false; _error = 'Mot de passe incorrect'; });
+      final t = AppLocalizations.of(context);
+      setState(() { _loading = false; _error = t.saWrongPassword; });
     }
   }
 
@@ -44,6 +46,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
   }
 
   Widget _buildLoginView() {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       body: Center(
         child: SizedBox(
@@ -63,7 +66,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
                   child: const Icon(Icons.shield_outlined, color: AppColors.warning, size: 22),
                 ),
                 const SizedBox(width: 14),
-                Text('Super Admin', style: Theme.of(context).textTheme.displayMedium),
+                Text(t.saTitle, style: Theme.of(context).textTheme.displayMedium),
               ]),
               const SizedBox(height: 24),
               Container(
@@ -73,19 +76,19 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(color: AppColors.warning.withOpacity(0.2)),
                 ),
-                child: const Text(
-                  'Zone réservée à l\'administrateur système.\nCette zone permet de gérer les utilisateurs et les droits d\'accès.',
+                child: Text(
+                  t.saZoneNotice,
                   style: TextStyle(fontSize: 12, color: AppColors.warning, height: 1.5),
                 ),
               ),
               const SizedBox(height: 28),
-              const Text('Mot de passe système', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+              Text(t.saSystemPasswordLabel, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
               const SizedBox(height: 8),
               TextField(
                 controller: _passCtrl,
                 obscureText: _obscure,
                 decoration: InputDecoration(
-                  hintText: 'Entrez le mot de passe Super Admin',
+                  hintText: t.saPasswordHint,
                   suffixIcon: IconButton(
                     icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 16),
                     onPressed: () => setState(() => _obscure = !_obscure),
@@ -118,7 +121,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
                   child: _loading
                       ? const SizedBox(width: 18, height: 18,
                           child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Accéder'),
+                      : Text(t.saAccessButton),
                 ),
               ),
             ],
@@ -172,35 +175,36 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
     final password = TextEditingController();
     String role = 'stockiste';
 
+    final t = AppLocalizations.of(context);
     await showDialog(context: context, builder: (ctx) => AlertDialog(
-      title: const Text('Ajouter un utilisateur'),
+      title: Text(t.saAddUserTitle),
       content: StatefulBuilder(builder: (ctx, ss) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(controller: fullName,
-            decoration: const InputDecoration(labelText: 'Nom complet')),
+            decoration: InputDecoration(labelText: t.setupFullNameLabel)),
           const SizedBox(height: 10),
           TextField(controller: username,
-            decoration: const InputDecoration(labelText: 'Nom d\'utilisateur')),
+            decoration: InputDecoration(labelText: t.loginUsername)),
           const SizedBox(height: 10),
           TextField(controller: password, obscureText: true,
-            decoration: const InputDecoration(labelText: 'Mot de passe')),
+            decoration: InputDecoration(labelText: t.loginPassword)),
           const SizedBox(height: 10),
           DropdownButtonFormField<String>(
             value: role,
-            decoration: const InputDecoration(labelText: 'Rôle'),
-            items: const [
-                DropdownMenuItem(value: 'admin',       child: Text('Admin')),
-                DropdownMenuItem(value: 'manager',     child: Text('Manager')),
-                DropdownMenuItem(value: 'stockiste',   child: Text('Stockiste')),
-                DropdownMenuItem(value: 'agent_kiosk', child: Text('Agent Kiosk')),
+            decoration: InputDecoration(labelText: t.saRoleLabel),
+            items: [
+                DropdownMenuItem(value: 'admin',       child: Text(t.saRoleAdminShort)),
+                DropdownMenuItem(value: 'manager',     child: Text(t.roleManager)),
+                DropdownMenuItem(value: 'stockiste',   child: Text(t.roleStockiste)),
+                DropdownMenuItem(value: 'agent_kiosk', child: Text(t.roleAgentKiosk)),
               ],
             onChanged: (v) => ss(() => role = v!),
           ),
         ],
       )),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t.cancel)),
         ElevatedButton(
           onPressed: () async {
             try {
@@ -218,14 +222,14 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
               if (ctx.mounted) {
                 ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
                   content: Text(detail == 'error_username_exists'
-                      ? 'Nom d\'utilisateur déjà utilisé'
-                      : 'Erreur — vérifiez les champs'),
+                      ? t.saUsernameExists
+                      : t.saCheckFieldsError),
                   backgroundColor: AppColors.danger,
                 ));
               }
             }
           },
-          child: const Text('Ajouter'),
+          child: Text(t.addButton),
         ),
       ],
     ));
@@ -249,13 +253,14 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
   }
 
   Future<void> _resetPassword(Map<String, dynamic> user) async {
+    final t = AppLocalizations.of(context);
     final ctrl = TextEditingController();
     await showDialog(context: context, builder: (ctx) => AlertDialog(
-      title: Text('Réinitialiser mot de passe — ${user['full_name']}'),
+      title: Text('${t.saResetPasswordTitlePrefix} ${user['full_name']}'),
       content: TextField(controller: ctrl, obscureText: true,
-        decoration: const InputDecoration(labelText: 'Nouveau mot de passe')),
+        decoration: InputDecoration(labelText: t.saNewPasswordLabel)),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Annuler')),
+        TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t.cancel)),
         ElevatedButton(
           onPressed: () async {
             try {
@@ -264,7 +269,7 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
               if (ctx.mounted) Navigator.pop(ctx);
             } catch (_) {}
           },
-          child: const Text('Confirmer'),
+          child: Text(t.confirm),
         ),
       ],
     ));
@@ -281,6 +286,7 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(28),
@@ -290,19 +296,19 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
             Row(children: [
               const Icon(Icons.shield_outlined, color: AppColors.warning, size: 20),
               const SizedBox(width: 10),
-              Text('Gestion des utilisateurs',
+              Text(t.saUsersManagementTitle,
                 style: Theme.of(context).textTheme.titleLarge),
               const Spacer(),
               ElevatedButton.icon(
                 onPressed: _addUser,
                 icon: const Icon(Icons.person_add_outlined, size: 16),
-                label: const Text('Ajouter'),
+                label: Text(t.addButton),
               ),
               const SizedBox(width: 10),
               OutlinedButton.icon(
                 onPressed: _load,
                 icon: const Icon(Icons.refresh_rounded, size: 16),
-                label: const Text('Actualiser'),
+                label: Text(t.dashboardRefresh),
               ),
             ]),
             const SizedBox(height: 24),
@@ -319,12 +325,12 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
                   child: Column(children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                      child: Row(children: const [
-                        Expanded(flex: 3, child: Text('NOM', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
-                        Expanded(flex: 2, child: Text('USERNAME', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
-                        Expanded(flex: 2, child: Text('RÔLE', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
-                        Expanded(flex: 1, child: Text('STATUT', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
-                        SizedBox(width: 120),
+                      child: Row(children: [
+                        Expanded(flex: 3, child: Text(t.saThName, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
+                        Expanded(flex: 2, child: Text(t.saThUsername, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
+                        Expanded(flex: 2, child: Text(t.saThRole, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
+                        Expanded(flex: 1, child: Text(t.thStatus, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
+                        const SizedBox(width: 120),
                       ]),
                     ),
                     const Divider(height: 1, color: AppColors.darkBorder),
@@ -369,12 +375,12 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
                                         color: isActive ? AppColors.danger : AppColors.success,
                                       ),
                                       onPressed: () => _toggleActive(u),
-                                      tooltip: isActive ? 'Désactiver' : 'Activer',
+                                      tooltip: isActive ? t.saDeactivateTooltip : t.saActivateTooltip,
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.key_outlined, size: 16, color: AppColors.warning),
                                       onPressed: () => _resetPassword(u),
-                                      tooltip: 'Réinitialiser mot de passe',
+                                      tooltip: t.saResetPasswordTooltip,
                                     ),
                                   ],
                                 ]),

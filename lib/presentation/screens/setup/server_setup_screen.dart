@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/config/app_config.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../auth/login_screen.dart';
 import 'admin_setup_screen.dart';
 
@@ -34,8 +35,9 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
     final ip = _ipCtrl.text.trim();
     final port = _portCtrl.text.trim();
 
+    final t = AppLocalizations.of(context);
     if (ip.isEmpty || port.isEmpty) {
-      setState(() => _error = 'Veuillez remplir tous les champs');
+      setState(() => _error = t.setupFillAllFields);
       return;
     }
 
@@ -63,15 +65,17 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
         Get.offAll(() => const LoginScreen());
       }
     } catch (_) {
+      final t = AppLocalizations.of(context);
       setState(() {
         _testing = false;
-        _error = 'Impossible de joindre le serveur. Vérifiez l\'adresse et que le serveur est démarré.';
+        _error = t.setupServerUnreachable;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Scaffold(
       body: Center(
         child: SizedBox(
@@ -86,7 +90,7 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
                   child: TextButton.icon(
                     onPressed: () => Get.back(),
                     icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 14),
-                    label: const Text('Retour'),
+                    label: Text(t.setupBackButton),
                   ),
                 ),
               Row(children: [
@@ -102,16 +106,16 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
                 Text('Synexia.Dz', style: Theme.of(context).textTheme.displayMedium),
               ]),
               const SizedBox(height: 32),
-              Text('Configuration du serveur', style: Theme.of(context).textTheme.titleLarge),
+              Text(t.setupServerConfigTitle, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 6),
-              const Text('Entrez l\'adresse du serveur local de votre entrepôt', style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
+              Text(t.setupServerConfigDesc, style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
               const SizedBox(height: 28),
               Row(children: [
                 Expanded(
                   flex: 3,
                   child: TextField(
                     controller: _ipCtrl,
-                    decoration: const InputDecoration(labelText: 'Adresse IP', hintText: '192.168.1.50'),
+                    decoration: InputDecoration(labelText: t.setupIpLabel, hintText: '192.168.1.50'),
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -119,7 +123,7 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
                   flex: 1,
                   child: TextField(
                     controller: _portCtrl,
-                    decoration: const InputDecoration(labelText: 'Port'),
+                    decoration: InputDecoration(labelText: t.setupPortLabel),
                   ),
                 ),
               ]),
@@ -142,7 +146,7 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
                   onPressed: _testing ? null : _connect,
                   child: _testing
                       ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : const Text('Se connecter'),
+                      : Text(t.loginButton),
                 ),
               ),
             ],

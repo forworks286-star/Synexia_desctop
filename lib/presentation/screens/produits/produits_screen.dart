@@ -8,6 +8,7 @@ import '../../../core/utils/get_safe_back.dart';
 import '../../../core/widgets/app_toast.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -24,15 +25,16 @@ class ProduitsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final stock = Get.find<StockController>();
     Get.find<AlertController>().markReadByType('stock');
+    final t = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         _TypeFilterTabs(),
           PageHeader(
-            title: 'Produits',
+            title: t.homeProducts,
             actions: [
-              SearchField(hint: 'SKU, nom, référence...', onChanged: (v) => stock.searchQuery.value = v),
+              SearchField(hint: t.searchProductHint, onChanged: (v) => stock.searchQuery.value = v),
               const SizedBox(width: 10),
               _FilterDropdown(stock: stock),
               const SizedBox(width: 10),
@@ -41,10 +43,10 @@ class ProduitsScreen extends StatelessWidget {
               Obx(() {
                 final auth = Get.find<AuthController>();
                 if (!auth.canEdit) return const SizedBox.shrink();
-                return SynButton(label: 'Ajouter', icon: Icons.add_rounded, onTap: () => _showChoixAjout(stock));
+                return SynButton(label: t.addButton, icon: Icons.add_rounded, onTap: () => _showChoixAjout(stock));
               }),
               const SizedBox(width: 10),
-              SynButton(label: 'Actualiser', icon: Icons.refresh_rounded, onTap: stock.loadProducts, outline: true),
+              SynButton(label: t.dashboardRefresh, icon: Icons.refresh_rounded, onTap: stock.loadProducts, outline: true),
             ],
           ),
           const SizedBox(height: 20),
@@ -62,7 +64,7 @@ class ProduitsScreen extends StatelessWidget {
                       }
                       final list = stock.filteredProducts;
                       if (list.isEmpty) {
-                        return const Center(child: Text('Aucun produit', style: TextStyle(color: AppColors.darkTextMuted)));
+                        return Center(child: Text(t.noProduct, style: TextStyle(color: AppColors.darkTextMuted)));
                       }
                       return ListView.separated(
                         itemCount: list.length,
@@ -84,16 +86,17 @@ class ProduitsScreen extends StatelessWidget {
 class _TableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(children: [
         const SizedBox(width: 16),
-        _TH(label: 'PRODUIT', flex: 3),
-        _TH(label: 'SKU', flex: 2),
-        _TH(label: 'CATÉGORIE', flex: 2),
-        _TH(label: 'STOCK DISPO', flex: 1),
-        _TH(label: 'VALEUR', flex: 2),
-        _TH(label: 'STATUT', flex: 1),
+        _TH(label: t.tableProduct, flex: 3),
+        _TH(label: t.thSku, flex: 2),
+        _TH(label: t.thCategory, flex: 2),
+        _TH(label: t.thStockAvailable, flex: 1),
+        _TH(label: t.thValue, flex: 2),
+        _TH(label: t.thStatus, flex: 1),
       ]),
     );
   }
@@ -122,16 +125,17 @@ class _ProductRow extends StatelessWidget {
     }
   }
 
-  String get _statusLabel {
+  String _statusLabel(AppLocalizations t) {
     switch (product.status) {
-      case StockStatus.normal: return 'Normal';
-      case StockStatus.low: return 'Bas';
-      case StockStatus.critical: return 'Critique';
+      case StockStatus.normal: return t.statusNormal;
+      case StockStatus.low: return t.statusLowShort;
+      case StockStatus.critical: return t.statusCritical;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return InkWell(
       onTap: () => _showDetail(product),
       child: Container(
@@ -154,7 +158,7 @@ class _ProductRow extends StatelessWidget {
             formatDA(product.valeurStock),
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
           )),
-          Expanded(flex: 1, child: StatusChip(status: product.status, label: _statusLabel)),
+          Expanded(flex: 1, child: StatusChip(status: product.status, label: _statusLabel(t))),
         ]),
       ),
     );
@@ -167,17 +171,18 @@ class _FilterDropdown extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Obx(() => DropdownButtonHideUnderline(
       child: DropdownButton<StockStatus?>(
         value: stock.statusFilter.value,
-        hint: const Text('Tous les statuts', style: TextStyle(fontSize: 12)),
+        hint: Text(t.filterAllStatus, style: TextStyle(fontSize: 12)),
         style: const TextStyle(fontSize: 12),
         dropdownColor: AppColors.darkCard,
-        items: const [
-          DropdownMenuItem(value: null, child: Text('Tous les statuts')),
-          DropdownMenuItem(value: StockStatus.normal, child: Text('Normal')),
-          DropdownMenuItem(value: StockStatus.low, child: Text('Stock bas')),
-          DropdownMenuItem(value: StockStatus.critical, child: Text('Critique')),
+        items: [
+          DropdownMenuItem(value: null, child: Text(t.filterAllStatus)),
+          DropdownMenuItem(value: StockStatus.normal, child: Text(t.statusNormal)),
+          DropdownMenuItem(value: StockStatus.low, child: Text(t.statusLow)),
+          DropdownMenuItem(value: StockStatus.critical, child: Text(t.statusCritical)),
         ],
         onChanged: (v) => stock.statusFilter.value = v,
       ),
@@ -195,14 +200,15 @@ class _CategorieDropdown extends StatelessWidget {
     return Obx(() {
       final cats = stock.categories;
       if (cats.isEmpty) return const SizedBox.shrink();
+      final t = AppLocalizations.of(context);
       return DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: stock.categorieFilter.value.isEmpty ? null : stock.categorieFilter.value,
-          hint: const Text('Catégorie', style: TextStyle(fontSize: 12)),
+          hint: Text(t.filterCategoryHint, style: TextStyle(fontSize: 12)),
           style: const TextStyle(fontSize: 12),
           dropdownColor: AppColors.darkCard,
           items: [
-            const DropdownMenuItem(value: null, child: Text('Toutes catégories')),
+            DropdownMenuItem(value: null, child: Text(t.filterAllCategories)),
             ...cats.map((c) => DropdownMenuItem(value: c, child: Text(c))),
           ],
           onChanged: (v) => stock.categorieFilter.value = v ?? '',
@@ -219,18 +225,19 @@ class _DetailGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     final items = [
-      ('Stock physique',    '${product.stockPhysique} ${product.uniteMesure}'),
-      ('Stock disponible',  '${product.stockDisponible} ${product.uniteMesure}'),
-      ('Stock réservé',     '${product.stockReserve} ${product.uniteMesure}'),
-      ('Seuil critique',    '${product.alertThreshold}'),
-      ('Prix achat',        formatDA(product.prixAchat)),
-      ('Prix vente',        formatDA(product.prixVente)),
-      ('PMP',               formatDA(product.prixMoyenPondere)),
-      ('Valeur stock',      formatDA(product.valeurStock)),
-      ('TVA',               '${product.tauxTva}%'),
-      ('Catégorie',         product.categorie ?? '—'),
-      ('Pays origine',      product.paysOrigine ?? '—'),
+      (t.detailStockPhysical,    '${product.stockPhysique} ${product.uniteMesure}'),
+      (t.detailStockAvailable,  '${product.stockDisponible} ${product.uniteMesure}'),
+      (t.detailStockReserved,     '${product.stockReserve} ${product.uniteMesure}'),
+      (t.detailCriticalThreshold,    '${product.alertThreshold}'),
+      (t.detailPurchasePrice,        formatDA(product.prixAchat)),
+      (t.detailSalePrice,        formatDA(product.prixVente)),
+      (t.detailPmp,               formatDA(product.prixMoyenPondere)),
+      (t.detailStockValue,      formatDA(product.valeurStock)),
+      (t.detailTva,               '${product.tauxTva}%'),
+      (t.formCategory,         product.categorie ?? '—'),
+      (t.detailOriginCountry,      product.paysOrigine ?? '—'),
     ];
 
     return Wrap(
@@ -250,6 +257,7 @@ class _DetailGrid extends StatelessWidget {
 }
 
 void _showDetail(Product product) {
+    final t = AppLocalizations(Get.locale ?? const Locale('fr'));
     Get.dialog(
       Dialog(
         child: Container(
@@ -275,7 +283,7 @@ void _showDetail(Product product) {
               _DetailGrid(product: product),
               const SizedBox(height: 12),
               SynButton(
-                label: 'Voir historique des prix',
+                label: t.viewPriceHistory,
                 icon: Icons.show_chart_rounded,
                 outline: true,
                 onTap: () async {
@@ -285,7 +293,7 @@ void _showDetail(Product product) {
               ),
               if (product.lots.isNotEmpty) ...[
                 const SizedBox(height: 20),
-                const Text('LOTS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+                Text(t.lotsTitle, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
                   color: AppColors.darkTextMuted, letterSpacing: 0.12)),
                 const SizedBox(height: 8),
                 ...product.lots.map((l) => Container(
@@ -298,13 +306,13 @@ void _showDetail(Product product) {
                   ),
                   child: Row(children: [
                     Expanded(child: Text(l.numeroLot ?? 'N/A', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
-                    Text('${l.quantiteDisponible} dispo', style: const TextStyle(fontSize: 12)),
+                    Text('${l.quantiteDisponible} ${t.lotAvailable}', style: const TextStyle(fontSize: 12)),
                     const SizedBox(width: 16),
                     if (l.emplacement != null)
                       Text('📍 ${l.emplacement}', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
                     if (l.dateExpiration != null) ...[
                       const SizedBox(width: 16),
-                      Text('Exp: ${_fmtDate(l.dateExpiration!)}',
+                      Text('${t.lotExpiry} ${_fmtDate(l.dateExpiration!)}',
                         style: TextStyle(fontSize: 11,
                           color: l.dateExpiration!.isBefore(DateTime.now().add(const Duration(days: 30)))
                             ? AppColors.danger : AppColors.darkTextMuted)),
@@ -314,7 +322,7 @@ void _showDetail(Product product) {
                     ],
                     IconButton(
                       icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppColors.primary),
-                      tooltip: 'Imprimer le QR de ce lot',
+                      tooltip: t.printLotQrTooltip,
                       onPressed: () => showLotQrDialog(l.id, l.numeroLot ?? '#${l.id}'),
                     ),
                   ]),
@@ -322,7 +330,7 @@ void _showDetail(Product product) {
               ],
               if (product.champsExtra.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                const Text('CHAMPS EXTRA', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+                Text(t.extraFieldsTitle, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
                   color: AppColors.darkTextMuted, letterSpacing: 0.12)),
                 const SizedBox(height: 8),
                 ...product.champsExtra.entries.map((e) => Padding(
@@ -346,24 +354,26 @@ void _showDetail(Product product) {
   
 
 void _showChoixAjout(StockController stock) {
+  final t = AppLocalizations(Get.locale ?? const Locale('fr'));
   Get.dialog(AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: const Text('Ajouter un produit'),
-    content: const Text('Choisissez le mode d\'ajout :', style: TextStyle(fontSize: 13)),
+    title: Text(t.addProductTitle),
+    content: Text(t.addProductChooseMode, style: const TextStyle(fontSize: 13)),
     actions: [
       TextButton(
         onPressed: () async { await safeBack(); _showAddProduitSimple(stock); },
-        child: const Text('Fiche produit seulement\n(sans stock)', textAlign: TextAlign.center),
+        child: Text(t.addProductSheetOnly, textAlign: TextAlign.center),
       ),
       ElevatedButton(
         onPressed: () async { await safeBack(); _showAddProduitComplet(stock); },
-        child: const Text('Avec stock initial\n(facture automatique)', textAlign: TextAlign.center),
+        child: Text(t.addProductWithStock, textAlign: TextAlign.center),
       ),
     ],
   ));
 }
 
 void _showAddProduitSimple(StockController stock) {
+  final t = AppLocalizations(Get.locale ?? const Locale('fr'));
   final skuCtrl = TextEditingController();
   final nomCtrl = TextEditingController();
   final qrCtrl = TextEditingController();
@@ -379,34 +389,34 @@ void _showAddProduitSimple(StockController stock) {
       padding: const EdgeInsets.all(28),
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Expanded(child: Text('Fiche produit (sans stock)',
+          Expanded(child: Text(t.addProductSheetOnly.replaceAll('\n', ' '),
             style: TextStyle(fontFamily: 'Syne', fontSize: 16, fontWeight: FontWeight.w700))),
           IconButton(onPressed: Get.back, icon: const Icon(Icons.close_rounded, size: 18)),
         ]),
         const SizedBox(height: 20),
         Row(children: [
-          Expanded(child: TextField(controller: skuCtrl, decoration: const InputDecoration(labelText: 'SKU *'))),
+          Expanded(child: TextField(controller: skuCtrl, decoration: InputDecoration(labelText: t.formSku))),
           const SizedBox(width: 12),
-          Expanded(child: TextField(controller: qrCtrl, decoration: const InputDecoration(labelText: 'QR Code *'))),
+          Expanded(child: TextField(controller: qrCtrl, decoration: InputDecoration(labelText: t.formQrCode))),
         ]),
         const SizedBox(height: 12),
-        TextField(controller: nomCtrl, decoration: const InputDecoration(labelText: 'Nom du produit *')),
+        TextField(controller: nomCtrl, decoration: InputDecoration(labelText: t.formProductName)),
         const SizedBox(height: 12),
-        TextField(controller: categorieCtrl, decoration: const InputDecoration(labelText: 'Catégorie')),
+        TextField(controller: categorieCtrl, decoration: InputDecoration(labelText: t.formCategory)),
         const SizedBox(height: 12),
         DropdownButtonFormField<String>(
           value: typeStock,
-          decoration: const InputDecoration(labelText: 'Type de stock'),
+          decoration: InputDecoration(labelText: t.formStockType),
           items: typeStockOptions.map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2))).toList(),
           onChanged: (v) => setState(() => typeStock = v ?? 'marchandise'),
         ),
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: TextField(controller: prixAchatCtrl,
-            decoration: const InputDecoration(labelText: 'Prix achat référence'), keyboardType: TextInputType.number)),
+            decoration: InputDecoration(labelText: t.formPurchasePriceRef), keyboardType: TextInputType.number)),
           const SizedBox(width: 12),
           Expanded(child: TextField(controller: prixVenteCtrl,
-            decoration: const InputDecoration(labelText: 'Prix vente référence'), keyboardType: TextInputType.number)),
+            decoration: InputDecoration(labelText: t.formSalePriceRef), keyboardType: TextInputType.number)),
         ]),
         if (errorMsg != null) ...[
           const SizedBox(height: 12),
@@ -414,12 +424,12 @@ void _showAddProduitSimple(StockController stock) {
         ],
         const SizedBox(height: 24),
         Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          OutlinedButton(onPressed: Get.back, child: const Text('Annuler')),
+          OutlinedButton(onPressed: Get.back, child: Text(t.cancel)),
           const SizedBox(width: 12),
           ElevatedButton(
             onPressed: () async {
               if (skuCtrl.text.trim().isEmpty || nomCtrl.text.trim().isEmpty || qrCtrl.text.trim().isEmpty) {
-                setState(() => errorMsg = 'SKU, Nom et QR Code sont obligatoires');
+                setState(() => errorMsg = t.errorSkuNameQrRequired);
                 return;
               }
               try {
@@ -435,12 +445,12 @@ void _showAddProduitSimple(StockController stock) {
                 });
                 await safeBack();
                 await stock.loadProducts();
-                AppToast.success('Succès', 'Fiche produit créée (stock à 0, en attente de facture)');
+                AppToast.success(t.toastSuccess, t.toastProductSheetCreated);
               } catch (e) {
-                setState(() => errorMsg = 'Erreur — SKU ou QR Code déjà utilisé');
+                setState(() => errorMsg = t.errorSkuQrUsed);
               }
             },
-            child: const Text('Créer'),
+            child: Text(t.create),
           ),
         ]),
       ]),
@@ -449,6 +459,7 @@ void _showAddProduitSimple(StockController stock) {
 }
 
 void _showAddProduitComplet(StockController stock) {
+  final t = AppLocalizations(Get.locale ?? const Locale('fr'));
   final fournisseurCtrl = TextEditingController();
   final paysOrigineCtrl = TextEditingController();
   final nifCtrl = TextEditingController();
@@ -471,28 +482,28 @@ void _showAddProduitComplet(StockController stock) {
       padding: const EdgeInsets.all(28),
       child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Expanded(child: Text('Produit avec stock initial',
-            style: TextStyle(fontFamily: 'Syne', fontSize: 16, fontWeight: FontWeight.w700))),
+          Expanded(child: Text(t.productFullTitle,
+            style: const TextStyle(fontFamily: 'Syne', fontSize: 16, fontWeight: FontWeight.w700))),
           IconButton(onPressed: Get.back, icon: const Icon(Icons.close_rounded, size: 18)),
         ]),
         const SizedBox(height: 8),
-        const Text('Une facture d\'ajustement sera créée automatiquement pour tracer cette entrée.',
+        Text(t.productFullSubtitle,
           style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
         const SizedBox(height: 20),
         Row(children: [
-          Expanded(child: TextField(controller: skuCtrl, decoration: const InputDecoration(labelText: 'SKU *'))),
+          Expanded(child: TextField(controller: skuCtrl, decoration: InputDecoration(labelText: t.formSku))),
           const SizedBox(width: 12),
-          Expanded(child: TextField(controller: qrCtrl, decoration: const InputDecoration(labelText: 'QR Code *'))),
+          Expanded(child: TextField(controller: qrCtrl, decoration: InputDecoration(labelText: t.formQrCode))),
         ]),
         const SizedBox(height: 12),
-        TextField(controller: nomCtrl, decoration: const InputDecoration(labelText: 'Nom du produit *')),
+        TextField(controller: nomCtrl, decoration: InputDecoration(labelText: t.formProductName)),
         const SizedBox(height: 12),
         Row(children: [
-          Expanded(child: TextField(controller: categorieCtrl, decoration: const InputDecoration(labelText: 'Catégorie'))),
+          Expanded(child: TextField(controller: categorieCtrl, decoration: InputDecoration(labelText: t.formCategory))),
           const SizedBox(width: 12),
           Expanded(child: DropdownButtonFormField<String>(
             value: typeStock,
-            decoration: const InputDecoration(labelText: 'Type de stock'),
+            decoration: InputDecoration(labelText: t.formStockType),
             items: typeStockOptions.map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2))).toList(),
             onChanged: (v) => setState(() => typeStock = v ?? 'marchandise'),
           )),
@@ -501,49 +512,49 @@ void _showAddProduitComplet(StockController stock) {
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: TextField(controller: fournisseurCtrl,
-            decoration: const InputDecoration(labelText: 'Fournisseur'))),
+            decoration: InputDecoration(labelText: t.formSupplier))),
           const SizedBox(width: 12),
           Expanded(child: TextField(controller: paysOrigineCtrl,
-            decoration: const InputDecoration(labelText: 'Pays d\'origine'))),
+            decoration: InputDecoration(labelText: t.formOriginCountry))),
         ]),
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: TextField(controller: nifCtrl,
-            decoration: const InputDecoration(labelText: 'NIF fournisseur'))),
+            decoration: InputDecoration(labelText: t.formSupplierNif))),
           const SizedBox(width: 12),
           Expanded(child: TextField(controller: nisCtrl,
-            decoration: const InputDecoration(labelText: 'NIS fournisseur'))),
+            decoration: InputDecoration(labelText: t.formSupplierNis))),
           const SizedBox(width: 12),
           Expanded(child: TextField(controller: rcCtrl,
-            decoration: const InputDecoration(labelText: 'RC fournisseur'))),
+            decoration: InputDecoration(labelText: t.formSupplierRc))),
         ]),
         
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: TextField(controller: prixAchatCtrl,
-            decoration: const InputDecoration(labelText: 'Prix achat'), keyboardType: TextInputType.number)),
+            decoration: InputDecoration(labelText: t.detailPurchasePrice), keyboardType: TextInputType.number)),
           const SizedBox(width: 12),
           Expanded(child: TextField(controller: prixVenteCtrl,
-            decoration: const InputDecoration(labelText: 'Prix vente'), keyboardType: TextInputType.number)),
+            decoration: InputDecoration(labelText: t.detailSalePrice), keyboardType: TextInputType.number)),
           const SizedBox(width: 12),
           Expanded(child: TextField(controller: seuilCtrl,
-            decoration: const InputDecoration(labelText: 'Seuil critique'), keyboardType: TextInputType.number)),
+            decoration: InputDecoration(labelText: t.detailCriticalThreshold), keyboardType: TextInputType.number)),
         ]),
         const SizedBox(height: 12),
         TextField(controller: stockInitialCtrl,
-          decoration: const InputDecoration(labelText: 'Quantité initiale *'), keyboardType: TextInputType.number),
+          decoration: InputDecoration(labelText: t.formInitialQty), keyboardType: TextInputType.number),
         if (errorMsg != null) ...[
           const SizedBox(height: 12),
           Text(errorMsg!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
         ],
         const SizedBox(height: 24),
         Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-          OutlinedButton(onPressed: Get.back, child: const Text('Annuler')),
+          OutlinedButton(onPressed: Get.back, child: Text(t.cancel)),
           const SizedBox(width: 12),
           ElevatedButton(
             onPressed: () async {
               if (skuCtrl.text.trim().isEmpty || nomCtrl.text.trim().isEmpty || qrCtrl.text.trim().isEmpty) {
-                setState(() => errorMsg = 'SKU, Nom et QR Code sont obligatoires');
+                setState(() => errorMsg = t.errorSkuNameQrRequired);
                 return;
               }
               final r = await stock.ajoutManuelComplet({
@@ -566,11 +577,11 @@ void _showAddProduitComplet(StockController stock) {
                 (_) async {
                   await safeBack();
                   await stock.loadProducts();
-                  AppToast.success('Succès', 'Produit + facture d\'ajustement créés');
+                  AppToast.success(t.toastSuccess, t.toastProductInvoiceCreated);
                 },
               );
             },
-            child: const Text('Créer'),
+            child: Text(t.create),
           ),
         ]),
       ]),
@@ -579,6 +590,7 @@ void _showAddProduitComplet(StockController stock) {
 }
 
 void _showLotQr(int lotId, String numeroLot) async {
+    final t = AppLocalizations(Get.locale ?? const Locale('fr'));
     Get.dialog(FutureBuilder<Either<String, Uint8List>>(
       future: StockRepositoryImpl().getLotQr(lotId),
       builder: (context, snapshot) {
@@ -587,16 +599,16 @@ void _showLotQr(int lotId, String numeroLot) async {
             child: Center(child: CircularProgressIndicator())));
         }
         return snapshot.data!.fold(
-          (e) => AlertDialog(title: const Text('Erreur'), content: Text(e)),
+          (e) => AlertDialog(title: Text(t.errorTitle), content: Text(e)),
           (bytes) => AlertDialog(
-            title: Text('QR — Lot $numeroLot'),
+            title: Text('${t.qrLotTitle} $numeroLot'),
             content: SizedBox(width: 260, height: 300, child: Column(children: [
               Image.memory(bytes, width: 220, height: 220),
               const SizedBox(height: 10),
-              const Text('Imprimez cette fenêtre (Ctrl+P) et collez le QR sur les cartons du lot.',
+              Text(t.qrPrintInstruction,
                 style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted), textAlign: TextAlign.center),
             ])),
-            actions: [TextButton(onPressed: () => safeBack(), child: const Text('Fermer'))],
+            actions: [TextButton(onPressed: () => safeBack(), child: Text(t.close))],
           ),
         );
       },
@@ -611,17 +623,17 @@ void _showLotQr(int lotId, String numeroLot) async {
 }
 
 class _TypeFilterTabsState extends State<_TypeFilterTabs> {
-  static const _options = {
-    null: 'Tout', 'marchandise': 'Marchandise', 'matiere_premiere': 'Matière première',
-    'produit_fini': 'Produit fini', 'consommable': 'Consommable',
-  };
-
   @override
   Widget build(BuildContext context) {
     final stock = Get.find<StockController>();
+    final t = AppLocalizations.of(context);
+    final options = {
+      null: t.filterTypeAll, 'marchandise': t.filterTypeMerchandise, 'matiere_premiere': t.filterTypeRawMaterial,
+      'produit_fini': t.filterTypeFinishedProduct, 'consommable': t.filterTypeConsumable,
+    };
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Obx(() => Wrap(spacing: 8, children: _options.entries.map((e) {
+      child: Obx(() => Wrap(spacing: 8, children: options.entries.map((e) {
         final selected = stock.typeStockFilter.value == e.key;
         return ChoiceChip(
           label: Text(e.value),

@@ -58,12 +58,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                   )),
                   const SizedBox(height: 12),
-                  const Text('Warehouse Management System', style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
+                  Text(AppLocalizations.of(context).appTagline, style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
                   const SizedBox(height: 60),
-                  _FeatureItem(icon: Icons.inventory_2_outlined, label: 'Gestion de stock en temps réel'),
-                  _FeatureItem(icon: Icons.receipt_long_outlined, label: 'Validation intelligente des factures'),
-                  _FeatureItem(icon: Icons.notifications_outlined, label: 'Alertes instantanées'),
-                  _FeatureItem(icon: Icons.bar_chart_rounded, label: 'Rapports et analyses'),
+                  _FeatureItem(icon: Icons.inventory_2_outlined, label: AppLocalizations.of(context).featureStockRealtime),
+                  _FeatureItem(icon: Icons.receipt_long_outlined, label: AppLocalizations.of(context).featureInvoiceValidation),
+                  _FeatureItem(icon: Icons.notifications_outlined, label: AppLocalizations.of(context).featureAlertsInstant),
+                  _FeatureItem(icon: Icons.bar_chart_rounded, label: AppLocalizations.of(context).featureReportsAnalytics),
                 ],
               ),
             ),
@@ -77,25 +77,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Connexion', style: Theme.of(context).textTheme.displayMedium),
+                    Text(AppLocalizations.of(context).loginTitle, style: Theme.of(context).textTheme.displayMedium),
                     const SizedBox(height: 6),
-                    const Text('Accès réservé aux utilisateurs autorisés', style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
+                    Text(AppLocalizations.of(context).loginSubtitle, style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
                     const SizedBox(height: 40),
-                    const Text('Nom d\'utilisateur', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    Text(AppLocalizations.of(context).loginUsername, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _usernameCtrl,
-                      decoration: const InputDecoration(hintText: 'Entrez votre identifiant'),
+                      decoration: InputDecoration(hintText: AppLocalizations.of(context).loginUsernameHint),
                       textInputAction: TextInputAction.next,
                     ),
                     const SizedBox(height: 16),
-                    const Text('Mot de passe', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+                    Text(AppLocalizations.of(context).loginPassword, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _passwordCtrl,
                       obscureText: _obscure,
                       decoration: InputDecoration(
-                        hintText: 'Entrez votre mot de passe',
+                        hintText: AppLocalizations.of(context).loginPasswordHint,
                         suffixIcon: IconButton(
                           icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, size: 16),
                           onPressed: () => setState(() => _obscure = !_obscure),
@@ -124,14 +124,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     }),
                     SizedBox(
                       width: double.infinity,
-                      child: Obx(() => SynButton(label: 'Se connecter', isLoading: auth.isLoading.value, onTap: () => _submit(auth))),
+                      child: Obx(() => SynButton(label: AppLocalizations.of(context).loginButton, isLoading: auth.isLoading.value, onTap: () => _submit(auth))),
                     ),
                     const SizedBox(height: 16),
                     Center(
                       child: TextButton(
                         onPressed: () => Get.to(() => const SuperAdminScreen()),
-                        child: const Text(
-                          'Accès administrateur système',
+                        child: Text(
+                          AppLocalizations.of(context).loginAdminAccess,
                           style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted),
                         ),
                       ),

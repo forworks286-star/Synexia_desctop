@@ -5,6 +5,7 @@ import '../../../core/widgets/app_toast.dart';
 import '../../controllers/controllers.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
@@ -12,15 +13,15 @@ import '../../widgets/widgets.dart';
 import '../../../data/repositories/invoice_repository_impl.dart';
 import '../historique/historique_produit_screen.dart';
 
-const typeStockOptions = [
-  ('matiere_premiere', 'Matière première'),
-  ('produit_fini', 'Produit fini'),
-  ('marchandise', 'Marchandise'),
-  ('consommable', 'Consommable'),
+List<(String, String)> typeStockOptionsL10n(AppLocalizations t) => [
+  ('matiere_premiere', t.filterTypeRawMaterial),
+  ('produit_fini', t.filterTypeFinishedProduct),
+  ('marchandise', t.filterTypeMerchandise),
+  ('consommable', t.filterTypeConsumable),
 ];
 
-String typeStockLabel(String? v) =>
-    typeStockOptions.firstWhere((e) => e.$1 == v, orElse: () => (v ?? '', v ?? '—')).$2;
+String typeStockLabelL10n(AppLocalizations t, String? v) =>
+    typeStockOptionsL10n(t).firstWhere((e) => e.$1 == v, orElse: () => (v ?? '', v ?? '—')).$2;
 
 class FactureDetailScreen extends StatefulWidget {
   final int factureId;
@@ -59,8 +60,9 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
     if (_loading) {
       return const Center(child: CircularProgressIndicator(color: AppColors.primary));
     }
+    final t = AppLocalizations.of(context);
     if (_error != null || _invoice == null) {
-      return Center(child: Text(_error ?? 'Erreur', style: const TextStyle(color: AppColors.danger)));
+      return Center(child: Text(_error ?? t.errorTitle, style: const TextStyle(color: AppColors.danger)));
     }
     final invoice = _invoice!;
 
@@ -70,21 +72,21 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => safeBack()),
-            Expanded(child: PageHeader(title: 'Facture ${invoice.numeroFacture ?? '#${invoice.id}'}')),
-            InvoiceChip(status: invoice.status, label: _statusLabel(invoice.status)),
+            Expanded(child: PageHeader(title: '${t.histInvoiceWord} ${invoice.numeroFacture ?? '#${invoice.id}'}')),
+            InvoiceChip(status: invoice.status, label: _statusLabel(t, invoice.status)),
           ]),
           const SizedBox(height: 20),
-          _buildHeaderCard(invoice),
+          _buildHeaderCard(t, invoice),
           const SizedBox(height: 16),
-          _buildFinancialCard(invoice),
+          _buildFinancialCard(t, invoice),
           const SizedBox(height: 16),
-          _buildLinesCard(invoice),
+          _buildLinesCard(t, invoice),
           if (invoice.motifRejet != null) ...[
             const SizedBox(height: 16),
             SynCard(
               borderLeft: AppColors.danger,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const SectionTitle(title: 'MOTIF DE REJET'),
+                SectionTitle(title: t.rejectionReasonTitle),
                 const SizedBox(height: 8),
                 Text(invoice.motifRejet!, style: const TextStyle(fontSize: 13)),
               ]),
@@ -92,14 +94,14 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
           ],
           if (_isPending && Get.find<AuthController>().isManager) ...[
             const SizedBox(height: 20),
-            _buildActionButtons(invoice),
+            _buildActionButtons(t, invoice),
           ],
         ]),
       ),
     );
   }
 
-  Widget _buildHeaderCard(Invoice invoice) {
+  Widget _buildHeaderCard(AppLocalizations t, Invoice invoice) {
     return SynCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Row(children: [
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -114,7 +116,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
-            invoice.typeFacture == 'vente' ? 'Vente' : (invoice.typeFacture == 'ajustement_manuel' ? 'Ajustement manuel' : 'Achat'),
+            invoice.typeFacture == 'vente' ? t.saleWord : (invoice.typeFacture == 'ajustement_manuel' ? t.manualAdjustmentWord : t.histTypePurchase),
             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
               color: invoice.typeFacture == 'vente' ? AppColors.success : AppColors.primary),
           ),
@@ -124,68 +126,68 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-            child: const Text('Créée manuellement', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.warning)),
+            child: Text(t.createdManuallyLabel, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.warning)),
           ),
         ],
       ]),
       const Divider(height: 24),
       Row(children: [
-        Expanded(child: _infoLine('NIF fournisseur', invoice.fournisseurNif ?? '—')),
-        Expanded(child: _infoLine('NIS fournisseur', invoice.fournisseurNis ?? '—')),
-        Expanded(child: _infoLine('RC fournisseur', invoice.fournisseurRc ?? '—')),
+        Expanded(child: _infoLine(t.formSupplierNif, invoice.fournisseurNif ?? '—')),
+        Expanded(child: _infoLine(t.formSupplierNis, invoice.fournisseurNis ?? '—')),
+        Expanded(child: _infoLine(t.formSupplierRc, invoice.fournisseurRc ?? '—')),
       ]),
       if (invoice.motifCreationManuelle != null) ...[
         const SizedBox(height: 8),
-        _infoLine('Motif (création manuelle)', invoice.motifCreationManuelle!),
+        _infoLine(t.manualCreationReasonLabel, invoice.motifCreationManuelle!),
       ],
     ]));
   }
 
-  Widget _buildFinancialCard(Invoice invoice) {
+  Widget _buildFinancialCard(AppLocalizations t, Invoice invoice) {
     return SynCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const SectionTitle(title: 'RÉSUMÉ FINANCIER'),
+      SectionTitle(title: t.financialSummaryTitle),
       const SizedBox(height: 16),
       Row(children: [
-        Expanded(child: _infoLine('Montant HT', formatDA(invoice.amountHt))),
-        Expanded(child: _infoLine('Taux TVA', '${invoice.tauxTva.toStringAsFixed(0)}%')),
-        Expanded(child: _infoLine('Montant TVA', formatDA(invoice.amountTva))),
-        Expanded(child: _infoLine('Montant TTC', formatDA(invoice.amountTtc))),
-        if (invoice.ppa != null) Expanded(child: _infoLine('PPA', formatDA(invoice.ppa!))),
+        Expanded(child: _infoLine(t.amountHtLabel, formatDA(invoice.amountHt))),
+        Expanded(child: _infoLine(t.tvaLabel, '${invoice.tauxTva.toStringAsFixed(0)}%')),
+        Expanded(child: _infoLine(t.invoiceAmountTva, formatDA(invoice.amountTva))),
+        Expanded(child: _infoLine(t.amountTtcLabel, formatDA(invoice.amountTtc))),
+        if (invoice.ppa != null) Expanded(child: _infoLine(t.ppaLabel, formatDA(invoice.ppa!))),
       ]),
       if (invoice.incoherenceDetectee) ...[
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
-          child: const Row(children: [
-            Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
-            SizedBox(width: 8),
-            Expanded(child: Text('Incohérence détectée entre le montant HT et le total des lignes.',
-              style: TextStyle(fontSize: 11, color: AppColors.warning))),
+          child: Row(children: [
+            const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
+            const SizedBox(width: 8),
+            Expanded(child: Text(t.incoherenceDetectedMsg,
+              style: const TextStyle(fontSize: 11, color: AppColors.warning))),
           ]),
         ),
       ],
     ]));
   }
 
-  Widget _buildLinesCard(Invoice invoice) {
+  Widget _buildLinesCard(AppLocalizations t, Invoice invoice) {
     return SynCard(padding: EdgeInsets.zero, child: Column(children: [
       Padding(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
         child: SectionTitle(
-          title: 'PRODUITS (${_lignes.length})',
-          action: _isPending ? SynButton(label: '+ Ajouter', outline: true, onTap: _showAddLigneDialog) : null,
+          title: '${t.productsCountTitle} (${_lignes.length})',
+          action: _isPending ? SynButton(label: t.addShortButton, outline: true, onTap: _showAddLigneDialog) : null,
         ),
       ),
       const Divider(height: 1),
       if (_lignes.isEmpty)
-        const Padding(padding: EdgeInsets.all(24), child: Text('Aucun produit ajouté à cette facture',
+        Padding(padding: const EdgeInsets.all(24), child: Text(t.noProductInInvoice,
           style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12))),
-      for (final l in _lignes) _ligneRow(l),
+      for (final l in _lignes) _ligneRow(t, l),
     ]));
   }
 
-  Widget _ligneRow(LigneFacture l) {
+  Widget _ligneRow(AppLocalizations t, LigneFacture l) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.darkBorder, width: 0.5))),
@@ -201,7 +203,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
           decoration: BoxDecoration(
             color: (l.matched ? AppColors.success : AppColors.warning).withOpacity(0.1),
             borderRadius: BorderRadius.circular(4)),
-          child: Text(l.matched ? '✅ Existant' : '🆕 ${typeStockLabel(l.typeStock)}',
+          child: Text(l.matched ? t.existingTag : '🆕 ${typeStockLabelL10n(t, l.typeStock)}',
             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600,
               color: l.matched ? AppColors.success : AppColors.warning)),
         )),
@@ -211,7 +213,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
         if (l.dateExpiration != null)
           Padding(
             padding: const EdgeInsets.only(right: 6),
-            child: Text('Exp: ${l.dateExpiration}', style: TextStyle(fontSize: 10,
+            child: Text('${t.histExpiresPrefix.replaceAll(':', '')}: ${l.dateExpiration}', style: TextStyle(fontSize: 10,
               color: l.dateExpirationManquante ? AppColors.warning : AppColors.darkTextMuted)),
           )
         else if (l.dateExpirationManquante)
@@ -231,59 +233,60 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
     );
   }
 
-  Widget _buildActionButtons(Invoice invoice) {
+  Widget _buildActionButtons(AppLocalizations t, Invoice invoice) {
     return Row(children: [
       Expanded(child: SynButton(
-        label: 'Valider',
+        label: t.invValidateButton,
         color: AppColors.success,
         onTap: () async {
           final r = await _repo.validateInvoice(invoice.id);
           r.fold(
-            (e) => AppToast.error('Erreur', e),
+            (e) => AppToast.error(t.errorTitle, e),
             (_) {
               _load();
               if (Get.isRegistered<StockController>()) Get.find<StockController>().loadProducts();
-              AppToast.success('Succès', 'Facture validée — stock mis à jour');
+              AppToast.success(t.toastSuccess, t.invoiceValidatedSuccessMsg);
             },
           );
         },
       )),
       const SizedBox(width: 12),
       Expanded(child: SynButton(
-        label: 'Rejeter', outline: true, color: AppColors.danger,
-        onTap: () => _showRejectDialog(invoice),
+        label: t.rejectButton, outline: true, color: AppColors.danger,
+        onTap: () => _showRejectDialog(t, invoice),
       )),
     ]);
   }
 
-  void _showRejectDialog(Invoice invoice) {
+  void _showRejectDialog(AppLocalizations t, Invoice invoice) {
     final motifCtrl = TextEditingController();
     Get.dialog(AlertDialog(
       backgroundColor: AppColors.darkCard,
-      title: const Text('Motif du rejet'),
+      title: Text(t.motifRejetTitle),
       content: TextField(
         controller: motifCtrl, maxLines: 3,
-        decoration: const InputDecoration(hintText: 'Expliquez pourquoi cette facture est rejetée...'),
+        decoration: InputDecoration(hintText: t.motifRejetHint),
       ),
       actions: [
-        TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
+        TextButton(onPressed: () => safeBack(), child: Text(t.cancel)),
         ElevatedButton(
           onPressed: () async {
             if (motifCtrl.text.trim().isEmpty) return;
             final r = await _repo.rejectInvoice(invoice.id, motifCtrl.text.trim());
             await safeBack();
             r.fold(
-              (e) => AppToast.error('Erreur', e),
+              (e) => AppToast.error(t.errorTitle, e),
               (_) => _load(),
             );
           },
-          child: const Text('Confirmer le rejet'),
+          child: Text(t.confirmRejectButton),
         ),
       ],
     ));
   }
 
   void _showAddLigneDialog() {
+    final t = AppLocalizations.of(context);
     final stock = Get.find<StockController>();
     Product? selectedProduct;
     final designationCtrl = TextEditingController();
@@ -298,10 +301,10 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
 
     Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
       backgroundColor: AppColors.darkCard,
-      title: const Text('Ajouter un produit à la facture'),
+      title: Text(t.addProductToInvoiceTitle),
       content: SizedBox(width: 460, child: Column(mainAxisSize: MainAxisSize.min, children: [
         SwitchListTile(
-          title: const Text('Produit inexistant (nouveau)', style: TextStyle(fontSize: 13)),
+          title: Text(t.newProductSwitchLabel, style: const TextStyle(fontSize: 13)),
           value: nouveauProduit,
           onChanged: (v) => setState(() => nouveauProduit = v),
         ),
@@ -313,27 +316,27 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
             onSelected: (p) => selectedProduct = p,
             fieldViewBuilder: (context, controller, focusNode, onSubmit) => TextField(
               controller: controller, focusNode: focusNode,
-              decoration: const InputDecoration(hintText: 'Rechercher un produit existant...'),
+              decoration: InputDecoration(hintText: t.searchExistingProductHint),
             ),
           )
         else ...[
           TextField(controller: designationCtrl,
-            decoration: const InputDecoration(labelText: 'Nom du nouveau produit')),
+            decoration: InputDecoration(labelText: t.newProductNameLabel)),
           const SizedBox(height: 8),
           DropdownButtonFormField<String>(
             value: selectedTypeStock,
-            decoration: const InputDecoration(labelText: 'Type de stock'),
-            items: typeStockOptions.map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2))).toList(),
+            decoration: InputDecoration(labelText: t.formStockType),
+            items: typeStockOptionsL10n(t).map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2))).toList(),
             onChanged: (v) => setState(() => selectedTypeStock = v),
           ),
         ],
         const SizedBox(height: 12),
         TextField(controller: qtyCtrl,
-          decoration: const InputDecoration(labelText: 'Quantité'), keyboardType: TextInputType.number),
+          decoration: InputDecoration(labelText: t.quantityWord), keyboardType: TextInputType.number),
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: TextField(controller: prixTotalCtrl,
-            decoration: const InputDecoration(labelText: 'Prix total (facture)'), keyboardType: TextInputType.number,
+            decoration: InputDecoration(labelText: t.lineTotalInvoiceLabel), keyboardType: TextInputType.number,
             onChanged: (v) {
               final total = double.tryParse(v) ?? 0;
               final qte = double.tryParse(qtyCtrl.text) ?? 0;
@@ -341,22 +344,22 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
             })),
           const SizedBox(width: 12),
           Expanded(child: TextField(controller: prixCtrl,
-            decoration: const InputDecoration(labelText: 'Prix unitaire (calculé, modifiable)'), keyboardType: TextInputType.number)),
+            decoration: InputDecoration(labelText: t.unitPriceCalcLabel), keyboardType: TextInputType.number)),
         ]),
         const SizedBox(height: 12),
         TextField(controller: prixVenteCtrl,
-          decoration: const InputDecoration(labelText: 'Prix de vente (optionnel)'), keyboardType: TextInputType.number),
+          decoration: InputDecoration(labelText: t.salePriceOptionalLabel2), keyboardType: TextInputType.number),
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: TextField(controller: dateFabCtrl,
-            decoration: const InputDecoration(labelText: 'Date fabrication (AAAA-MM-JJ)'))),
+            decoration: InputDecoration(labelText: t.manufacturingDateYmdLabel))),
           const SizedBox(width: 12),
           Expanded(child: TextField(controller: dateExpCtrl,
-            decoration: const InputDecoration(labelText: 'Date expiration (AAAA-MM-JJ)'))),
+            decoration: InputDecoration(labelText: t.expirationDateYmdLabel))),
         ]),
       ])),
       actions: [
-        TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
+        TextButton(onPressed: () => safeBack(), child: Text(t.cancel)),
         ElevatedButton(
           onPressed: () async {
             final qty = double.tryParse(qtyCtrl.text) ?? 0;
@@ -383,7 +386,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
             await safeBack();
             r.fold((e) {}, (_) => _load());
           },
-          child: const Text('Ajouter'),
+          child: Text(t.addButton),
         ),
       ],
     )));
@@ -411,12 +414,12 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
 
   String _fmtDate(DateTime d) => '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
 
-  String _statusLabel(InvoiceStatus s) {
+  String _statusLabel(AppLocalizations t, InvoiceStatus s) {
     switch (s) {
-      case InvoiceStatus.validated: return 'Validée';
-      case InvoiceStatus.rejected: return 'Rejetée';
-      case InvoiceStatus.pending: return 'En attente';
-      case InvoiceStatus.annulee: return 'Annulée';
+      case InvoiceStatus.validated: return t.pdfStatusValidated;
+      case InvoiceStatus.rejected: return t.pdfStatusRejected;
+      case InvoiceStatus.pending: return t.pdfStatusPending;
+      case InvoiceStatus.annulee: return t.invoiceCancelled;
     }
   }
 }

@@ -4,6 +4,7 @@ import '../../../core/utils/get_safe_back.dart';
 import '../../../core/widgets/app_toast.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../core/l10n/app_localizations.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../../../domain/models/models.dart';
@@ -16,11 +17,12 @@ class ApprobationsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final ctrl = Get.find<InvoiceController>();
     ctrl.loadFacturesEcartAValider();
+    final t = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.all(28),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        PageHeader(title: 'Confirmation des changements', actions: [
+        PageHeader(title: t.approvalsPageTitle, actions: [
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: () {
             ctrl.loadDemandes();
             ctrl.loadFacturesEcartAValider();
@@ -41,7 +43,7 @@ class ApprobationsScreen extends StatelessWidget {
               Row(children: [
                 const Icon(Icons.rule_folder_rounded, color: Colors.purple, size: 18),
                 const SizedBox(width: 8),
-                Text('${ctrl.facturesEcartAValider.length} écart(s) bon de commande à valider',
+                Text(t.gapCount(ctrl.facturesEcartAValider.length),
                   style: const TextStyle(color: Colors.purple, fontWeight: FontWeight.bold, fontSize: 13)),
               ]),
               const SizedBox(height: 10),
@@ -49,7 +51,7 @@ class ApprobationsScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: 4),
                 child: Row(children: [
                   Expanded(child: Text('#${f.id} — ${f.supplierName}', style: const TextStyle(fontSize: 13))),
-                  SynButton(label: 'Examiner', icon: Icons.fact_check_rounded,
+                  SynButton(label: t.examineButton, icon: Icons.fact_check_rounded,
                     onTap: () => _showEcartAValiderDialog(context, ctrl, f)),
                 ]),
               )),
@@ -59,7 +61,7 @@ class ApprobationsScreen extends StatelessWidget {
         Expanded(child: Obx(() {
           final demandes = ctrl.demandes;
           if (demandes.isEmpty) {
-            return const Center(child: Text('Aucune demande en attente',
+            return Center(child: Text(t.approvalsNoPending,
               style: TextStyle(color: AppColors.darkTextMuted)));
           }
           return ListView.separated(
@@ -73,39 +75,40 @@ class ApprobationsScreen extends StatelessWidget {
   }
 }
 
-String _formatEcarts(List<dynamic> ecarts) {
+String _formatEcarts(AppLocalizations t, List<dynamic> ecarts) {
   return ecarts.map((e) {
     final map = e as Map<String, dynamic>;
     if (map['type'] == 'fournisseur_different') {
-      return '⚠ Fournisseur différent : commandé "${map['commande']}" → reçu "${map['recu']}"';
+      return t.ecartFournisseurDifferent('${map['commande']}', '${map['recu']}');
     } else if (map['type'] == 'produit_non_commande') {
-      return '⚠ "${map['designation']}" reçu mais non commandé (qté: ${map['quantite_recue']})';
+      return t.ecartProduitNonCommande('${map['designation']}', '${map['quantite_recue']}');
     } else if (map['type'] == 'produit_manquant') {
-      return '⚠ "${map['designation']}" commandé (qté: ${map['quantite_commandee']}) mais non reçu';
+      return t.ecartProduitManquant('${map['designation']}', '${map['quantite_commandee']}');
     } else {
       final details = <String>[];
       if (map['quantite'] != null) {
-        details.add('quantité commandée ${map['quantite']['commandee']} → reçue ${map['quantite']['recue']}');
+        details.add(t.ecartQuantiteDetail('${map['quantite']['commandee']}', '${map['quantite']['recue']}'));
       }
       if (map['prix_unitaire'] != null) {
-        details.add('prix estimé ${map['prix_unitaire']['estime']} → reçu ${map['prix_unitaire']['recu']}');
+        details.add(t.ecartPrixDetail('${map['prix_unitaire']['estime']}', '${map['prix_unitaire']['recu']}'));
       }
-      return '⚠ "${map['designation']}" : ${details.join(', ')}';
+      return t.ecartGenericPrefix('${map['designation']}', details.join(', '));
     }
   }).join('\n');
 }
 
 void _showEcartAValiderDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
+  final t = AppLocalizations.of(context);
   Get.dialog(AlertDialog(
     backgroundColor: AppColors.darkCard,
-    title: Text('Écart — Facture #${facture.id}'),
+    title: Text('${t.gapTitlePrefix}${facture.id}'),
     content: SizedBox(width: 500, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const SectionTitle(title: 'ÉCARTS DÉTECTÉS'),
+      SectionTitle(title: t.gapDetectedTitle),
       const SizedBox(height: 6),
-      Text(_formatEcarts(facture.ecartsBc ?? []), style: const TextStyle(fontSize: 13)),
+      Text(_formatEcarts(t, facture.ecartsBc ?? []), style: const TextStyle(fontSize: 13)),
       const SizedBox(height: 16),
-      const SectionTitle(title: 'COMMENTAIRE'),
+      SectionTitle(title: t.gapCommentTitle),
       const SizedBox(height: 6),
       Text(facture.ecartCompteRendu ?? '—', style: const TextStyle(fontSize: 13)),
     ]))),
@@ -115,20 +118,20 @@ void _showEcartAValiderDialog(BuildContext context, InvoiceController ctrl, Invo
           final ok = await ctrl.rejeterEcart(facture.id);
           await safeBack();
           if (ok) {
-            AppToast.error('Rejetée', 'La facture a été annulée');
+            AppToast.error(t.rejectedTitle, t.rejectedMsg);
           }
         },
-        child: const Text('Rejeter', style: TextStyle(color: AppColors.danger)),
+        child: Text(t.rejectButton, style: const TextStyle(color: AppColors.danger)),
       ),
       ElevatedButton(
         onPressed: () async {
           final ok = await ctrl.approuverEcart(facture.id);
           await safeBack();
           if (ok) {
-            AppToast.success('Approuvé', 'La facture reprend son cours normal');
+            AppToast.success(t.approvedTitle, t.approvedMsg);
           }
         },
-        child: const Text('Approuver'),
+        child: Text(t.approveButton),
       ),
     ],
   ));
@@ -141,6 +144,7 @@ class _DemandeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ctrl = Get.find<InvoiceController>();
+    final t = AppLocalizations.of(context);
     final ecartLie = ctrl.facturesEcartASignaler.any((f) => f.id == demande.factureId)
         || ctrl.facturesEcartAValider.any((f) => f.id == demande.factureId);
 
@@ -151,7 +155,7 @@ class _DemandeCard extends StatelessWidget {
           const Icon(Icons.edit_note_rounded, size: 18, color: AppColors.warning),
           const SizedBox(width: 8),
           Expanded(child: Text(
-            'Facture #${demande.factureId} — ${demande.factureFournisseur ?? "—"}',
+            '${t.invoiceHashPrefix}${demande.factureId} — ${demande.factureFournisseur ?? "—"}',
             style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
           )),
           if (demande.factureMontantTtc != null)
@@ -159,10 +163,10 @@ class _DemandeCard extends StatelessWidget {
               style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.warning)),
         ]),
         const SizedBox(height: 4),
-        Text('Demandé par ${demande.demandeurNom ?? "—"}',
+        Text('${t.requestedByPrefix} ${demande.demandeurNom ?? "—"}',
           style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
         const SizedBox(height: 12),
-        const SectionTitle(title: 'COMPTE-RENDU'),
+        SectionTitle(title: t.gapCommentTitle),
         const SizedBox(height: 4),
         Text(demande.compteRendu, style: const TextStyle(fontSize: 13)),
         if (ecartLie) ...[
@@ -170,25 +174,25 @@ class _DemandeCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(color: Colors.purple.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-            child: const Text('🔒 Réglez d\'abord l\'écart bon de commande de cette facture (voir ci-dessus)',
-              style: TextStyle(fontSize: 12, color: Colors.purple)),
+            child: Text(t.gapLockNotice,
+              style: const TextStyle(fontSize: 12, color: Colors.purple)),
           ),
         ],
         const SizedBox(height: 14),
         Row(children: [
           TextButton.icon(
             icon: const Icon(Icons.visibility_outlined, size: 16),
-            label: const Text('Voir la facture'),
+            label: Text(t.viewInvoiceButton),
             onPressed: () => Get.to(() => FactureDetailScreen(factureId: demande.factureId)),
           ),
           const Spacer(),
           SynButton(
-            label: 'Refuser', outline: true, color: AppColors.danger,
+            label: t.refuseButton, outline: true, color: AppColors.danger,
             onTap: ecartLie ? null : () => _refuser(context, ctrl, demande.id),
           ),
           const SizedBox(width: 10),
           SynButton(
-            label: 'Approuver', color: AppColors.success,
+            label: t.approveButton, color: AppColors.success,
             onTap: ecartLie ? null : () => ctrl.approuverDemande(demande.id),
           ),
         ]),
@@ -197,21 +201,22 @@ class _DemandeCard extends StatelessWidget {
   }
 
   void _refuser(BuildContext context, InvoiceController ctrl, int id) {
+    final t = AppLocalizations.of(context);
     final motifCtrl = TextEditingController();
     Get.dialog(AlertDialog(
       backgroundColor: AppColors.darkCard,
-      title: const Text('Motif du refus'),
+      title: Text(t.refuseReasonTitle),
       content: TextField(controller: motifCtrl, maxLines: 3,
-        decoration: const InputDecoration(hintText: 'Pourquoi refuser cette demande ?')),
+        decoration: InputDecoration(hintText: t.refuseReasonHint)),
       actions: [
-        TextButton(onPressed: () => safeBack(), child: const Text('Annuler')),
+        TextButton(onPressed: () => safeBack(), child: Text(t.cancel)),
         TextButton(
           onPressed: () async {
             if (motifCtrl.text.trim().isEmpty) return;
             ctrl.refuserDemande(id, motifCtrl.text.trim());
             await safeBack();
           },
-          child: const Text('Confirmer le refus'),
+          child: Text(t.confirmRefuseButton),
         ),
       ],
     ));
