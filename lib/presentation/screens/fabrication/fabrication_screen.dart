@@ -73,7 +73,7 @@ class _BomTab extends StatelessWidget {
               const SizedBox(height: 8),
               ...b.lignes.map((l) => Padding(
                 padding: const EdgeInsets.only(bottom: 4),
-                child: Text('• ${l.quantiteNecessaire} ${l.composantUnite ?? ''} ${t.formCategory == t.formCategory ? '' : ''}${l.composantNom} ${t.fabPerUnitSuffix}'
+                child: Text('• ${l.quantiteNecessaire} ${l.composantUnite ?? ''} ${l.composantNom} ${t.fabPerUnitSuffix}'
                   '${l.tauxPerte > 0 ? ' ${t.fabLossSuffix} ${l.tauxPerte}%' : ''}',
                   style: const TextStyle(fontSize: 12)),
               )),

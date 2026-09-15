@@ -545,6 +545,14 @@ class AppLocalizations {
       'rejection_reason_title': 'MOTIF DE REJET',
       'manual_creation_reason_label': 'Motif (création manuelle)',
       'invoice_cancelled': 'Annulée',
+      'invoice_amount_tva': 'Montant TVA',
+      'invoices_empty': 'Aucune facture',
+      'th_invoice_number': 'N° FACTURE',
+      'th_supplier_upper': 'FOURNISSEUR',
+      'th_date_upper': 'DATE',
+      'th_amount_ht_upper': 'MONTANT HT',
+      'th_amount_ttc_upper': 'MONTANT TTC',
+      'th_actions': 'ACTIONS',
     },
     'ar': {
       'app_name': 'سينيكسيا',
@@ -1073,6 +1081,14 @@ class AppLocalizations {
       'rejection_reason_title': 'سبب الرفض',
       'manual_creation_reason_label': 'السبب (إنشاء يدوي)',
       'invoice_cancelled': 'ملغاة',
+      'invoice_amount_tva': 'مبلغ الضريبة',
+      'invoices_empty': 'لا توجد فاتورة',
+      'th_invoice_number': 'رقم الفاتورة',
+      'th_supplier_upper': 'المورّد',
+      'th_date_upper': 'التاريخ',
+      'th_amount_ht_upper': 'المبلغ دون الضريبة',
+      'th_amount_ttc_upper': 'المبلغ شامل الضريبة',
+      'th_actions': 'الإجراءات',
     },
     'en': {
       'app_name': 'Synexia',
@@ -1601,6 +1617,14 @@ class AppLocalizations {
       'rejection_reason_title': 'REJECTION REASON',
       'manual_creation_reason_label': 'Reason (manual creation)',
       'invoice_cancelled': 'Cancelled',
+      'invoice_amount_tva': 'VAT amount',
+      'invoices_empty': 'No invoice',
+      'th_invoice_number': 'INVOICE N°',
+      'th_supplier_upper': 'SUPPLIER',
+      'th_date_upper': 'DATE',
+      'th_amount_ht_upper': 'AMOUNT EXCL. TAX',
+      'th_amount_ttc_upper': 'AMOUNT INCL. TAX',
+      'th_actions': 'ACTIONS',
     },
   };
 
@@ -2135,6 +2159,14 @@ class AppLocalizations {
   String get rejectionReasonTitle => get('rejection_reason_title');
   String get manualCreationReasonLabel => get('manual_creation_reason_label');
   String get invoiceCancelled => get('invoice_cancelled');
+  String get invoiceAmountTva => get('invoice_amount_tva');
+  String get invoicesEmpty => get('invoices_empty');
+  String get thInvoiceNumber => get('th_invoice_number');
+  String get thSupplierUpper => get('th_supplier_upper');
+  String get thDateUpper => get('th_date_upper');
+  String get thAmountHtUpper => get('th_amount_ht_upper');
+  String get thAmountTtcUpper => get('th_amount_ttc_upper');
+  String get thActions => get('th_actions');
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

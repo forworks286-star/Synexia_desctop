@@ -195,7 +195,7 @@ class FacturesScreen extends StatelessWidget {
                       }
                       final list = ctrl.filteredInvoices;
                       if (list.isEmpty) {
-                        return const Center(child: Text('Aucune facture', style: TextStyle(color: AppColors.darkTextMuted)));
+                        return Center(child: Text(AppLocalizations.of(context).invoicesEmpty, style: const TextStyle(color: AppColors.darkTextMuted)));
                       }
                       return ListView.separated(
                         itemCount: list.length,
@@ -217,18 +217,19 @@ class FacturesScreen extends StatelessWidget {
 class _TableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
       child: Row(children: [
-        _TH(label: 'N° FACTURE', flex: 2),
+        _TH(label: t.thInvoiceNumber, flex: 2),
         _TH(label: '', flex: 1),
-        _TH(label: 'FOURNISSEUR', flex: 3),
-        _TH(label: 'DATE', flex: 2),
-        _TH(label: 'MONTANT HT', flex: 2),
-        _TH(label: 'MONTANT TTC', flex: 2),
-        _TH(label: AppLocalizations.of(context).thAuthentication, flex: 2),
-        _TH(label: AppLocalizations.of(context).thStatus, flex: 2),
-        _TH(label: AppLocalizations.of(context).thTitle == AppLocalizations.of(context).thTitle ? 'ACTIONS' : 'ACTIONS', flex: 2),
+        _TH(label: t.thSupplierUpper, flex: 3),
+        _TH(label: t.thDateUpper, flex: 2),
+        _TH(label: t.thAmountHtUpper, flex: 2),
+        _TH(label: t.thAmountTtcUpper, flex: 2),
+        _TH(label: t.thAuthentication, flex: 2),
+        _TH(label: t.thStatus, flex: 2),
+        _TH(label: t.thActions, flex: 2),
       ]),
     );
   }

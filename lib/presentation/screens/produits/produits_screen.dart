@@ -407,7 +407,7 @@ void _showAddProduitSimple(StockController stock) {
         DropdownButtonFormField<String>(
           value: typeStock,
           decoration: InputDecoration(labelText: t.formStockType),
-          items: typeStockOptions.map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2))).toList(),
+          items: typeStockOptionsL10n(t).map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2))).toList(),
           onChanged: (v) => setState(() => typeStock = v ?? 'marchandise'),
         ),
         const SizedBox(height: 12),
@@ -504,7 +504,7 @@ void _showAddProduitComplet(StockController stock) {
           Expanded(child: DropdownButtonFormField<String>(
             value: typeStock,
             decoration: InputDecoration(labelText: t.formStockType),
-            items: typeStockOptions.map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2))).toList(),
+            items: typeStockOptionsL10n(t).map((e) => DropdownMenuItem(value: e.$1, child: Text(e.$2))).toList(),
             onChanged: (v) => setState(() => typeStock = v ?? 'marchandise'),
           )),
         ]),
