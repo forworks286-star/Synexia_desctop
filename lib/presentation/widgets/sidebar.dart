@@ -26,8 +26,6 @@ class DesktopSidebar extends StatelessWidget {
         _NavItem(icon: Icons.precision_manufacturing_outlined, label: t.navManufacturing, index: 9),
       _NavItem(icon: Icons.description_outlined,    label: t.navPurchaseOrders, index: 11),
       _NavItem(icon: Icons.qr_code_2_rounded,        label: t.navQrCodes,     index: 12),
-      // Factures : visible pour tous — chacun ne voit que ses propres factures
-      // cote serveur (sauf admin/manager qui voient tout). Voir GET /factures.
       _NavItem(icon: Icons.receipt_long_outlined,   label: t.navInvoices,    index: 2),
       if (role == UserRole.admin || role == UserRole.manager)
         _NavItem(icon: Icons.fact_check_outlined,   label: t.navApprovals, index: 10),
@@ -68,10 +66,10 @@ class DesktopSidebar extends StatelessWidget {
               const SizedBox(width: 10),
               RichText(
                 text: TextSpan(
-                  style: const TextStyle(fontFamily: 'Syne', fontSize: 15, fontWeight: FontWeight.w800),
+                  style: TextStyle(fontFamily: 'Syne', fontSize: 15, fontWeight: FontWeight.w800, color: colors.text),
                   children: [
-                    const TextSpan(text: 'Synexia', style: TextStyle(color: Colors.white)),
-                    TextSpan(text: '.Dz', style: TextStyle(color: colors.primaryLight)),
+                    TextSpan(text: 'Synexia', style: TextStyle(color: colors.text)),
+                    TextSpan(text: '.Dz', style: TextStyle(color: colors.primary)),
                   ],
                 ),
               ),
@@ -113,7 +111,7 @@ class DesktopSidebar extends StatelessWidget {
                     child: Center(
                       child: Text(
                         auth.user.value?.fullName.isNotEmpty == true ? auth.user.value!.fullName[0].toUpperCase() : 'U',
-                        style: TextStyle(color: colors.primaryLight, fontWeight: FontWeight.w700, fontSize: 13),
+                        style: TextStyle(color: colors.primary, fontWeight: FontWeight.w700, fontSize: 13),
                       ),
                     ),
                   ),
@@ -123,7 +121,7 @@ class DesktopSidebar extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(auth.user.value?.fullName ?? '',
-                            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                            style: TextStyle(color: colors.text, fontSize: 12, fontWeight: FontWeight.w600),
                             overflow: TextOverflow.ellipsis),
                         Text(roleLabel(t, auth.user.value?.role),
                             style: TextStyle(color: colors.textMuted, fontSize: 10, letterSpacing: 0.1)),
@@ -183,12 +181,12 @@ class _SidebarItem extends StatelessWidget {
           margin: const EdgeInsets.symmetric(vertical: 2),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: selected ? colors.primary.withOpacity(0.16) : Colors.transparent,
+            color: selected ? colors.primary.withOpacity(0.14) : Colors.transparent,
             borderRadius: AppRadii.rMd,
             border: Border.all(color: selected ? colors.primary.withOpacity(0.4) : Colors.transparent),
           ),
           child: Row(children: [
-            Icon(item.icon, size: 17, color: selected ? colors.primaryLight : colors.textMuted),
+            Icon(item.icon, size: 17, color: selected ? colors.primary : colors.textMuted),
             const SizedBox(width: 10),
             Expanded(
               child: Text(
@@ -196,7 +194,7 @@ class _SidebarItem extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12.5,
                   fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                  color: selected ? Colors.white : colors.textMuted,
+                  color: selected ? colors.text : colors.textMuted,
                 ),
               ),
             ),

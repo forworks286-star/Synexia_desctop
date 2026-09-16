@@ -28,7 +28,7 @@ class SynCard extends StatelessWidget {
                 width: 3,
                 decoration: BoxDecoration(
                   color: borderLeft,
-                  borderRadius: BorderRadius.horizontal(left: Radius.circular(AppRadii.lg)),
+                  borderRadius: BorderRadius.horizontal(left: Radius.circular(AppRadii.xl)),
                 ),
               ),
               Expanded(child: content),
@@ -38,7 +38,7 @@ class SynCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: colors.card,
-        borderRadius: AppRadii.rLg,
+        borderRadius: AppRadii.rXl,
         border: Border.all(color: colors.border, width: 1),
         boxShadow: AppShadows.card(isDark),
       ),

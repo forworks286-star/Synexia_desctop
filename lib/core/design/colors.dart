@@ -32,7 +32,7 @@ class AppPalette {
   static const lightSurface   = Color(0xFFFFFFFF);
   static const lightCard      = Color(0xFFFFFFFF);
   static const lightBorder    = Color(0xFFE6E9F2);
-  static const lightSidebar   = Color(0xFF0F172A);
+  static const lightSidebar   = Color(0xFFFFFFFF);
   static const lightText      = Color(0xFF0F172A);
   static const lightTextMuted = Color(0xFF64748B);
   static const lightHover     = Color(0xFFF1F4FA);
