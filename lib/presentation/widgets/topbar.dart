@@ -27,8 +27,7 @@ class DesktopTopbar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(child: _TopbarSearch(hint: t.topbarSearchHint)),
-          const SizedBox(width: 16),
+          const Spacer(),
           Obx(() => _IconButtonBadge(
                 icon: settings.isDark.value ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
                 tooltip: settings.isDark.value ? t.settingsLight : t.settingsDark,
@@ -50,45 +49,6 @@ class DesktopTopbar extends StatelessWidget {
                 onLogout: auth.logout,
                 logoutLabel: t.logout,
               )),
-        ],
-      ),
-    );
-  }
-}
-
-class _TopbarSearch extends StatelessWidget {
-  final String hint;
-  const _TopbarSearch({required this.hint});
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = context.colors;
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      decoration: BoxDecoration(
-        color: colors.bg,
-        borderRadius: AppRadii.rMd,
-        border: Border.all(color: colors.border),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.search_rounded, size: 18, color: colors.textMuted),
-          const SizedBox(width: 10),
-          Expanded(
-            child: TextField(
-              style: TextStyle(fontSize: 13, color: colors.text),
-              decoration: InputDecoration.collapsed(
-                hintText: hint,
-                hintStyle: TextStyle(fontSize: 13, color: colors.textMuted),
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-            decoration: BoxDecoration(color: colors.hover, borderRadius: AppRadii.rXs),
-            child: Text('Ctrl+K', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: colors.textMuted)),
-          ),
         ],
       ),
     );
@@ -176,7 +136,7 @@ class _ProfileMenu extends StatelessWidget {
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(color: colors.primary.withOpacity(0.14), borderRadius: AppRadii.rMd),
+            decoration: BoxDecoration(color: colors.primary.withOpacity(0.16), borderRadius: AppRadii.rMd),
             child: Center(
               child: Text(
                 name.isNotEmpty ? name[0].toUpperCase() : 'U',

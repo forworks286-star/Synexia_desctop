@@ -37,7 +37,11 @@ class SynCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.card,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [colors.card, colors.cardAlt],
+        ),
         borderRadius: AppRadii.rXl,
         border: Border.all(color: colors.border, width: 1),
         boxShadow: AppShadows.card(isDark),
@@ -79,16 +83,26 @@ class KpiCard extends StatelessWidget {
         children: [
           Row(children: [
             Container(
-              width: 36, height: 36,
-              decoration: BoxDecoration(color: accent.withOpacity(0.12), borderRadius: AppRadii.rMd),
-              child: Icon(icon, size: 17, color: accent),
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [accent.withOpacity(0.32), accent.withOpacity(0.10)],
+                ),
+                borderRadius: AppRadii.rLg,
+                border: Border.all(color: accent.withOpacity(0.4), width: 1),
+                boxShadow: AppShadows.glow(accent),
+              ),
+              child: Icon(icon, size: 19, color: accent),
             ),
             const Spacer(),
             if (trend != null)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: (trendUp ? colors.success : colors.danger).withOpacity(0.12),
+                  color: (trendUp ? colors.success : colors.danger).withOpacity(0.16),
                   borderRadius: AppRadii.rSm,
                 ),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -101,7 +115,7 @@ class KpiCard extends StatelessWidget {
               ),
           ]),
           const SizedBox(height: 16),
-          Text(value, style: TextStyle(fontFamily: 'Syne', fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.5, color: colors.text)),
+          Text(value, style: TextStyle(fontFamily: 'Syne', fontSize: 25, fontWeight: FontWeight.w800, letterSpacing: -0.5, color: colors.text)),
           const SizedBox(height: 4),
           Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: colors.textMuted, letterSpacing: 0.2)),
         ],
@@ -127,7 +141,7 @@ class StatusChip extends StatelessWidget {
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(color: c.withOpacity(0.12), borderRadius: AppRadii.rSm),
+      decoration: BoxDecoration(color: c.withOpacity(0.16), borderRadius: AppRadii.rSm),
       child: Row(mainAxisSize: MainAxisSize.min, children: [
         Container(width: 5, height: 5, decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
         const SizedBox(width: 5),
@@ -155,7 +169,7 @@ class InvoiceChip extends StatelessWidget {
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(color: c.withOpacity(0.12), borderRadius: AppRadii.rSm),
+      decoration: BoxDecoration(color: c.withOpacity(0.16), borderRadius: AppRadii.rSm),
       child: Text(label, style: TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.w600)),
     );
   }
