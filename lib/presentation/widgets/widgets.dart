@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/design/theme_extension.dart';
+import '../../core/design/radii.dart';
+import '../../core/design/shadows.dart';
 import '../../domain/models/models.dart';
 
 class SynCard extends StatelessWidget {
@@ -12,20 +14,39 @@ class SynCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget card = Card(
-      child: Container(
-        decoration: borderLeft != null
-            ? BoxDecoration(
-                border: Border(left: BorderSide(color: borderLeft!, width: 3)),
-                borderRadius: BorderRadius.circular(12),
-              )
-            : null,
-        padding: padding ?? const EdgeInsets.all(20),
-        child: child,
+    final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final content = Padding(padding: padding ?? const EdgeInsets.all(20), child: child);
+
+    final body = borderLeft == null
+        ? content
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Container(
+                width: 3,
+                decoration: BoxDecoration(
+                  color: borderLeft,
+                  borderRadius: BorderRadius.horizontal(left: Radius.circular(AppRadii.lg)),
+                ),
+              ),
+              Expanded(child: content),
+            ],
+          );
+
+    return Container(
+      decoration: BoxDecoration(
+        color: colors.card,
+        borderRadius: AppRadii.rLg,
+        border: Border.all(color: colors.border, width: 1),
+        boxShadow: AppShadows.card(isDark),
       ),
+      clipBehavior: Clip.antiAlias,
+      child: onTap == null
+          ? body
+          : InkWell(onTap: onTap, hoverColor: colors.hover, child: body),
     );
-    if (onTap != null) return InkWell(onTap: onTap, borderRadius: BorderRadius.circular(12), child: card);
-    return card;
   }
 }
 
@@ -49,39 +70,40 @@ class KpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final vc = valueColor ?? theme.textTheme.displayMedium?.color;
+    final colors = context.colors;
+    final accent = valueColor ?? colors.primary;
+
     return SynCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
             Container(
-              width: 32, height: 32,
-              decoration: BoxDecoration(
-                color: (vc ?? AppColors.primary).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, size: 16, color: vc ?? AppColors.primary),
+              width: 36, height: 36,
+              decoration: BoxDecoration(color: accent.withOpacity(0.12), borderRadius: AppRadii.rMd),
+              child: Icon(icon, size: 17, color: accent),
             ),
             const Spacer(),
             if (trend != null)
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                 decoration: BoxDecoration(
-                  color: (trendUp ? AppColors.success : AppColors.danger).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(5),
+                  color: (trendUp ? colors.success : colors.danger).withOpacity(0.12),
+                  borderRadius: AppRadii.rSm,
                 ),
-                child: Text(trend!,
-                  style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600,
-                    color: trendUp ? AppColors.success : AppColors.danger)),
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(trendUp ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
+                      size: 10, color: trendUp ? colors.success : colors.danger),
+                  const SizedBox(width: 2),
+                  Text(trend!, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+                      color: trendUp ? colors.success : colors.danger)),
+                ]),
               ),
           ]),
-          const SizedBox(height: 14),
-          Text(value,
-            style: theme.textTheme.displayMedium?.copyWith(color: vc, fontSize: 24, letterSpacing: -0.5)),
-          const SizedBox(height: 3),
-          Text(label, style: theme.textTheme.labelSmall),
+          const SizedBox(height: 16),
+          Text(value, style: TextStyle(fontFamily: 'Syne', fontSize: 24, fontWeight: FontWeight.w800, letterSpacing: -0.5, color: colors.text)),
+          const SizedBox(height: 4),
+          Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: colors.textMuted, letterSpacing: 0.2)),
         ],
       ),
     );
@@ -96,16 +118,21 @@ class StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color c;
+    final colors = context.colors;
+    late final Color c;
     switch (status) {
-      case StockStatus.normal: c = AppColors.success; break;
-      case StockStatus.low: c = AppColors.warning; break;
-      case StockStatus.critical: c = AppColors.danger; break;
+      case StockStatus.normal: c = colors.success; break;
+      case StockStatus.low: c = colors.warning; break;
+      case StockStatus.critical: c = colors.danger; break;
     }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: c.withOpacity(0.12), borderRadius: BorderRadius.circular(4)),
-      child: Text(label, style: TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.w600)),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(color: c.withOpacity(0.12), borderRadius: AppRadii.rSm),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Container(width: 5, height: 5, decoration: BoxDecoration(color: c, shape: BoxShape.circle)),
+        const SizedBox(width: 5),
+        Text(label, style: TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.w600)),
+      ]),
     );
   }
 }
@@ -118,16 +145,17 @@ class InvoiceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color c;
+    final colors = context.colors;
+    late final Color c;
     switch (status) {
-      case InvoiceStatus.validated: c = AppColors.success; break;
-      case InvoiceStatus.rejected: c = AppColors.danger; break;
-      case InvoiceStatus.pending: c = AppColors.warning; break;
-      case InvoiceStatus.annulee: c = AppColors.darkTextMuted; break;
+      case InvoiceStatus.validated: c = colors.success; break;
+      case InvoiceStatus.rejected: c = colors.danger; break;
+      case InvoiceStatus.pending: c = colors.warning; break;
+      case InvoiceStatus.annulee: c = colors.textMuted; break;
     }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(color: c.withOpacity(0.12), borderRadius: BorderRadius.circular(4)),
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(color: c.withOpacity(0.12), borderRadius: AppRadii.rSm),
       child: Text(label, style: TextStyle(color: c, fontSize: 11, fontWeight: FontWeight.w600)),
     );
   }
@@ -140,12 +168,13 @@ class AlertDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color c;
+    final colors = context.colors;
+    late final Color c;
     switch (level) {
-      case AlertLevel.danger: c = AppColors.danger; break;
-      case AlertLevel.warning: c = AppColors.warning; break;
-      case AlertLevel.success: c = AppColors.success; break;
-      case AlertLevel.info: c = AppColors.secondary; break;
+      case AlertLevel.danger: c = colors.danger; break;
+      case AlertLevel.warning: c = colors.warning; break;
+      case AlertLevel.success: c = colors.success; break;
+      case AlertLevel.info: c = colors.secondary; break;
     }
     return Container(width: 8, height: 8, decoration: BoxDecoration(color: c, shape: BoxShape.circle));
   }
@@ -163,13 +192,15 @@ class SynButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = color ?? AppColors.primary;
+    final colors = context.colors;
+    final c = color ?? colors.primary;
+
     final content = isLoading
-        ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+        ? SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: outline ? c : Colors.white))
         : Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (icon != null) ...[Icon(icon, size: 14), const SizedBox(width: 6)],
+              if (icon != null) ...[Icon(icon, size: 15), const SizedBox(width: 7)],
               Text(label),
             ],
           );
@@ -178,11 +209,8 @@ class SynButton extends StatelessWidget {
       return OutlinedButton(
         onPressed: isLoading ? null : onTap,
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: c),
+          side: BorderSide(color: color != null ? c : colors.border),
           foregroundColor: c,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          textStyle: const TextStyle(fontFamily: 'Syne', fontSize: 12, fontWeight: FontWeight.w700),
         ),
         child: content,
       );
@@ -204,10 +232,11 @@ class SectionTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Row(
       children: [
-        Container(width: 3, height: 14, color: AppColors.primary, margin: const EdgeInsets.only(right: 8)),
-        Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 0.1)),
+        Container(width: 3, height: 14, decoration: BoxDecoration(color: colors.primary, borderRadius: AppRadii.rXs), margin: const EdgeInsets.only(right: 8)),
+        Text(title, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 0.2, color: colors.text)),
         if (action != null) ...[const Spacer(), action!],
       ],
     );
@@ -222,13 +251,15 @@ class SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return SizedBox(
       width: 260,
       child: TextField(
         onChanged: onChanged,
+        style: TextStyle(fontSize: 13, color: colors.text),
         decoration: InputDecoration(
           hintText: hint,
-          prefixIcon: const Icon(Icons.search_rounded, size: 16, color: AppColors.darkTextMuted),
+          prefixIcon: Icon(Icons.search_rounded, size: 17, color: colors.textMuted),
           isDense: true,
         ),
       ),
@@ -244,9 +275,10 @@ class PageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Row(
       children: [
-        Text(title, style: Theme.of(context).textTheme.titleLarge),
+        Text(title, style: TextStyle(fontFamily: 'Syne', fontSize: 20, fontWeight: FontWeight.w700, color: colors.text, letterSpacing: -0.3)),
         const Spacer(),
         ...actions,
       ],

@@ -1,150 +1,147 @@
 import 'package:flutter/material.dart';
+import '../design/colors.dart';
+import '../design/typography.dart';
+import '../design/radii.dart';
+import '../design/theme_extension.dart';
 
+// Palette statique conservée pour compatibilité arrière avec les écrans
+// non encore migrés. Pour tout nouveau code, utiliser context.colors.
 class AppColors {
   AppColors._();
 
-  // Brand
-  static const primary       = Color(0xFF2563EB); // Blue-600 — professional
-  static const primaryLight  = Color(0xFF3B82F6);
-  static const primaryDark   = Color(0xFF1D4ED8);
-  static const secondary     = Color(0xFF7C3AED); // Violet-600
+  static const primary       = AppPalette.primary;
+  static const primaryLight  = AppPalette.primaryLight;
+  static const primaryDark   = AppPalette.primaryDark;
+  static const secondary     = AppPalette.secondary;
 
-  // Semantic
-  static const success       = Color(0xFF16A34A);
-  static const successLight  = Color(0xFFDCFCE7);
-  static const danger        = Color(0xFFDC2626);
-  static const dangerLight   = Color(0xFFFEE2E2);
-  static const warning       = Color(0xFFD97706);
-  static const warningLight  = Color(0xFFFEF3C7);
-  static const info          = Color(0xFF0891B2);
-  static const infoLight     = Color(0xFFE0F2FE);
+  static const success       = AppPalette.success;
+  static const successLight  = AppPalette.successSoft;
+  static const danger        = AppPalette.danger;
+  static const dangerLight   = AppPalette.dangerSoft;
+  static const warning       = AppPalette.warning;
+  static const warningLight  = AppPalette.warningSoft;
+  static const info          = AppPalette.info;
+  static const infoLight     = AppPalette.infoSoft;
 
-  // Dark theme
-  static const darkBg        = Color(0xFF0F1117);
-  static const darkSurface   = Color(0xFF161B27);
-  static const darkCard      = Color(0xFF1C2333);
-  static const darkBorder    = Color(0xFF2A3347);
-  static const darkText      = Color(0xFFF1F5F9);
-  static const darkTextMuted = Color(0xFF64748B);
-  static const darkSidebar   = Color(0xFF111827);
+  static const darkBg        = AppPalette.darkBg;
+  static const darkSurface   = AppPalette.darkSurface;
+  static const darkCard      = AppPalette.darkCard;
+  static const darkBorder    = AppPalette.darkBorder;
+  static const darkText      = AppPalette.darkText;
+  static const darkTextMuted = AppPalette.darkTextMuted;
+  static const darkSidebar   = AppPalette.darkSidebar;
 
-  // Light theme
-  static const lightBg        = Color(0xFFF8FAFC);
-  static const lightSurface   = Color(0xFFFFFFFF);
-  static const lightCard      = Color(0xFFFFFFFF);
-  static const lightBorder    = Color(0xFFE2E8F0);
-  static const lightText      = Color(0xFF0F172A);
-  static const lightTextMuted = Color(0xFF64748B);
-  static const lightSidebar   = Color(0xFF0F172A);
+  static const lightBg        = AppPalette.lightBg;
+  static const lightSurface   = AppPalette.lightSurface;
+  static const lightCard      = AppPalette.lightCard;
+  static const lightBorder    = AppPalette.lightBorder;
+  static const lightText      = AppPalette.lightText;
+  static const lightTextMuted = AppPalette.lightTextMuted;
+  static const lightSidebar   = AppPalette.lightSidebar;
 }
 
 class AppTheme {
   AppTheme._();
 
-  static ThemeData dark() {
-    return ThemeData(
-      useMaterial3: true,
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: AppColors.darkBg,
-      colorScheme: const ColorScheme.dark(
-        primary: AppColors.primary,
-        secondary: AppColors.secondary,
-        surface: AppColors.darkSurface,
-        error: AppColors.danger,
-      ),
-      cardTheme: CardThemeData(
-        color: AppColors.darkCard,
-        elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: AppColors.darkBorder, width: 1),
-        ),
-      ),
-      dividerTheme: const DividerThemeData(color: AppColors.darkBorder, space: 1),
-      textTheme: _buildTextTheme(AppColors.darkText, AppColors.darkTextMuted),
-      elevatedButtonTheme: _buildButtonTheme(),
-      inputDecorationTheme: _buildInputTheme(AppColors.darkCard, AppColors.darkBorder, AppColors.darkTextMuted),
-      dataTableTheme: DataTableThemeData(
-        headingRowColor: WidgetStateProperty.all(AppColors.darkSurface),
-        dataRowColor: WidgetStateProperty.resolveWith((s) =>
-          s.contains(WidgetState.hovered) ? AppColors.darkBorder.withOpacity(0.2) : Colors.transparent),
-        dividerThickness: 0.5,
-        headingTextStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.darkTextMuted, letterSpacing: 0.08),
-        dataTextStyle: const TextStyle(fontSize: 13, color: AppColors.darkText),
-      ),
-    );
-  }
+  static ThemeData dark() => _build(isDark: true);
+  static ThemeData light() => _build(isDark: false);
 
-  static ThemeData light() {
+  static ThemeData _build({required bool isDark}) {
+    final ext = isDark ? AppColorsExt.dark : AppColorsExt.light;
+
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.light,
-      scaffoldBackgroundColor: AppColors.lightBg,
-      colorScheme: const ColorScheme.light(
-        primary: AppColors.primary,
-        secondary: AppColors.secondary,
-        surface: AppColors.lightSurface,
-        error: AppColors.danger,
-      ),
+      brightness: isDark ? Brightness.dark : Brightness.light,
+      scaffoldBackgroundColor: ext.bg,
+      colorScheme: isDark
+          ? ColorScheme.dark(primary: ext.primary, secondary: ext.secondary, surface: ext.surface, error: ext.danger)
+          : ColorScheme.light(primary: ext.primary, secondary: ext.secondary, surface: ext.surface, error: ext.danger),
+      extensions: [ext],
       cardTheme: CardThemeData(
-        color: AppColors.lightCard,
+        color: ext.card,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: AppColors.lightBorder, width: 1),
+          borderRadius: AppRadii.rLg,
+          side: BorderSide(color: ext.border, width: 1),
         ),
       ),
-      dividerTheme: const DividerThemeData(color: AppColors.lightBorder, space: 1),
-      textTheme: _buildTextTheme(AppColors.lightText, AppColors.lightTextMuted),
-      elevatedButtonTheme: _buildButtonTheme(),
-      inputDecorationTheme: _buildInputTheme(AppColors.lightSurface, AppColors.lightBorder, AppColors.lightTextMuted),
+      dividerTheme: DividerThemeData(color: ext.border, space: 1),
+      textTheme: _buildTextTheme(ext.text, ext.textMuted),
+      elevatedButtonTheme: _buildButtonTheme(ext),
+      outlinedButtonTheme: _buildOutlinedButtonTheme(ext),
+      inputDecorationTheme: _buildInputTheme(ext),
+      snackBarTheme: _buildSnackBarTheme(ext),
       dataTableTheme: DataTableThemeData(
-        headingRowColor: WidgetStateProperty.all(AppColors.lightBg),
+        headingRowColor: WidgetStateProperty.all(ext.surface),
         dataRowColor: WidgetStateProperty.resolveWith((s) =>
-          s.contains(WidgetState.hovered) ? AppColors.lightBorder.withOpacity(0.5) : Colors.transparent),
+          s.contains(WidgetState.hovered) ? ext.hover : Colors.transparent),
         dividerThickness: 0.5,
-        headingTextStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: AppColors.lightTextMuted, letterSpacing: 0.08),
-        dataTextStyle: TextStyle(fontSize: 13, color: AppColors.lightText),
+        headingTextStyle: TextStyle(fontSize: AppTypography.micro, fontWeight: FontWeight.w700, color: ext.textMuted, letterSpacing: 0.4),
+        dataTextStyle: TextStyle(fontSize: AppTypography.bodySm, color: ext.text),
       ),
     );
   }
 
   static TextTheme _buildTextTheme(Color primary, Color muted) {
     return TextTheme(
-      displayLarge:  TextStyle(fontFamily: 'Syne', fontSize: 26, fontWeight: FontWeight.w800, color: primary, letterSpacing: -0.5),
-      displayMedium: TextStyle(fontFamily: 'Syne', fontSize: 20, fontWeight: FontWeight.w700, color: primary, letterSpacing: -0.3),
-      titleLarge:    TextStyle(fontFamily: 'Syne', fontSize: 16, fontWeight: FontWeight.w700, color: primary),
-      titleMedium:   TextStyle(fontFamily: 'Syne', fontSize: 13, fontWeight: FontWeight.w600, color: primary),
-      bodyLarge:     TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: primary, height: 1.5),
-      bodyMedium:    TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: muted, height: 1.5),
-      labelSmall:    TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: muted, letterSpacing: 0.12),
+      displayLarge:  TextStyle(fontFamily: AppTypography.fontDisplay, fontSize: AppTypography.display, fontWeight: FontWeight.w800, color: primary, letterSpacing: -0.6),
+      displayMedium: TextStyle(fontFamily: AppTypography.fontDisplay, fontSize: AppTypography.h1, fontWeight: FontWeight.w700, color: primary, letterSpacing: -0.3),
+      titleLarge:    TextStyle(fontFamily: AppTypography.fontDisplay, fontSize: AppTypography.h3, fontWeight: FontWeight.w700, color: primary),
+      titleMedium:   TextStyle(fontFamily: AppTypography.fontDisplay, fontSize: AppTypography.bodySm, fontWeight: FontWeight.w600, color: primary),
+      bodyLarge:     TextStyle(fontSize: AppTypography.body, fontWeight: FontWeight.w400, color: primary, height: 1.5),
+      bodyMedium:    TextStyle(fontSize: AppTypography.caption, fontWeight: FontWeight.w400, color: muted, height: 1.5),
+      labelSmall:    TextStyle(fontSize: AppTypography.micro, fontWeight: FontWeight.w600, color: muted, letterSpacing: 0.4),
     );
   }
 
-  static ElevatedButtonThemeData _buildButtonTheme() {
+  static ElevatedButtonThemeData _buildButtonTheme(AppColorsExt ext) {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.primary,
+        backgroundColor: ext.primary,
         foregroundColor: Colors.white,
         elevation: 0,
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(7)),
-        textStyle: const TextStyle(fontFamily: 'Syne', fontSize: 13, fontWeight: FontWeight.w600),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+        shape: RoundedRectangleBorder(borderRadius: AppRadii.rMd),
+        textStyle: const TextStyle(fontFamily: AppTypography.fontDisplay, fontSize: AppTypography.bodySm, fontWeight: FontWeight.w600),
+      ).copyWith(
+        overlayColor: WidgetStateProperty.all(Colors.white.withOpacity(0.08)),
       ),
     );
   }
 
-  static InputDecorationTheme _buildInputTheme(Color fill, Color border, Color hint) {
+  static OutlinedButtonThemeData _buildOutlinedButtonTheme(AppColorsExt ext) {
+    return OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: ext.text,
+        side: BorderSide(color: ext.border),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
+        shape: RoundedRectangleBorder(borderRadius: AppRadii.rMd),
+        textStyle: const TextStyle(fontFamily: AppTypography.fontDisplay, fontSize: AppTypography.bodySm, fontWeight: FontWeight.w700),
+      ),
+    );
+  }
+
+  static InputDecorationTheme _buildInputTheme(AppColorsExt ext) {
     return InputDecorationTheme(
       filled: true,
-      fillColor: fill,
-      hintStyle: TextStyle(color: hint, fontSize: 13),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(7), borderSide: BorderSide(color: border)),
-      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(7), borderSide: BorderSide(color: border)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(7), borderSide: const BorderSide(color: AppColors.primary, width: 2)),
-      errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(7), borderSide: const BorderSide(color: AppColors.danger)),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      fillColor: ext.surface,
+      hintStyle: TextStyle(color: ext.textMuted, fontSize: AppTypography.bodySm),
+      border: OutlineInputBorder(borderRadius: AppRadii.rMd, borderSide: BorderSide(color: ext.border)),
+      enabledBorder: OutlineInputBorder(borderRadius: AppRadii.rMd, borderSide: BorderSide(color: ext.border)),
+      focusedBorder: OutlineInputBorder(borderRadius: AppRadii.rMd, borderSide: BorderSide(color: ext.primary, width: 1.6)),
+      errorBorder: OutlineInputBorder(borderRadius: AppRadii.rMd, borderSide: BorderSide(color: ext.danger)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       isDense: true,
+    );
+  }
+
+  static SnackBarThemeData _buildSnackBarTheme(AppColorsExt ext) {
+    return SnackBarThemeData(
+      backgroundColor: ext.cardAlt,
+      contentTextStyle: TextStyle(color: ext.text, fontSize: AppTypography.bodySm, fontWeight: FontWeight.w500),
+      shape: RoundedRectangleBorder(borderRadius: AppRadii.rMd, side: BorderSide(color: ext.border)),
+      behavior: SnackBarBehavior.floating,
+      elevation: 0,
     );
   }
 }

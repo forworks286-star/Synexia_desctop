@@ -553,6 +553,20 @@ class AppLocalizations {
       'th_amount_ht_upper': 'MONTANT HT',
       'th_amount_ttc_upper': 'MONTANT TTC',
       'th_actions': 'ACTIONS',
+      'topbar_search_hint': 'Rechercher un produit, une référence, un fournisseur...',
+      'dashboard_subtitle': "Voici un aperçu de votre activité aujourd'hui.",
+      'today_label': "Aujourd'hui",
+      'stock_status_ok': 'Stock en bon état',
+      'stock_status_alert': 'Stock à surveiller',
+      'quick_actions_title': 'Actions rapides',
+      'action_add_product': 'Ajouter un produit',
+      'action_new_purchase_order': 'Nouveau bon de commande',
+      'action_view_invoices': 'Voir les factures',
+      'action_view_alerts': 'Voir les alertes',
+      'action_view_reports': 'Voir les rapports',
+      'category_breakdown_title': 'Répartition des catégories',
+      'category_other': 'Autres',
+      'view_all_label': 'Tout voir',
     },
     'ar': {
       'app_name': 'سينيكسيا',
@@ -1089,6 +1103,20 @@ class AppLocalizations {
       'th_amount_ht_upper': 'المبلغ دون الضريبة',
       'th_amount_ttc_upper': 'المبلغ شامل الضريبة',
       'th_actions': 'الإجراءات',
+      'topbar_search_hint': 'ابحث عن منتج، مرجع، أو مورّد...',
+      'dashboard_subtitle': 'إليك نظرة عامة على نشاطك اليوم.',
+      'today_label': 'اليوم',
+      'stock_status_ok': 'المخزون في حالة جيدة',
+      'stock_status_alert': 'المخزون يحتاج إلى مراقبة',
+      'quick_actions_title': 'إجراءات سريعة',
+      'action_add_product': 'إضافة منتج',
+      'action_new_purchase_order': 'أمر شراء جديد',
+      'action_view_invoices': 'عرض الفواتير',
+      'action_view_alerts': 'عرض التنبيهات',
+      'action_view_reports': 'عرض التقارير',
+      'category_breakdown_title': 'توزيع الفئات',
+      'category_other': 'أخرى',
+      'view_all_label': 'عرض الكل',
     },
     'en': {
       'app_name': 'Synexia',
@@ -1625,6 +1653,20 @@ class AppLocalizations {
       'th_amount_ht_upper': 'AMOUNT EXCL. TAX',
       'th_amount_ttc_upper': 'AMOUNT INCL. TAX',
       'th_actions': 'ACTIONS',
+      'topbar_search_hint': 'Search for a product, a reference, a supplier...',
+      'dashboard_subtitle': "Here's an overview of your activity today.",
+      'today_label': 'Today',
+      'stock_status_ok': 'Stock in good condition',
+      'stock_status_alert': 'Stock needs attention',
+      'quick_actions_title': 'Quick actions',
+      'action_add_product': 'Add a product',
+      'action_new_purchase_order': 'New purchase order',
+      'action_view_invoices': 'View invoices',
+      'action_view_alerts': 'View alerts',
+      'action_view_reports': 'View reports',
+      'category_breakdown_title': 'Category breakdown',
+      'category_other': 'Other',
+      'view_all_label': 'View all',
     },
   };
 
@@ -1738,6 +1780,20 @@ class AppLocalizations {
   String get tableType => get('table_type');
   String get movementEntry => get('movement_entry');
   String get movementExit => get('movement_exit');
+  String get topbarSearchHint => get('topbar_search_hint');
+  String get dashboardSubtitle => get('dashboard_subtitle');
+  String get todayLabel => get('today_label');
+  String get stockStatusOk => get('stock_status_ok');
+  String get stockStatusAlert => get('stock_status_alert');
+  String get quickActionsTitle => get('quick_actions_title');
+  String get actionAddProduct => get('action_add_product');
+  String get actionNewPurchaseOrder => get('action_new_purchase_order');
+  String get actionViewInvoices => get('action_view_invoices');
+  String get actionViewAlerts => get('action_view_alerts');
+  String get actionViewReports => get('action_view_reports');
+  String get categoryBreakdownTitle => get('category_breakdown_title');
+  String get categoryOther => get('category_other');
+  String get viewAllLabel => get('view_all_label');
   String get searchProductHint => get('search_product_hint');
   String get filterAllStatus => get('filter_all_status');
   String get addButton => get('add_button');
