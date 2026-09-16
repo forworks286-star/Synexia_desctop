@@ -5,7 +5,7 @@ import '../../core/design/theme_extension.dart';
 import '../controllers/controllers.dart';
 import '../widgets/sidebar.dart';
 import '../widgets/topbar.dart';
-import '../widgets/decor/corner_lines.dart';
+import '../widgets/decor/glow_lines.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/produits/produits_screen.dart';
 import '../screens/factures/factures_screen.dart';
@@ -29,71 +29,70 @@ class MainShell extends StatelessWidget {
     final settings = Get.find<AppSettingsController>();
     final auth     = Get.find<AuthController>();
     final colors   = context.colors;
+    final isDark   = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       decoration: BoxDecoration(
-        gradient: RadialGradient(
-          center: Alignment.topCenter,
-          radius: 1.6,
-          colors: [colors.surface, colors.bg],
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.gradientTop, colors.gradientBottom],
         ),
       ),
       child: Stack(
         children: [
-          Positioned(
-            right: -40,
-            bottom: -20,
+          Positioned.fill(
             child: IgnorePointer(
-              child: CornerFlowLines(color: colors.primary, width: 340, height: 220, flipped: true),
+              child: GlowFlowLines(color: colors.primary, secondaryColor: colors.secondary, isDark: isDark),
             ),
           ),
           Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Row(
-          children: [
-            const DesktopSidebar(),
-            Container(width: 1, color: colors.border),
-            Expanded(
-              child: Column(
-                children: [
-                  const DesktopTopbar(),
-                  Expanded(
-                    child: Obx(() {
-                      final role  = auth.user.value?.role;
-                      final index = settings.selectedNavIndex.value;
+            backgroundColor: Colors.transparent,
+            body: Row(
+              children: [
+                const DesktopSidebar(),
+                Container(width: 1, color: colors.border),
+                Expanded(
+                  child: Column(
+                    children: [
+                      const DesktopTopbar(),
+                      Expanded(
+                        child: Obx(() {
+                          final role  = auth.user.value?.role;
+                          final index = settings.selectedNavIndex.value;
 
-                      final screens = <int, Widget>{
-                        0: const DashboardScreen(),
-                        1: const ProduitsScreen(),
-                        2: const FacturesScreen(),
-                        3: const AlertesScreen(),
-                        5: const SettingsScreen(),
-                        7: const IoTScreen(),
-                        8: const SecuriteScreen(),
-                        11: const BonsCommandeScreen(),
-                        12: const QrAImprimerScreen(),
-                      };
+                          final screens = <int, Widget>{
+                            0: const DashboardScreen(),
+                            1: const ProduitsScreen(),
+                            2: const FacturesScreen(),
+                            3: const AlertesScreen(),
+                            5: const SettingsScreen(),
+                            7: const IoTScreen(),
+                            8: const SecuriteScreen(),
+                            11: const BonsCommandeScreen(),
+                            12: const QrAImprimerScreen(),
+                          };
 
-                      if (role == UserRole.admin || role == UserRole.manager) {
-                        screens[4] = const RapportsScreen();
-                        screens[9] = const FabricationScreen();
-                        screens[10] = const ApprobationsScreen();
-                      }
-                      if (role == UserRole.admin) {
-                        screens[6] = const SuperAdminScreen();
-                      }
+                          if (role == UserRole.admin || role == UserRole.manager) {
+                            screens[4] = const RapportsScreen();
+                            screens[9] = const FabricationScreen();
+                            screens[10] = const ApprobationsScreen();
+                          }
+                          if (role == UserRole.admin) {
+                            screens[6] = const SuperAdminScreen();
+                          }
 
-                      return AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
-                        child: screens[index] ?? const DashboardScreen(),
-                      );
-                    }),
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 180),
+                            child: screens[index] ?? const DashboardScreen(),
+                          );
+                        }),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
           ),
         ],
       ),

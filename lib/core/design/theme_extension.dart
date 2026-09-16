@@ -23,6 +23,8 @@ class AppColorsExt extends ThemeExtension<AppColorsExt> {
   final Color warningSoft;
   final Color info;
   final Color infoSoft;
+  final Color gradientTop;
+  final Color gradientBottom;
 
   const AppColorsExt({
     required this.bg,
@@ -46,6 +48,8 @@ class AppColorsExt extends ThemeExtension<AppColorsExt> {
     required this.warningSoft,
     required this.info,
     required this.infoSoft,
+    required this.gradientTop,
+    required this.gradientBottom,
   });
 
   static const dark = AppColorsExt(
@@ -70,6 +74,8 @@ class AppColorsExt extends ThemeExtension<AppColorsExt> {
     warningSoft: AppPalette.warningSoft,
     info: AppPalette.info,
     infoSoft: AppPalette.infoSoft,
+    gradientTop: AppPalette.darkGradientTop,
+    gradientBottom: AppPalette.darkGradientBottom,
   );
 
   static const light = AppColorsExt(
@@ -94,6 +100,8 @@ class AppColorsExt extends ThemeExtension<AppColorsExt> {
     warningSoft: Color(0xFFFEF3C7),
     info: AppPalette.info,
     infoSoft: Color(0xFFE0F2FE),
+    gradientTop: AppPalette.lightGradientTop,
+    gradientBottom: AppPalette.lightGradientBottom,
   );
 
   @override
@@ -102,6 +110,7 @@ class AppColorsExt extends ThemeExtension<AppColorsExt> {
     Color? text, Color? textMuted, Color? hover, Color? primary, Color? primaryLight,
     Color? secondary, Color? accent, Color? success, Color? successSoft, Color? danger,
     Color? dangerSoft, Color? warning, Color? warningSoft, Color? info, Color? infoSoft,
+    Color? gradientTop, Color? gradientBottom,
   }) {
     return AppColorsExt(
       bg: bg ?? this.bg,
@@ -125,6 +134,8 @@ class AppColorsExt extends ThemeExtension<AppColorsExt> {
       warningSoft: warningSoft ?? this.warningSoft,
       info: info ?? this.info,
       infoSoft: infoSoft ?? this.infoSoft,
+      gradientTop: gradientTop ?? this.gradientTop,
+      gradientBottom: gradientBottom ?? this.gradientBottom,
     );
   }
 
@@ -153,6 +164,8 @@ class AppColorsExt extends ThemeExtension<AppColorsExt> {
       warningSoft: Color.lerp(warningSoft, other.warningSoft, t)!,
       info: Color.lerp(info, other.info, t)!,
       infoSoft: Color.lerp(infoSoft, other.infoSoft, t)!,
+      gradientTop: Color.lerp(gradientTop, other.gradientTop, t)!,
+      gradientBottom: Color.lerp(gradientBottom, other.gradientBottom, t)!,
     );
   }
 }

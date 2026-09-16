@@ -48,18 +48,27 @@ class DashboardScreen extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(flex: 3, child: _buildMovementsChart(context, t, stock)),
+              Expanded(
+                flex: 3,
+                child: Column(
+                  children: [
+                    _buildMovementsChart(context, t, stock),
+                    const SizedBox(height: 20),
+                    _buildRecentMovements(context, t, stock),
+                  ],
+                ),
+              ),
               const SizedBox(width: 20),
-              Expanded(flex: 2, child: _buildAlertsPanel(context, t, alerts)),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(flex: 2, child: _buildCriticalStock(context, t, stock)),
-              const SizedBox(width: 20),
-              Expanded(flex: 3, child: _buildRecentMovements(context, t, stock)),
+              Expanded(
+                flex: 2,
+                child: Column(
+                  children: [
+                    _buildAlertsPanel(context, t, alerts),
+                    const SizedBox(height: 20),
+                    _buildCriticalStock(context, t, stock),
+                  ],
+                ),
+              ),
             ],
           ),
         ],

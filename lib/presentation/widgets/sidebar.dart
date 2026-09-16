@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 
 import '../../core/design/theme_extension.dart';
 import '../../core/design/radii.dart';
-import 'decor/corner_lines.dart';
 import '../../core/l10n/app_localizations.dart';
 import '../controllers/controllers.dart';
 import '../../domain/models/models.dart';
@@ -45,17 +44,7 @@ class DesktopSidebar extends StatelessWidget {
     return Container(
       width: 216,
       color: colors.sidebar,
-      child: Stack(
-        children: [
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              child: CornerFlowLines(color: colors.primary, width: 216, height: 140),
-            ),
-          ),
-          Column(
+      child: Column(
         children: [
           const SizedBox(height: 22),
           Padding(
@@ -149,8 +138,6 @@ class DesktopSidebar extends StatelessWidget {
                 ]),
               )),
           const SizedBox(height: 6),
-        ],
-          ),
         ],
       ),
     );

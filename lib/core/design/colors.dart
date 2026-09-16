@@ -36,4 +36,9 @@ class AppPalette {
   static const lightText      = Color(0xFF0B1220);
   static const lightTextMuted = Color(0xFF60708A);
   static const lightHover     = Color(0xFFEFF3FA);
+
+  static const darkGradientTop     = Color(0xFF17224A);
+  static const darkGradientBottom  = Color(0xFF05070D);
+  static const lightGradientTop    = Color(0xFFFFFFFF);
+  static const lightGradientBottom = Color(0xFFE3E8F4);
 }

@@ -4,7 +4,7 @@ import '../../core/design/radii.dart';
 import '../../core/design/shadows.dart';
 import '../../domain/models/models.dart';
 
-class SynCard extends StatelessWidget {
+class SynCard extends StatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final VoidCallback? onTap;
@@ -13,13 +13,22 @@ class SynCard extends StatelessWidget {
   const SynCard({super.key, required this.child, this.padding, this.onTap, this.borderLeft});
 
   @override
+  State<SynCard> createState() => _SynCardState();
+}
+
+class _SynCardState extends State<SynCard> {
+  bool _hovering = false;
+
+  @override
   Widget build(BuildContext context) {
     final colors = context.colors;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final interactive = widget.onTap != null;
+    final lifted = interactive && _hovering;
 
-    final content = Padding(padding: padding ?? const EdgeInsets.all(20), child: child);
+    final content = Padding(padding: widget.padding ?? const EdgeInsets.all(20), child: widget.child);
 
-    final body = borderLeft == null
+    final body = widget.borderLeft == null
         ? content
         : Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -27,7 +36,7 @@ class SynCard extends StatelessWidget {
               Container(
                 width: 3,
                 decoration: BoxDecoration(
-                  color: borderLeft,
+                  color: widget.borderLeft,
                   borderRadius: BorderRadius.horizontal(left: Radius.circular(AppRadii.xl)),
                 ),
               ),
@@ -35,7 +44,10 @@ class SynCard extends StatelessWidget {
             ],
           );
 
-    return Container(
+    final card = AnimatedContainer(
+      duration: const Duration(milliseconds: 160),
+      curve: Curves.easeOut,
+      transform: Matrix4.translationValues(0, lifted ? -3 : 0, 0),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -43,13 +55,45 @@ class SynCard extends StatelessWidget {
           colors: [colors.card, colors.cardAlt],
         ),
         borderRadius: AppRadii.rXl,
-        border: Border.all(color: colors.border, width: 1),
-        boxShadow: AppShadows.card(isDark),
+        border: Border.all(
+          color: lifted ? colors.primary.withOpacity(0.35) : colors.border,
+          width: 1,
+        ),
+        boxShadow: lifted ? AppShadows.elevated(isDark) : AppShadows.card(isDark),
       ),
       clipBehavior: Clip.antiAlias,
-      child: onTap == null
-          ? body
-          : InkWell(onTap: onTap, hoverColor: colors.hover, child: body),
+      child: Stack(
+        children: [
+          Positioned(
+            left: 1,
+            right: 1,
+            top: 1,
+            child: Container(
+              height: 1,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    (isDark ? Colors.white : colors.primary).withOpacity(isDark ? 0.08 : 0.35),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+          widget.onTap == null
+              ? body
+              : InkWell(onTap: widget.onTap, hoverColor: Colors.transparent, splashColor: colors.primary.withOpacity(0.06), child: body),
+        ],
+      ),
+    );
+
+    if (!interactive) return card;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      cursor: SystemMouseCursors.click,
+      child: card,
     );
   }
 }
