@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
-
 import '../../../core/config/app_config.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../data/services/api_client.dart';
 
@@ -59,11 +59,11 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
                 Container(
                   width: 48, height: 48,
                   decoration: BoxDecoration(
-                    color: AppColors.warning.withOpacity(0.12),
+                    color: AppPalette.warning.withOpacity(0.12),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                    border: Border.all(color: AppPalette.warning.withOpacity(0.3)),
                   ),
-                  child: const Icon(Icons.shield_outlined, color: AppColors.warning, size: 22),
+                  child: const Icon(Icons.shield_outlined, color: AppPalette.warning, size: 22),
                 ),
                 const SizedBox(width: 14),
                 Text(t.saTitle, style: Theme.of(context).textTheme.displayMedium),
@@ -72,13 +72,13 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                  color: AppColors.warning.withOpacity(0.06),
+                  color: AppPalette.warning.withOpacity(0.06),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.warning.withOpacity(0.2)),
+                  border: Border.all(color: AppPalette.warning.withOpacity(0.2)),
                 ),
                 child: Text(
                   t.saZoneNotice,
-                  style: TextStyle(fontSize: 12, color: AppColors.warning, height: 1.5),
+                  style: TextStyle(fontSize: 12, color: AppPalette.warning, height: 1.5),
                 ),
               ),
               const SizedBox(height: 28),
@@ -101,14 +101,14 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: AppColors.danger.withOpacity(0.08),
+                    color: AppPalette.danger.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppColors.danger.withOpacity(0.2)),
+                    border: Border.all(color: AppPalette.danger.withOpacity(0.2)),
                   ),
                   child: Row(children: [
-                    const Icon(Icons.error_outline_rounded, size: 14, color: AppColors.danger),
+                    const Icon(Icons.error_outline_rounded, size: 14, color: AppPalette.danger),
                     const SizedBox(width: 8),
-                    Text(_error!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+                    Text(_error!, style: const TextStyle(color: AppPalette.danger, fontSize: 12)),
                   ]),
                 ),
               ],
@@ -116,7 +116,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: AppColors.warning),
+                  style: ElevatedButton.styleFrom(backgroundColor: AppPalette.warning),
                   onPressed: _loading ? null : _verify,
                   child: _loading
                       ? const SizedBox(width: 18, height: 18,
@@ -224,7 +224,7 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
                   content: Text(detail == 'error_username_exists'
                       ? t.saUsernameExists
                       : t.saCheckFieldsError),
-                  backgroundColor: AppColors.danger,
+                  backgroundColor: AppPalette.danger,
                 ));
               }
             }
@@ -277,10 +277,10 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
 
   Color _roleColor(String role) {
     switch (role) {
-      case 'admin':      return AppColors.danger;
-      case 'manager':    return AppColors.primary;
-      case 'stockiste':  return AppColors.success;
-      default:           return AppColors.darkTextMuted;
+      case 'admin':      return AppPalette.danger;
+      case 'manager':    return AppPalette.primary;
+      case 'stockiste':  return AppPalette.success;
+      default:           return context.colors.textMuted;
     }
   }
 
@@ -294,7 +294,7 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              const Icon(Icons.shield_outlined, color: AppColors.warning, size: 20),
+              const Icon(Icons.shield_outlined, color: AppPalette.warning, size: 20),
               const SizedBox(width: 10),
               Text(t.saUsersManagementTitle,
                 style: Theme.of(context).textTheme.titleLarge),
@@ -313,31 +313,31 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
             ]),
             const SizedBox(height: 24),
             if (_loading)
-              const Center(child: CircularProgressIndicator(color: AppColors.primary))
+              const Center(child: CircularProgressIndicator(color: AppPalette.primary))
             else
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: AppColors.darkCard,
+                    color: context.colors.card,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.darkBorder),
+                    border: Border.all(color: context.colors.border),
                   ),
                   child: Column(children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                       child: Row(children: [
-                        Expanded(flex: 3, child: Text(t.saThName, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
-                        Expanded(flex: 2, child: Text(t.saThUsername, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
-                        Expanded(flex: 2, child: Text(t.saThRole, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
-                        Expanded(flex: 1, child: Text(t.thStatus, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1))),
+                        Expanded(flex: 3, child: Text(t.saThName, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.colors.textMuted, letterSpacing: 0.1))),
+                        Expanded(flex: 2, child: Text(t.saThUsername, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.colors.textMuted, letterSpacing: 0.1))),
+                        Expanded(flex: 2, child: Text(t.saThRole, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.colors.textMuted, letterSpacing: 0.1))),
+                        Expanded(flex: 1, child: Text(t.thStatus, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.colors.textMuted, letterSpacing: 0.1))),
                         const SizedBox(width: 120),
                       ]),
                     ),
-                    const Divider(height: 1, color: AppColors.darkBorder),
+                    Divider(height: 1, color: context.colors.border),
                     Expanded(
                       child: ListView.separated(
                         itemCount: _users.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.darkBorder),
+                        separatorBuilder: (_, __) => Divider(height: 1, color: context.colors.border),
                         itemBuilder: (_, i) {
                           final u = _users[i];
                           final isActive = u['is_active'] as bool? ?? true;
@@ -348,7 +348,7 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
                               Expanded(flex: 3, child: Text(u['full_name'] as String? ?? '',
                                 style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
                               Expanded(flex: 2, child: Text('@${u['username']}',
-                                style: const TextStyle(fontSize: 12, fontFamily: 'monospace', color: AppColors.darkTextMuted))),
+                                style: TextStyle(fontSize: 12, fontFamily: 'monospace', color: context.colors.textMuted))),
                               Expanded(flex: 2, child: Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
@@ -360,7 +360,7 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
                               Expanded(flex: 1, child: Container(
                                 width: 8, height: 8,
                                 decoration: BoxDecoration(
-                                  color: isActive ? AppColors.success : AppColors.darkTextMuted,
+                                  color: isActive ? AppPalette.success : context.colors.textMuted,
                                   shape: BoxShape.circle,
                                 ),
                               )),
@@ -372,13 +372,13 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
                                       icon: Icon(
                                         isActive ? Icons.block_rounded : Icons.check_circle_outline_rounded,
                                         size: 16,
-                                        color: isActive ? AppColors.danger : AppColors.success,
+                                        color: isActive ? AppPalette.danger : AppPalette.success,
                                       ),
                                       onPressed: () => _toggleActive(u),
                                       tooltip: isActive ? t.saDeactivateTooltip : t.saActivateTooltip,
                                     ),
                                     IconButton(
-                                      icon: const Icon(Icons.key_outlined, size: 16, color: AppColors.warning),
+                                      icon: const Icon(Icons.key_outlined, size: 16, color: AppPalette.warning),
                                       onPressed: () => _resetPassword(u),
                                       tooltip: t.saResetPasswordTooltip,
                                     ),

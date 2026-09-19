@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
 import '../../../core/widgets/app_toast.dart';
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
@@ -126,10 +126,10 @@ class FacturesScreen extends StatelessWidget {
               ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
-                  const Icon(Icons.lock_clock_rounded, color: AppColors.darkTextMuted, size: 18),
+                  Icon(Icons.lock_clock_rounded, color: context.colors.textMuted, size: 18),
                   const SizedBox(width: 8),
                   Text(t.invBannerPendingModCount(ctrl.facturesEnAttenteModification.length),
-                    style: const TextStyle(color: AppColors.darkTextMuted, fontWeight: FontWeight.bold, fontSize: 13)),
+                    style: TextStyle(color: context.colors.textMuted, fontWeight: FontWeight.bold, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
                 ConstrainedBox(
@@ -138,10 +138,10 @@ class FacturesScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     child: Row(children: [
                       Expanded(child: Text('#${f.id} — ${f.supplierName} — ${formatDA(f.amountTtc)}',
-                        style: const TextStyle(fontSize: 13, color: AppColors.darkTextMuted))),
-                      const Icon(Icons.lock_outline_rounded, size: 16, color: AppColors.darkTextMuted),
+                        style: TextStyle(fontSize: 13, color: context.colors.textMuted))),
+                      Icon(Icons.lock_outline_rounded, size: 16, color: context.colors.textMuted),
                       const SizedBox(width: 6),
-                      Text(t.invPendingAdmin, style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+                      Text(t.invPendingAdmin, style: TextStyle(fontSize: 12, color: context.colors.textMuted)),
                     ]),
                   )).toList()),
                 ),
@@ -154,16 +154,16 @@ class FacturesScreen extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 16),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: AppColors.warning.withOpacity(0.08),
+                color: AppPalette.warning.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: AppColors.warning.withOpacity(0.3)),
+                border: Border.all(color: AppPalette.warning.withOpacity(0.3)),
               ),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(children: [
-                  const Icon(Icons.edit_note_rounded, color: AppColors.warning, size: 18),
+                  const Icon(Icons.edit_note_rounded, color: AppPalette.warning, size: 18),
                   const SizedBox(width: 8),
                   Text(t.invBannerToCorrectCount(ctrl.facturesACorriger.length),
-                    style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 13)),
+                    style: const TextStyle(color: AppPalette.warning, fontWeight: FontWeight.bold, fontSize: 13)),
                 ]),
                 const SizedBox(height: 10),
                 ConstrainedBox(
@@ -191,11 +191,11 @@ class FacturesScreen extends StatelessWidget {
                   Expanded(
                     child: Obx(() {
                       if (ctrl.isLoading.value && ctrl.invoices.isEmpty) {
-                        return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                        return const Center(child: CircularProgressIndicator(color: AppPalette.primary));
                       }
                       final list = ctrl.filteredInvoices;
                       if (list.isEmpty) {
-                        return Center(child: Text(AppLocalizations.of(context).invoicesEmpty, style: const TextStyle(color: AppColors.darkTextMuted)));
+                        return Center(child: Text(AppLocalizations.of(context).invoicesEmpty, style: TextStyle(color: context.colors.textMuted)));
                       }
                       return ListView.separated(
                         itemCount: list.length,
@@ -242,7 +242,7 @@ class _TH extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(flex: flex, child: Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1)));
+    return Expanded(flex: flex, child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.colors.textMuted, letterSpacing: 0.1)));
   }
 }
 
@@ -274,18 +274,18 @@ class _InvoiceRow extends StatelessWidget {
               margin: const EdgeInsets.only(top: 2),
               padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
               decoration: BoxDecoration(
-                color: invoice.typeFacture == 'vente' ? AppColors.success.withOpacity(0.1) : AppColors.primary.withOpacity(0.1),
+                color: invoice.typeFacture == 'vente' ? AppPalette.success.withOpacity(0.1) : AppPalette.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(3),
               ),
               child: Text(
                 invoice.typeFacture == 'vente' ? AppLocalizations.of(context).histTypeSale : AppLocalizations.of(context).histTypePurchase,
                 style: TextStyle(fontSize: 8, fontWeight: FontWeight.w700,
-                  color: invoice.typeFacture == 'vente' ? AppColors.success : AppColors.primary),
+                  color: invoice.typeFacture == 'vente' ? AppPalette.success : AppPalette.primary),
               ),
             ),
           ],
         )),
-        Expanded(flex: 2, child: Text(_fmt(invoice.date), style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted))),
+        Expanded(flex: 2, child: Text(_fmt(invoice.date), style: TextStyle(fontSize: 12, color: context.colors.textMuted))),
         Expanded(flex: 2, child: Text(formatDA(invoice.amountHt), style: const TextStyle(fontSize: 12))),
         Expanded(flex: 2, child: Text(formatDA(invoice.amountTtc), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
         Expanded(flex: 2, child: Row(children: [
@@ -298,9 +298,9 @@ class _InvoiceRow extends StatelessWidget {
           if (!Get.find<AuthController>().isManager) return const SizedBox.shrink();
           if (invoice.statusRaw != 'pending') return const SizedBox.shrink();
           return Row(children: [
-            SynButton(label: AppLocalizations.of(context).invValidateButton, color: AppColors.success, onTap: () => ctrl.validateInvoice(invoice.id)),
+            SynButton(label: AppLocalizations.of(context).invValidateButton, color: AppPalette.success, onTap: () => ctrl.validateInvoice(invoice.id)),
             const SizedBox(width: 8),
-            SynButton(label: AppLocalizations.of(context).rejectButton, outline: true, color: AppColors.danger,
+            SynButton(label: AppLocalizations.of(context).rejectButton, outline: true, color: AppPalette.danger,
               onTap: () => _showRejectDialogInline(context, ctrl, invoice)),
           ]);
         })),
@@ -324,7 +324,7 @@ void _showRejectDialogInline(BuildContext context, InvoiceController ctrl, Invoi
   final t = AppLocalizations.of(context);
   final motifCtrl = TextEditingController();
   Get.dialog(AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text(t.motifRejetTitle),
     content: TextField(
       controller: motifCtrl, maxLines: 3,
@@ -354,7 +354,7 @@ class _AuthDot extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final c = detected ? AppColors.success : AppColors.darkTextMuted;
+    final c = detected ? AppPalette.success : context.colors.textMuted;
     return Row(mainAxisSize: MainAxisSize.min, children: [
       Icon(detected ? Icons.check_circle_outline_rounded : Icons.cancel_outlined, size: 12, color: c),
       const SizedBox(width: 3),
@@ -374,7 +374,7 @@ class _FilterDropdown extends StatelessWidget {
         value: ctrl.statusFilter.value,
         hint: Text(AppLocalizations.of(context).filterAllStatus, style: const TextStyle(fontSize: 12)),
         style: const TextStyle(fontSize: 12),
-        dropdownColor: AppColors.darkCard,
+        dropdownColor: context.colors.card,
         items: [
           DropdownMenuItem(value: null, child: Text(AppLocalizations.of(context).filterAllStatus)),
           DropdownMenuItem(value: InvoiceStatus.pending, child: Text(AppLocalizations.of(context).pdfStatusPending)),
@@ -399,7 +399,7 @@ class _TypeFilterDropdown extends StatelessWidget {
         value: ctrl.typeFilter.value,
         hint: Text(AppLocalizations.of(context).filterAllTypes, style: const TextStyle(fontSize: 12)),
         style: const TextStyle(fontSize: 12),
-        dropdownColor: AppColors.darkCard,
+        dropdownColor: context.colors.card,
         items: [
           DropdownMenuItem(value: null,      child: Text(AppLocalizations.of(context).filterAllTypes)),
           DropdownMenuItem(value: 'achat',   child: Text(AppLocalizations.of(context).typePurchases)),
@@ -439,19 +439,19 @@ void _showFactureManuelleDialog(BuildContext context, InvoiceController ctrl, {S
   Get.find<BonCommandeController>().loadBonsOuverts(typeStock: typeStock);
 
   Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text(t.newManualInvoiceTitle),
     content: SizedBox(width: 560, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
       Container(
         padding: const EdgeInsets.all(10),
         margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+        decoration: BoxDecoration(color: AppPalette.warning.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
         child: Row(children: [
-          const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.warning),
+          const Icon(Icons.info_outline_rounded, size: 16, color: AppPalette.warning),
           const SizedBox(width: 8),
           Expanded(child: Text(t.manualInvoiceNotice,
-            style: const TextStyle(fontSize: 11, color: AppColors.warning))),
+            style: const TextStyle(fontSize: 11, color: AppPalette.warning))),
         ]),
       ),
       Row(children: [
@@ -740,7 +740,7 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(10),
-      decoration: BoxDecoration(color: AppColors.darkSurface, borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: context.colors.surface, borderRadius: BorderRadius.circular(8)),
       child: Column(children: [
         SwitchListTile(
           contentPadding: EdgeInsets.zero,
@@ -828,7 +828,7 @@ class _LigneManuelleRowState extends State<_LigneManuelleRow> {
             onChanged: (v) => setState(() => widget.data['quantite'] = v),
           )),
           if (widget.onRemove != null)
-            IconButton(icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.danger), onPressed: widget.onRemove),
+            IconButton(icon: const Icon(Icons.close_rounded, size: 18, color: AppPalette.danger), onPressed: widget.onRemove),
         ]),
         const SizedBox(height: 6),
         Row(children: [
@@ -915,7 +915,7 @@ void _showCompleterModificationDialog(BuildContext context, InvoiceController ct
 
   final t = AppLocalizations.of(context);
   Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text('${t.correctInvoiceTitlePrefix}${facture.id}'),
     content: SizedBox(width: 560, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1027,13 +1027,13 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
 
   final t = AppLocalizations.of(context);
   Get.dialog(AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text('${t.verifyOcrTitlePrefix}${facture.id}'),
     content: SizedBox(width: 560, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _champLectureSeule(t.pdfHeaderSupplier, facture.supplierName),
-      _champLectureSeule(t.pdfHeaderDate, '${facture.date.year}-${facture.date.month.toString().padLeft(2, '0')}-${facture.date.day.toString().padLeft(2, '0')}'),
-      _champLectureSeule(t.invoiceAmountTtc, formatDA(facture.amountTtc)),
+      _champLectureSeule(context, t.pdfHeaderSupplier, facture.supplierName),
+      _champLectureSeule(context, t.pdfHeaderDate, '${facture.date.year}-${facture.date.month.toString().padLeft(2, '0')}-${facture.date.day.toString().padLeft(2, '0')}'),
+      _champLectureSeule(context, t.invoiceAmountTtc, formatDA(facture.amountTtc)),
       const Divider(height: 24),
       SectionTitle(title: t.ocrDetectedArticlesTitle),
       const SizedBox(height: 8),
@@ -1044,7 +1044,7 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(l.produitNom, style: const TextStyle(fontWeight: FontWeight.bold)),
           Text('${t.poQuantityShort} ${l.quantite}${t.puLabel} ${formatDA(l.prixUnitaire)}${l.dateExpiration != null ? '${t.expInlineLabel} ${l.dateExpiration}' : ''}',
-            style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+            style: TextStyle(fontSize: 12, color: context.colors.textMuted)),
           const SizedBox(height: 6),
           TextField(
             controller: emplacementCtrls[l.id],
@@ -1069,7 +1069,7 @@ void _showVerifierOcrDialog(BuildContext context, InvoiceController ctrl, Invoic
           await safeBack();
           _showSignalerErreurDialog(context, ctrl, facture);
         },
-        child: Text(t.reportErrorButton, style: const TextStyle(color: AppColors.danger)),
+        child: Text(t.reportErrorButton, style: const TextStyle(color: AppPalette.danger)),
       ),
       TextButton(
         onPressed: () async {
@@ -1129,7 +1129,7 @@ void _showEcartASignalerDialog(BuildContext context, InvoiceController ctrl, Inv
   final t = AppLocalizations.of(context);
   final compteRenduCtrl = TextEditingController();
   Get.dialog(AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text('${t.gapsDetectedTitlePrefix}${facture.id}'),
     content: SizedBox(width: 500, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1159,7 +1159,7 @@ void _showSignalerErreurDialog(BuildContext context, InvoiceController ctrl, Inv
   final t = AppLocalizations.of(context);
   final compteRenduCtrl = TextEditingController();
   Get.dialog(AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text(t.reportErrorTitle),
     content: SizedBox(width: 420, child: TextField(
       controller: compteRenduCtrl, maxLines: 4,
@@ -1182,10 +1182,10 @@ void _showSignalerErreurDialog(BuildContext context, InvoiceController ctrl, Inv
   ));
 }
 
-Widget _champLectureSeule(String label, String value) => Padding(
+Widget _champLectureSeule(BuildContext context, String label, String value) => Padding(
   padding: const EdgeInsets.only(bottom: 8),
   child: Row(children: [
-    SizedBox(width: 120, child: Text(label, style: const TextStyle(color: AppColors.darkTextMuted, fontSize: 12))),
+    SizedBox(width: 120, child: Text(label, style: TextStyle(color: context.colors.textMuted, fontSize: 12))),
     Expanded(child: Text(value, style: const TextStyle(fontWeight: FontWeight.w600))),
   ]),
 );
@@ -1193,7 +1193,7 @@ Widget _champLectureSeule(String label, String value) => Padding(
 void ouvrirNouvelleFacture(BuildContext context, InvoiceController ctrl) {
   final t = AppLocalizations.of(context);
   Get.dialog(AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text(t.newInvoiceTitle),
     content: SizedBox(width: 400, child: Column(mainAxisSize: MainAxisSize.min, children: [
       _ChoixCard(
@@ -1218,7 +1218,7 @@ void _choisirType(BuildContext context, InvoiceController ctrl, {required bool v
     'produit_fini': t.filterTypeFinishedProduct, 'consommable': t.filterTypeConsumable,
   };
   Get.dialog(AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text(t.invoiceCategoryTitle),
     content: SizedBox(width: 380, child: Column(mainAxisSize: MainAxisSize.min,
       children: types.entries.map((e) => _ChoixCard(
@@ -1242,7 +1242,7 @@ void _choisirBonCommandePourOcr(BuildContext context, InvoiceController ctrl, St
   final bcCtrl = Get.find<BonCommandeController>();
   bcCtrl.loadBonsOuverts(typeStock: typeStock);
   Get.dialog(Obx(() => AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text(t.poChoiceTitle),
     content: SizedBox(width: 380, child: Column(mainAxisSize: MainAxisSize.min, children: [
       _ChoixCard(icon: Icons.close_rounded, title: t.noneWord, subtitle: '',
@@ -1280,15 +1280,15 @@ class _ChoixCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         margin: const EdgeInsets.only(bottom: 4),
-        decoration: BoxDecoration(color: AppColors.darkSurface, borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(color: context.colors.surface, borderRadius: BorderRadius.circular(10)),
         child: Row(children: [
-          Icon(icon, color: AppColors.primary),
+          Icon(icon, color: AppPalette.primary),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-            if (subtitle.isNotEmpty) Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+            if (subtitle.isNotEmpty) Text(subtitle, style: TextStyle(fontSize: 11, color: context.colors.textMuted)),
           ])),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.darkTextMuted),
+          Icon(Icons.chevron_right_rounded, color: context.colors.textMuted),
         ]),
       ),
     );
@@ -1399,17 +1399,17 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     return AlertDialog(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: context.colors.card,
       title: Text(t.receiveFromPhoneTitle),
       content: SizedBox(width: 340, child: Column(mainAxisSize: MainAxisSize.min, children: [
         if (_statut == 'expire') ...[
-          const Icon(Icons.timer_off_rounded, size: 48, color: AppColors.warning),
+          const Icon(Icons.timer_off_rounded, size: 48, color: AppPalette.warning),
           const SizedBox(height: 12),
           Text(t.codeExpiredTitle, style: const TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 12),
           SynButton(label: t.generateNewCodeButton, onTap: _genererCode),
         ] else if (_statut == 'erreur') ...[
-          const Icon(Icons.error_outline_rounded, size: 48, color: AppColors.danger),
+          const Icon(Icons.error_outline_rounded, size: 48, color: AppPalette.danger),
           const SizedBox(height: 12),
           Text(t.serverConnectionError),
           const SizedBox(height: 12),
@@ -1427,21 +1427,21 @@ class _AttenteAppairageDialogState extends State<_AttenteAppairageDialog> {
           Text(_code!, style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, letterSpacing: 4)),
           const SizedBox(height: 10),
           if (_statut == 'attente')
-            Text('${t.expiresInPrefix} ${_secondesRestantes}s', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+            Text('${t.expiresInPrefix} ${_secondesRestantes}s', style: TextStyle(fontSize: 11, color: context.colors.textMuted)),
           const SizedBox(height: 14),
           if (_statut == 'attente')
             Text(t.mobileInstructions,
               textAlign: TextAlign.center, style: const TextStyle(fontSize: 12)),
           if (_statut == 'scanne') ...[
-            const Icon(Icons.check_circle_outline_rounded, color: AppColors.success, size: 28),
+            const Icon(Icons.check_circle_outline_rounded, color: AppPalette.success, size: 28),
             const SizedBox(height: 6),
             Text(t.phoneConnectedMsg,
-              textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: AppColors.success)),
+              textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: AppPalette.success)),
           ],
           if (_statut == 'complete') ...[
-            const Icon(Icons.task_alt_rounded, color: AppColors.success, size: 40),
+            const Icon(Icons.task_alt_rounded, color: AppPalette.success, size: 40),
             const SizedBox(height: 8),
-            Text(t.invoiceReceivedMsg, style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.success)),
+            Text(t.invoiceReceivedMsg, style: const TextStyle(fontWeight: FontWeight.w700, color: AppPalette.success)),
           ],
         ],
       ])),

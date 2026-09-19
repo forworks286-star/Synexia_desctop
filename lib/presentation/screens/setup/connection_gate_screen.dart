@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
-
 import '../../../core/config/app_config.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import 'server_setup_screen.dart';
 import 'admin_setup_screen.dart';
@@ -74,15 +74,15 @@ class _ConnectionGateScreenState extends State<ConnectionGateScreen> {
             Container(
               width: 56, height: 56,
               decoration: BoxDecoration(
-                gradient: const LinearGradient(colors: [AppColors.primary, AppColors.secondary]),
+                gradient: const LinearGradient(colors: [AppPalette.primary, AppPalette.secondary]),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: const Center(child: Text('S', style: TextStyle(color: Colors.white, fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 26))),
             ),
             const SizedBox(height: 24),
-            const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: AppColors.primary)),
+            const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4, color: AppPalette.primary)),
             const SizedBox(height: 16),
-            Text(AppLocalizations.of(context).gateConnecting, style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
+            Text(AppLocalizations.of(context).gateConnecting, style: TextStyle(fontSize: 13, color: context.colors.textMuted)),
           ],
         ),
       ),

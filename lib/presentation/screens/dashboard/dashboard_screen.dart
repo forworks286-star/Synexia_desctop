@@ -67,7 +67,7 @@ class DashboardScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     _buildCriticalStock(context, t, stock),
                   ],
-                ),
+                ), 
               ),
             ],
           ),

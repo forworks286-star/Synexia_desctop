@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:dio/dio.dart';
-
 import '../../../core/config/app_config.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../auth/login_screen.dart';
 import 'admin_setup_screen.dart';
@@ -97,7 +97,7 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
                 Container(
                   width: 48, height: 48,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(colors: [AppColors.primary, AppColors.secondary]),
+                    gradient: const LinearGradient(colors: [AppPalette.primary, AppPalette.secondary]),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Center(child: Text('S', style: TextStyle(color: Colors.white, fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 22))),
@@ -108,7 +108,7 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
               const SizedBox(height: 32),
               Text(t.setupServerConfigTitle, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 6),
-              Text(t.setupServerConfigDesc, style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
+              Text(t.setupServerConfigDesc, style: TextStyle(fontSize: 13, color: context.colors.textMuted)),
               const SizedBox(height: 28),
               Row(children: [
                 Expanded(
@@ -131,11 +131,11 @@ class _ServerSetupScreenState extends State<ServerSetupScreen> {
                 const SizedBox(height: 14),
                 Container(
                   padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.danger.withOpacity(0.2))),
+                  decoration: BoxDecoration(color: AppPalette.danger.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppPalette.danger.withOpacity(0.2))),
                   child: Row(children: [
-                    const Icon(Icons.error_outline_rounded, size: 14, color: AppColors.danger),
+                    const Icon(Icons.error_outline_rounded, size: 14, color: AppPalette.danger),
                     const SizedBox(width: 8),
-                    Expanded(child: Text(_error!, style: const TextStyle(color: AppColors.danger, fontSize: 12))),
+                    Expanded(child: Text(_error!, style: const TextStyle(color: AppPalette.danger, fontSize: 12))),
                   ]),
                 ),
               ],

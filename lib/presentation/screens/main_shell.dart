@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../core/design/theme_extension.dart';
 import '../controllers/controllers.dart';
 import '../widgets/sidebar.dart';

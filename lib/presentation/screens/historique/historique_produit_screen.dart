@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import '../qr/qr_a_imprimer_screen.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:get/get.dart';
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../domain/models/models.dart';
@@ -88,12 +88,12 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          if (_loading) const Expanded(child: Center(child: CircularProgressIndicator(color: AppColors.primary))),
-          if (_error != null) Expanded(child: Center(child: Text(_error!, style: const TextStyle(color: AppColors.danger)))),
+          if (_loading) const Expanded(child: Center(child: CircularProgressIndicator(color: AppPalette.primary))),
+          if (_error != null) Expanded(child: Center(child: Text(_error!, style: const TextStyle(color: AppPalette.danger)))),
           if (!_loading && _error == null && _data != null) Expanded(child: _buildContent(t, _data!)),
           if (!_loading && _error == null && _data == null)
             Expanded(child: Center(child: Text(t.histSearchEmpty,
-              style: TextStyle(color: AppColors.darkTextMuted)))),
+              style: TextStyle(color: context.colors.textMuted)))),
         ],
       ),
     );
@@ -116,7 +116,7 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
             SectionTitle(title: t.histLotDistributionTitle),
             const SizedBox(height: 12),
             if (_selectedProduct == null || _selectedProduct!.lots.isEmpty)
-              Text(t.histNoActiveLot, style: TextStyle(fontSize: 12, color: AppColors.darkTextMuted))
+              Text(t.histNoActiveLot, style: TextStyle(fontSize: 12, color: context.colors.textMuted))
             else
               for (final lot in _selectedProduct!.lots) Padding(
                 padding: const EdgeInsets.symmetric(vertical: 6),
@@ -125,14 +125,14 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
                   Expanded(child: Text('${lot.quantiteDisponible} ${t.histUnitsSuffix}', style: const TextStyle(fontSize: 12))),
                   Expanded(child: Text(lot.dateExpiration != null
                     ? '${t.histExpiresPrefix} ${lot.dateExpiration!.day}/${lot.dateExpiration!.month}/${lot.dateExpiration!.year}'
-                    : '', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
+                    : '', style: TextStyle(fontSize: 11, color: context.colors.textMuted))),
                   Expanded(child: Row(children: [
-                    const Icon(Icons.place_outlined, size: 13, color: AppColors.darkTextMuted),
+                    Icon(Icons.place_outlined, size: 13, color: context.colors.textMuted),
                     const SizedBox(width: 3),
-                    Expanded(child: Text(lot.emplacement ?? '—', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
+                    Expanded(child: Text(lot.emplacement ?? '—', style: TextStyle(fontSize: 11, color: context.colors.textMuted))),
                   ])),
                   IconButton(
-                    icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppColors.primary),
+                    icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppPalette.primary),
                     tooltip: t.printLotQrTooltip,
                     onPressed: () => showLotQrDialog(lot.id, lot.numeroLot ?? '#${lot.id}'),
                   ),
@@ -168,7 +168,7 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
             const Divider(height: 1),
             if (data.historique.isEmpty)
               Padding(padding: const EdgeInsets.all(20), child: Text(t.histNoInvoiceYet,
-                style: TextStyle(fontSize: 12, color: AppColors.darkTextMuted))),
+                style: TextStyle(fontSize: 12, color: context.colors.textMuted))),
             for (final l in data.historique) _HistoriqueRow(ligne: l),
           ]),
         ),
@@ -186,12 +186,12 @@ class _MarginCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(child: SynCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted, fontWeight: FontWeight.w600)),
+      Text(label, style: TextStyle(fontSize: 11, color: context.colors.textMuted, fontWeight: FontWeight.w600)),
       const SizedBox(height: 8),
       Text(
         value == null ? '—' : (isPercent ? '${value!.toStringAsFixed(1)}%' : formatDA(value!)),
         style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
-          color: isPercent && value != null ? (value! >= 0 ? AppColors.success : AppColors.danger) : null),
+          color: isPercent && value != null ? (value! >= 0 ? AppPalette.success : AppPalette.danger) : null),
       ),
     ])));
   }
@@ -215,13 +215,13 @@ class _PriceChart extends StatelessWidget {
     final t = AppLocalizations(Get.locale ?? const Locale('fr'));
     if (achats.isEmpty) {
       return Center(child: Text(t.histNoValidatedPurchase,
-        style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)));
+        style: TextStyle(color: context.colors.textMuted, fontSize: 12)));
     }
     if (achats.length < 2) {
       return Center(child: Text(
         '${t.histSinglePurchasePrefix} (${formatDA(achats.first.prixUnitaire)})\n${t.histChartAppearsNote}',
         textAlign: TextAlign.center,
-        style: const TextStyle(color: AppColors.darkTextMuted, fontSize: 12)));
+        style: TextStyle(color: context.colors.textMuted, fontSize: 12)));
     }
 
     final spots = <FlSpot>[
@@ -247,11 +247,11 @@ class _PriceChart extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(top: 6),
             child: Text('${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${(d.year % 100).toString().padLeft(2, '0')}',
-              style: const TextStyle(fontSize: 9, color: AppColors.darkTextMuted)),
+              style: TextStyle(fontSize: 9, color: context.colors.textMuted)),
           );
         })),
         leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: true, reservedSize: 55, getTitlesWidget: (v, meta) =>
-          Text(formatDA(v), style: const TextStyle(fontSize: 8, color: AppColors.darkTextMuted)))),
+          Text(formatDA(v), style: TextStyle(fontSize: 8, color: context.colors.textMuted)))),
       ),
       borderData: FlBorderData(show: false),
       lineTouchData: LineTouchData(
@@ -267,9 +267,9 @@ class _PriceChart extends StatelessWidget {
       ),
       lineBarsData: [
         LineChartBarData(
-          spots: spots, isCurved: false, color: AppColors.primary, barWidth: 2,
+          spots: spots, isCurved: false, color: AppPalette.primary, barWidth: 2,
           dotData: const FlDotData(show: true),
-          belowBarData: BarAreaData(show: true, color: AppColors.primary.withOpacity(0.08)),
+          belowBarData: BarAreaData(show: true, color: AppPalette.primary.withOpacity(0.08)),
         ),
       ],
     ));
@@ -284,15 +284,15 @@ class _HistoriqueRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
     final isVente = ligne.typeFacture == 'vente';
-    final statusColor = ligne.factureStatus == 'validated' ? AppColors.success
-                       : ligne.factureStatus == 'rejected' ? AppColors.danger
-                       : AppColors.warning;
+    final statusColor = ligne.factureStatus == 'validated' ? AppPalette.success
+                       : ligne.factureStatus == 'rejected' ? AppPalette.danger
+                       : AppPalette.warning;
     final statusLabel = ligne.factureStatus == 'validated' ? t.histStatusAccepted
                        : ligne.factureStatus == 'rejected' ? t.pdfStatusRejected
                        : t.pdfStatusPending;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.darkBorder, width: 0.5))),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: context.colors.border, width: 0.5))),
       child: Row(children: [
         Expanded(flex: 2, child: Text(
           '${ligne.factureDate.day.toString().padLeft(2, '0')}/${ligne.factureDate.month.toString().padLeft(2, '0')}/${ligne.factureDate.year}',
@@ -300,10 +300,10 @@ class _HistoriqueRow extends StatelessWidget {
         Expanded(flex: 2, child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: (isVente ? AppColors.success : AppColors.primary).withOpacity(0.1),
+            color: (isVente ? AppPalette.success : AppPalette.primary).withOpacity(0.1),
             borderRadius: BorderRadius.circular(4)),
           child: Text(isVente ? t.histTypeSale : t.histTypePurchase, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700,
-            color: isVente ? AppColors.success : AppColors.primary)),
+            color: isVente ? AppPalette.success : AppPalette.primary)),
         )),
         Expanded(flex: 2, child: Text(ligne.fournisseurNom, style: const TextStyle(fontSize: 12))),
         Expanded(flex: 1, child: Text('${ligne.quantite.toStringAsFixed(0)} u.', style: const TextStyle(fontSize: 12))),
@@ -311,7 +311,7 @@ class _HistoriqueRow extends StatelessWidget {
         Expanded(flex: 2, child: GestureDetector(
           onTap: () => Get.to(() => FactureDetailScreen(factureId: ligne.factureId)),
           child: Text(ligne.numeroFacture ?? '#${ligne.factureId}',
-            style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: AppColors.primary, decoration: TextDecoration.underline)),
+            style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: AppPalette.primary, decoration: TextDecoration.underline)),
         )),
         Expanded(flex: 2, child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -36,7 +36,7 @@ class RapportsScreen extends StatelessWidget {
                 title: t.reportStockTitle,
                 description: t.reportStockDesc,
                 icon: Icons.inventory_2_outlined,
-                color: AppColors.primary,
+                color: AppPalette.primary,
                 onGenerate: () => _generateStockPdf(tGlobal, stock),
               )),
               const SizedBox(width: 20),
@@ -44,7 +44,7 @@ class RapportsScreen extends StatelessWidget {
                 title: t.reportInvoicesTitle,
                 description: t.reportInvoicesDesc,
                 icon: Icons.receipt_long_outlined,
-                color: AppColors.success,
+                color: AppPalette.success,
                 onGenerate: () => _generateFacturesPdf(tGlobal, invoices),
               )),
               const SizedBox(width: 20),
@@ -52,7 +52,7 @@ class RapportsScreen extends StatelessWidget {
                 title: t.reportAlertsTitle,
                 description: t.reportAlertsDesc,
                 icon: Icons.notifications_outlined,
-                color: AppColors.warning,
+                color: AppPalette.warning,
                 onGenerate: () => _generateAlertesPdf(tGlobal),
               )),
             ],
@@ -70,15 +70,15 @@ class RapportsScreen extends StatelessWidget {
                   final validated = invoices.invoices.where((i) => i.status == InvoiceStatus.validated).length;
                   final critical = stock.products.where((p) => p.status == StockStatus.critical).length;
                   return Row(children: [
-                    Expanded(child: _StatItem(label: t.statTotalProducts, value: '${s?.totalProducts ?? 0}', color: AppColors.primary)),
+                    Expanded(child: _StatItem(label: t.statTotalProducts, value: '${s?.totalProducts ?? 0}', color: AppPalette.primary)),
                     _Divider(),
-                    Expanded(child: _StatItem(label: t.statCriticalProducts, value: '$critical', color: AppColors.danger)),
+                    Expanded(child: _StatItem(label: t.statCriticalProducts, value: '$critical', color: AppPalette.danger)),
                     _Divider(),
-                    Expanded(child: _StatItem(label: t.statValidatedInvoices, value: '$validated', color: AppColors.success)),
+                    Expanded(child: _StatItem(label: t.statValidatedInvoices, value: '$validated', color: AppPalette.success)),
                     _Divider(),
-                    Expanded(child: _StatItem(label: t.kpiPendingInvoices, value: '$pending', color: AppColors.warning)),
+                    Expanded(child: _StatItem(label: t.kpiPendingInvoices, value: '$pending', color: AppPalette.warning)),
                     _Divider(),
-                    Expanded(child: _StatItem(label: t.statSystemAvailability, value: '${s?.availability.toStringAsFixed(1) ?? 0}%', color: AppColors.secondary)),
+                    Expanded(child: _StatItem(label: t.statSystemAvailability, value: '${s?.availability.toStringAsFixed(1) ?? 0}%', color: AppPalette.secondary)),
                   ]);
                 }),
               ],
@@ -114,7 +114,7 @@ class _ReportCard extends StatelessWidget {
           const SizedBox(height: 16),
           Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, fontFamily: 'Syne')),
           const SizedBox(height: 8),
-          Text(description, style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted, height: 1.5)),
+          Text(description, style: TextStyle(fontSize: 12, color: context.colors.textMuted, height: 1.5)),
           const SizedBox(height: 20),
           SynButton(label: AppLocalizations.of(context).generatePdfButton, icon: Icons.picture_as_pdf_outlined, color: color, onTap: onGenerate),
         ],
@@ -134,7 +134,7 @@ class _StatItem extends StatelessWidget {
     return Column(children: [
       Text(value, style: TextStyle(fontFamily: 'Syne', fontSize: 28, fontWeight: FontWeight.w800, color: color)),
       const SizedBox(height: 6),
-      Text(label, style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted), textAlign: TextAlign.center),
+      Text(label, style: TextStyle(fontSize: 11, color: context.colors.textMuted), textAlign: TextAlign.center),
     ]);
   }
 }
@@ -142,7 +142,7 @@ class _StatItem extends StatelessWidget {
 class _Divider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Container(width: 1, height: 60, color: AppColors.darkBorder, margin: const EdgeInsets.symmetric(horizontal: 20));
+    return Container(width: 1, height: 60, color: context.colors.border, margin: const EdgeInsets.symmetric(horizontal: 20));
   }
 }
 

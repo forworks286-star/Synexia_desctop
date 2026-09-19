@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../design/colors.dart';
 
 enum ToastType { success, error, warning, info }
 
@@ -47,10 +47,10 @@ class _AppToastHostState extends State<AppToastHost> {
 
   Color _bg(ToastType t) {
     switch (t) {
-      case ToastType.success: return AppColors.success;
-      case ToastType.error: return AppColors.danger;
-      case ToastType.warning: return AppColors.warning;
-      case ToastType.info: return AppColors.darkCard;
+      case ToastType.success: return AppPalette.success;
+      case ToastType.error: return AppPalette.danger;
+      case ToastType.warning: return AppPalette.warning;
+      case ToastType.info: return AppPalette.info;
     }
   }
 

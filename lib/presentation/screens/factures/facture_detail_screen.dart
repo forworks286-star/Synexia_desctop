@@ -3,8 +3,8 @@ import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
 import '../../../core/widgets/app_toast.dart';
 import '../../controllers/controllers.dart';
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../domain/models/models.dart';
@@ -58,11 +58,11 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+      return const Center(child: CircularProgressIndicator(color: AppPalette.primary));
     }
     final t = AppLocalizations.of(context);
     if (_error != null || _invoice == null) {
-      return Center(child: Text(_error ?? t.errorTitle, style: const TextStyle(color: AppColors.danger)));
+      return Center(child: Text(_error ?? t.errorTitle, style: const TextStyle(color: AppPalette.danger)));
     }
     final invoice = _invoice!;
 
@@ -84,7 +84,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
           if (invoice.motifRejet != null) ...[
             const SizedBox(height: 16),
             SynCard(
-              borderLeft: AppColors.danger,
+              borderLeft: AppPalette.danger,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 SectionTitle(title: t.rejectionReasonTitle),
                 const SizedBox(height: 8),
@@ -107,26 +107,26 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(invoice.supplierName, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
           const SizedBox(height: 4),
-          Text(_fmtDate(invoice.date), style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+          Text(_fmtDate(invoice.date), style: TextStyle(fontSize: 12, color: context.colors.textMuted)),
         ])),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
           decoration: BoxDecoration(
-            color: (invoice.typeFacture == 'vente' ? AppColors.success : AppColors.primary).withOpacity(0.1),
+            color: (invoice.typeFacture == 'vente' ? AppPalette.success : AppPalette.primary).withOpacity(0.1),
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(
             invoice.typeFacture == 'vente' ? t.saleWord : (invoice.typeFacture == 'ajustement_manuel' ? t.manualAdjustmentWord : t.histTypePurchase),
             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
-              color: invoice.typeFacture == 'vente' ? AppColors.success : AppColors.primary),
+              color: invoice.typeFacture == 'vente' ? AppPalette.success : AppPalette.primary),
           ),
         ),
         if (invoice.creeManuellement) ...[
           const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-            decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-            child: Text(t.createdManuallyLabel, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.warning)),
+            decoration: BoxDecoration(color: AppPalette.warning.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+            child: Text(t.createdManuallyLabel, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppPalette.warning)),
           ),
         ],
       ]),
@@ -158,12 +158,12 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
         const SizedBox(height: 12),
         Container(
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: AppColors.warning.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
+          decoration: BoxDecoration(color: AppPalette.warning.withOpacity(0.08), borderRadius: BorderRadius.circular(6)),
           child: Row(children: [
-            const Icon(Icons.warning_amber_rounded, size: 16, color: AppColors.warning),
+            const Icon(Icons.warning_amber_rounded, size: 16, color: AppPalette.warning),
             const SizedBox(width: 8),
             Expanded(child: Text(t.incoherenceDetectedMsg,
-              style: const TextStyle(fontSize: 11, color: AppColors.warning))),
+              style: const TextStyle(fontSize: 11, color: AppPalette.warning))),
           ]),
         ),
       ],
@@ -182,7 +182,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
       const Divider(height: 1),
       if (_lignes.isEmpty)
         Padding(padding: const EdgeInsets.all(24), child: Text(t.noProductInInvoice,
-          style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12))),
+          style: TextStyle(color: context.colors.textMuted, fontSize: 12))),
       for (final l in _lignes) _ligneRow(t, l),
     ]));
   }
@@ -190,22 +190,22 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
   Widget _ligneRow(AppLocalizations t, LigneFacture l) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: AppColors.darkBorder, width: 0.5))),
+            decoration: BoxDecoration(border: Border(bottom: BorderSide(color: context.colors.border, width: 0.5))),
       child: Row(children: [
         Expanded(flex: 3, child: GestureDetector(
           onTap: l.produitId != null ? () => _goToProduct(l.produitId!) : null,
           child: Text(l.produitNom, style: TextStyle(fontSize: 13,
             decoration: l.produitId != null ? TextDecoration.underline : null,
-            color: l.produitId != null ? AppColors.primary : null)),
+            color: l.produitId != null ? AppPalette.primary : null)),
         )),
         Expanded(flex: 2, child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: (l.matched ? AppColors.success : AppColors.warning).withOpacity(0.1),
+            color: (l.matched ? AppPalette.success : AppPalette.warning).withOpacity(0.1),
             borderRadius: BorderRadius.circular(4)),
           child: Text(l.matched ? t.existingTag : '🆕 ${typeStockLabelL10n(t, l.typeStock)}',
             style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600,
-              color: l.matched ? AppColors.success : AppColors.warning)),
+              color: l.matched ? AppPalette.success : AppPalette.warning)),
         )),
         Expanded(flex: 1, child: Text('${l.quantite.toStringAsFixed(0)}', style: const TextStyle(fontSize: 12))),
         Expanded(flex: 2, child: Text(formatDA(l.prixUnitaire), style: const TextStyle(fontSize: 12))),
@@ -214,16 +214,16 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 6),
             child: Text('${t.histExpiresPrefix.replaceAll(':', '')}: ${l.dateExpiration}', style: TextStyle(fontSize: 10,
-              color: l.dateExpirationManquante ? AppColors.warning : AppColors.darkTextMuted)),
+              color: l.dateExpirationManquante ? AppPalette.warning : context.colors.textMuted)),
           )
         else if (l.dateExpirationManquante)
           const Padding(
             padding: EdgeInsets.only(right: 6),
-            child: Icon(Icons.event_busy_rounded, size: 14, color: AppColors.warning),
+            child: Icon(Icons.event_busy_rounded, size: 14, color: AppPalette.warning),
           ),
         if (_isPending)
           IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppColors.danger),
+            icon: const Icon(Icons.delete_outline_rounded, size: 18, color: AppPalette.danger),
             onPressed: () async {
               final r = await _repo.deleteLigne(l.id);
               r.fold((e) {}, (_) => _load());
@@ -237,7 +237,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
     return Row(children: [
       Expanded(child: SynButton(
         label: t.invValidateButton,
-        color: AppColors.success,
+        color: AppPalette.success,
         onTap: () async {
           final r = await _repo.validateInvoice(invoice.id);
           r.fold(
@@ -252,7 +252,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
       )),
       const SizedBox(width: 12),
       Expanded(child: SynButton(
-        label: t.rejectButton, outline: true, color: AppColors.danger,
+        label: t.rejectButton, outline: true, color: AppPalette.danger,
         onTap: () => _showRejectDialog(t, invoice),
       )),
     ]);
@@ -261,7 +261,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
   void _showRejectDialog(AppLocalizations t, Invoice invoice) {
     final motifCtrl = TextEditingController();
     Get.dialog(AlertDialog(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: context.colors.card,
       title: Text(t.motifRejetTitle),
       content: TextField(
         controller: motifCtrl, maxLines: 3,
@@ -300,7 +300,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
     bool nouveauProduit = false;
 
     Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: context.colors.card,
       title: Text(t.addProductToInvoiceTitle),
       content: SizedBox(width: 460, child: Column(mainAxisSize: MainAxisSize.min, children: [
         SwitchListTile(
@@ -406,7 +406,7 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
   Widget _infoLine(String label, String value) => Padding(
     padding: const EdgeInsets.only(bottom: 4),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: const TextStyle(fontSize: 10, color: AppColors.darkTextMuted)),
+      Text(label, style: TextStyle(fontSize: 10, color: context.colors.textMuted)),
       const SizedBox(height: 2),
       Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
     ]),

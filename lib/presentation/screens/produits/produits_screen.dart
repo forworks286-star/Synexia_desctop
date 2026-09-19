@@ -7,7 +7,8 @@ import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
 import '../../../core/widgets/app_toast.dart';
 
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
@@ -26,6 +27,7 @@ class ProduitsScreen extends StatelessWidget {
     final stock = Get.find<StockController>();
     Get.find<AlertController>().markReadByType('stock');
     final t = AppLocalizations.of(context);
+    final colors = context.colors;
 
     return Padding(
       padding: const EdgeInsets.all(28),
@@ -56,19 +58,19 @@ class ProduitsScreen extends StatelessWidget {
               child: Column(
                 children: [
                   _TableHeader(),
-                  const Divider(height: 1),
+                  Divider(height: 1, color: colors.border),
                   Expanded(
                     child: Obx(() {
                       if (stock.isLoading.value && stock.products.isEmpty) {
-                        return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+                        return Center(child: CircularProgressIndicator(color: AppPalette.primary));
                       }
                       final list = stock.filteredProducts;
                       if (list.isEmpty) {
-                        return Center(child: Text(t.noProduct, style: TextStyle(color: AppColors.darkTextMuted)));
+                        return Center(child: Text(t.noProduct, style: TextStyle(color: colors.textMuted)));
                       }
                       return ListView.separated(
                         itemCount: list.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
+                        separatorBuilder: (_, __) => Divider(height: 1, color: colors.border),
                         itemBuilder: (_, i) => _ProductRow(product: list[i]),
                       );
                     }),
@@ -109,7 +111,8 @@ class _TH extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(flex: flex, child: Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1)));
+    final colors = context.colors;
+    return Expanded(flex: flex, child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: colors.textMuted, letterSpacing: 0.1)));
   }
 }
 
@@ -119,9 +122,9 @@ class _ProductRow extends StatelessWidget {
 
   Color get _dotColor {
     switch (product.status) {
-      case StockStatus.normal: return AppColors.success;
-      case StockStatus.low: return AppColors.warning;
-      case StockStatus.critical: return AppColors.danger;
+      case StockStatus.normal: return AppPalette.success;
+      case StockStatus.low: return AppPalette.warning;
+      case StockStatus.critical: return AppPalette.danger;
     }
   }
 
@@ -136,6 +139,7 @@ class _ProductRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    final colors = context.colors;
     return InkWell(
       onTap: () => _showDetail(product),
       child: Container(
@@ -143,20 +147,20 @@ class _ProductRow extends StatelessWidget {
         child: Row(children: [
           Container(width: 5, height: 5, decoration: BoxDecoration(color: _dotColor, shape: BoxShape.circle), margin: const EdgeInsets.only(right: 10)),
           Expanded(flex: 3, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(product.name, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-            Text(product.qrReference, style: const TextStyle(fontSize: 10, fontFamily: 'monospace', color: AppColors.darkTextMuted)),
+            Text(product.name, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: colors.text)),
+            Text(product.qrReference, style: TextStyle(fontSize: 10, fontFamily: 'monospace', color: colors.textMuted)),
           ])),
-          Expanded(flex: 2, child: Text(product.sku, style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: AppColors.darkTextMuted))),
-          Expanded(flex: 2, child: Text(product.categorie ?? '—', style: const TextStyle(fontSize: 12))),
+          Expanded(flex: 2, child: Text(product.sku, style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: colors.textMuted))),
+          Expanded(flex: 2, child: Text(product.categorie ?? '—', style: TextStyle(fontSize: 12, color: colors.text))),
           Expanded(flex: 1, child: Text(
             '${product.stockDisponible}',
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
-              color: product.status == StockStatus.critical ? AppColors.danger
-                   : product.status == StockStatus.low ? AppColors.warning : null),
+              color: product.status == StockStatus.critical ? AppPalette.danger
+                   : product.status == StockStatus.low ? AppPalette.warning : colors.text),
           )),
           Expanded(flex: 2, child: Text(
             formatDA(product.valeurStock),
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: colors.text),
           )),
           Expanded(flex: 1, child: StatusChip(status: product.status, label: _statusLabel(t))),
         ]),
@@ -172,12 +176,13 @@ class _FilterDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    final colors = context.colors;
     return Obx(() => DropdownButtonHideUnderline(
       child: DropdownButton<StockStatus?>(
         value: stock.statusFilter.value,
-        hint: Text(t.filterAllStatus, style: TextStyle(fontSize: 12)),
-        style: const TextStyle(fontSize: 12),
-        dropdownColor: AppColors.darkCard,
+        hint: Text(t.filterAllStatus, style: TextStyle(fontSize: 12, color: colors.textMuted)),
+        style: TextStyle(fontSize: 12, color: colors.text),
+        dropdownColor: colors.card,
         items: [
           DropdownMenuItem(value: null, child: Text(t.filterAllStatus)),
           DropdownMenuItem(value: StockStatus.normal, child: Text(t.statusNormal)),
@@ -201,12 +206,13 @@ class _CategorieDropdown extends StatelessWidget {
       final cats = stock.categories;
       if (cats.isEmpty) return const SizedBox.shrink();
       final t = AppLocalizations.of(context);
+      final colors = context.colors;
       return DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: stock.categorieFilter.value.isEmpty ? null : stock.categorieFilter.value,
-          hint: Text(t.filterCategoryHint, style: TextStyle(fontSize: 12)),
-          style: const TextStyle(fontSize: 12),
-          dropdownColor: AppColors.darkCard,
+          hint: Text(t.filterCategoryHint, style: TextStyle(fontSize: 12, color: colors.textMuted)),
+          style: TextStyle(fontSize: 12, color: colors.text),
+          dropdownColor: colors.card,
           items: [
             DropdownMenuItem(value: null, child: Text(t.filterAllCategories)),
             ...cats.map((c) => DropdownMenuItem(value: c, child: Text(c))),
@@ -226,6 +232,7 @@ class _DetailGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
+    final colors = context.colors;
     final items = [
       (t.detailStockPhysical,    '${product.stockPhysique} ${product.uniteMesure}'),
       (t.detailStockAvailable,  '${product.stockDisponible} ${product.uniteMesure}'),
@@ -246,10 +253,10 @@ class _DetailGrid extends StatelessWidget {
       children: items.map((item) => SizedBox(
         width: 210,
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(item.$1, style: const TextStyle(fontSize: 10, color: AppColors.darkTextMuted,
+          Text(item.$1, style: TextStyle(fontSize: 10, color: colors.textMuted,
             fontWeight: FontWeight.w600, letterSpacing: 0.08)),
           const SizedBox(height: 3),
-          Text(item.$2, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500)),
+          Text(item.$2, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: colors.text)),
         ]),
       )).toList(),
     );
@@ -258,6 +265,7 @@ class _DetailGrid extends StatelessWidget {
 
 void _showDetail(Product product) {
     final t = AppLocalizations(Get.locale ?? const Locale('fr'));
+    final colors = Get.context!.colors;
     Get.dialog(
       Dialog(
         child: Container(
@@ -276,7 +284,7 @@ void _showDetail(Product product) {
               ]),
               const SizedBox(height: 4),
               Text('SKU: ${product.sku}  ·  QR: ${product.qrReference}',
-                style: const TextStyle(fontSize: 11, fontFamily: 'monospace', color: AppColors.darkTextMuted)),
+                style: TextStyle(fontSize: 11, fontFamily: 'monospace', color: colors.textMuted)),
               const SizedBox(height: 20),
               const Divider(),
               const SizedBox(height: 16),
@@ -294,34 +302,34 @@ void _showDetail(Product product) {
               if (product.lots.isNotEmpty) ...[
                 const SizedBox(height: 20),
                 Text(t.lotsTitle, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
-                  color: AppColors.darkTextMuted, letterSpacing: 0.12)),
+                  color: colors.textMuted, letterSpacing: 0.12)),
                 const SizedBox(height: 8),
                 ...product.lots.map((l) => Container(
                   margin: const EdgeInsets.only(bottom: 6),
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
-                    color: AppColors.darkSurface,
+                    color: colors.surface,
                     borderRadius: BorderRadius.circular(7),
-                    border: Border.all(color: AppColors.darkBorder),
+                    border: Border.all(color: colors.border),
                   ),
                   child: Row(children: [
                     Expanded(child: Text(l.numeroLot ?? 'N/A', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
                     Text('${l.quantiteDisponible} ${t.lotAvailable}', style: const TextStyle(fontSize: 12)),
                     const SizedBox(width: 16),
                     if (l.emplacement != null)
-                      Text('📍 ${l.emplacement}', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+                      Text('📍 ${l.emplacement}', style: TextStyle(fontSize: 11, color: colors.textMuted)),
                     if (l.dateExpiration != null) ...[
                       const SizedBox(width: 16),
                       Text('${t.lotExpiry} ${_fmtDate(l.dateExpiration!)}',
                         style: TextStyle(fontSize: 11,
                           color: l.dateExpiration!.isBefore(DateTime.now().add(const Duration(days: 30)))
-                            ? AppColors.danger : AppColors.darkTextMuted)),
+                            ? AppPalette.danger : colors.textMuted)),
                     ] else ...[
                       const SizedBox(width: 16),
-                      const Icon(Icons.event_busy_rounded, size: 13, color: AppColors.warning),
+                      const Icon(Icons.event_busy_rounded, size: 13, color: AppPalette.warning),
                     ],
                     IconButton(
-                      icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppColors.primary),
+                      icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppPalette.primary),
                       tooltip: t.printLotQrTooltip,
                       onPressed: () => showLotQrDialog(l.id, l.numeroLot ?? '#${l.id}'),
                     ),
@@ -331,12 +339,12 @@ void _showDetail(Product product) {
               if (product.champsExtra.isNotEmpty) ...[
                 const SizedBox(height: 16),
                 Text(t.extraFieldsTitle, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
-                  color: AppColors.darkTextMuted, letterSpacing: 0.12)),
+                  color: colors.textMuted, letterSpacing: 0.12)),
                 const SizedBox(height: 8),
                 ...product.champsExtra.entries.map((e) => Padding(
                   padding: const EdgeInsets.only(bottom: 4),
                   child: Row(children: [
-                    Text('${e.key}:', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+                    Text('${e.key}:', style: TextStyle(fontSize: 11, color: colors.textMuted)),
                     const SizedBox(width: 8),
                     Text('${e.value}', style: const TextStyle(fontSize: 11)),
                   ]),
@@ -355,8 +363,9 @@ void _showDetail(Product product) {
 
 void _showChoixAjout(StockController stock) {
   final t = AppLocalizations(Get.locale ?? const Locale('fr'));
+  final colors = Get.context!.colors;
   Get.dialog(AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: colors.card,
     title: Text(t.addProductTitle),
     content: Text(t.addProductChooseMode, style: const TextStyle(fontSize: 13)),
     actions: [
@@ -420,7 +429,7 @@ void _showAddProduitSimple(StockController stock) {
         ]),
         if (errorMsg != null) ...[
           const SizedBox(height: 12),
-          Text(errorMsg!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+          Text(errorMsg!, style: const TextStyle(color: AppPalette.danger, fontSize: 12)),
         ],
         const SizedBox(height: 24),
         Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -460,6 +469,7 @@ void _showAddProduitSimple(StockController stock) {
 
 void _showAddProduitComplet(StockController stock) {
   final t = AppLocalizations(Get.locale ?? const Locale('fr'));
+  final colors = Get.context!.colors;
   final fournisseurCtrl = TextEditingController();
   final paysOrigineCtrl = TextEditingController();
   final nifCtrl = TextEditingController();
@@ -488,7 +498,7 @@ void _showAddProduitComplet(StockController stock) {
         ]),
         const SizedBox(height: 8),
         Text(t.productFullSubtitle,
-          style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+          style: TextStyle(fontSize: 11, color: colors.textMuted)),
         const SizedBox(height: 20),
         Row(children: [
           Expanded(child: TextField(controller: skuCtrl, decoration: InputDecoration(labelText: t.formSku))),
@@ -545,7 +555,7 @@ void _showAddProduitComplet(StockController stock) {
           decoration: InputDecoration(labelText: t.formInitialQty), keyboardType: TextInputType.number),
         if (errorMsg != null) ...[
           const SizedBox(height: 12),
-          Text(errorMsg!, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+          Text(errorMsg!, style: const TextStyle(color: AppPalette.danger, fontSize: 12)),
         ],
         const SizedBox(height: 24),
         Row(mainAxisAlignment: MainAxisAlignment.end, children: [
@@ -591,6 +601,7 @@ void _showAddProduitComplet(StockController stock) {
 
 void _showLotQr(int lotId, String numeroLot) async {
     final t = AppLocalizations(Get.locale ?? const Locale('fr'));
+    final colors = Get.context!.colors;
     Get.dialog(FutureBuilder<Either<String, Uint8List>>(
       future: StockRepositoryImpl().getLotQr(lotId),
       builder: (context, snapshot) {
@@ -606,7 +617,7 @@ void _showLotQr(int lotId, String numeroLot) async {
               Image.memory(bytes, width: 220, height: 220),
               const SizedBox(height: 10),
               Text(t.qrPrintInstruction,
-                style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted), textAlign: TextAlign.center),
+                style: TextStyle(fontSize: 11, color: colors.textMuted), textAlign: TextAlign.center),
             ])),
             actions: [TextButton(onPressed: () => safeBack(), child: Text(t.close))],
           ),

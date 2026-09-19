@@ -6,7 +6,8 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw; 
 import 'package:printing/printing.dart';
 import '../../controllers/controllers.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../widgets/widgets.dart';
@@ -34,7 +35,7 @@ class BonsCommandeScreen extends StatelessWidget {
           itemBuilder: (context, i) {
             final bc = ctrl.bonsCommandeOuverts[i];
             return Card(
-              color: AppColors.darkCard,
+              color: context.colors.card,
               child: ListTile(
                 title: Text('${bc.numeroBc} — ${bc.fournisseurNom ?? t.poNoSupplier}'),
                 subtitle: Text('${bc.typeStock} — ${bc.lignes.length} ${t.poArticlesSuffix}'),
@@ -77,7 +78,7 @@ class BonsCommandeScreen extends StatelessWidget {
   void _showDetailBC(BuildContext context, BonCommande bc) {
   final t = AppLocalizations.of(context);
   Get.dialog(AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text(bc.numeroBc),
     content: SizedBox(width: 480, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -108,7 +109,7 @@ class BonsCommandeScreen extends StatelessWidget {
     final lignes = <Map<String, dynamic>>[{'designation': '', 'quantite': 0.0, 'prix_unitaire_estime': 0.0}];
 
     Get.dialog(StatefulBuilder(builder: (context, setState) => AlertDialog(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: context.colors.card,
       title: Text(t.poNew),
       content: SizedBox(width: 500, child: SingleChildScrollView(child: Column(mainAxisSize: MainAxisSize.min, children: [
         DropdownButtonFormField<String>(

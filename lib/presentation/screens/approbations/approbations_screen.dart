@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
 import '../../../core/widgets/app_toast.dart';
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -62,7 +62,7 @@ class ApprobationsScreen extends StatelessWidget {
           final demandes = ctrl.demandes;
           if (demandes.isEmpty) {
             return Center(child: Text(t.approvalsNoPending,
-              style: TextStyle(color: AppColors.darkTextMuted)));
+              style: TextStyle(color: context.colors.textMuted)));
           }
           return ListView.separated(
             itemCount: demandes.length,
@@ -100,7 +100,7 @@ String _formatEcarts(AppLocalizations t, List<dynamic> ecarts) {
 void _showEcartAValiderDialog(BuildContext context, InvoiceController ctrl, Invoice facture) {
   final t = AppLocalizations.of(context);
   Get.dialog(AlertDialog(
-    backgroundColor: AppColors.darkCard,
+    backgroundColor: context.colors.card,
     title: Text('${t.gapTitlePrefix}${facture.id}'),
     content: SizedBox(width: 500, child: SingleChildScrollView(child: Column(
         mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -121,7 +121,7 @@ void _showEcartAValiderDialog(BuildContext context, InvoiceController ctrl, Invo
             AppToast.error(t.rejectedTitle, t.rejectedMsg);
           }
         },
-        child: Text(t.rejectButton, style: const TextStyle(color: AppColors.danger)),
+        child: Text(t.rejectButton, style: const TextStyle(color: AppPalette.danger)),
       ),
       ElevatedButton(
         onPressed: () async {
@@ -149,10 +149,10 @@ class _DemandeCard extends StatelessWidget {
         || ctrl.facturesEcartAValider.any((f) => f.id == demande.factureId);
 
     return SynCard(
-      borderLeft: ecartLie ? AppColors.darkTextMuted : AppColors.warning,
+      borderLeft: ecartLie ? context.colors.textMuted : AppPalette.warning,
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Icon(Icons.edit_note_rounded, size: 18, color: AppColors.warning),
+          const Icon(Icons.edit_note_rounded, size: 18, color: AppPalette.warning),
           const SizedBox(width: 8),
           Expanded(child: Text(
             '${t.invoiceHashPrefix}${demande.factureId} — ${demande.factureFournisseur ?? "—"}',
@@ -160,11 +160,11 @@ class _DemandeCard extends StatelessWidget {
           )),
           if (demande.factureMontantTtc != null)
             Text('${demande.factureMontantTtc!.toStringAsFixed(2)} DA',
-              style: const TextStyle(fontWeight: FontWeight.w700, color: AppColors.warning)),
+              style: const TextStyle(fontWeight: FontWeight.w700, color: AppPalette.warning)),
         ]),
         const SizedBox(height: 4),
         Text('${t.requestedByPrefix} ${demande.demandeurNom ?? "—"}',
-          style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+          style: TextStyle(fontSize: 11, color: context.colors.textMuted)),
         const SizedBox(height: 12),
         SectionTitle(title: t.gapCommentTitle),
         const SizedBox(height: 4),
@@ -187,12 +187,12 @@ class _DemandeCard extends StatelessWidget {
           ),
           const Spacer(),
           SynButton(
-            label: t.refuseButton, outline: true, color: AppColors.danger,
+            label: t.refuseButton, outline: true, color: AppPalette.danger,
             onTap: ecartLie ? null : () => _refuser(context, ctrl, demande.id),
           ),
           const SizedBox(width: 10),
           SynButton(
-            label: t.approveButton, color: AppColors.success,
+            label: t.approveButton, color: AppPalette.success,
             onTap: ecartLie ? null : () => ctrl.approuverDemande(demande.id),
           ),
         ]),
@@ -204,7 +204,7 @@ class _DemandeCard extends StatelessWidget {
     final t = AppLocalizations.of(context);
     final motifCtrl = TextEditingController();
     Get.dialog(AlertDialog(
-      backgroundColor: AppColors.darkCard,
+      backgroundColor: context.colors.card,
       title: Text(t.refuseReasonTitle),
       content: TextField(controller: motifCtrl, maxLines: 3,
         decoration: InputDecoration(hintText: t.refuseReasonHint)),

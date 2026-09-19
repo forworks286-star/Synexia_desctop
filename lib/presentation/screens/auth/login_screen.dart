@@ -1,9 +1,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
 import '../../../core/l10n/app_localizations.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../super_admin/super_admin_screen.dart';
@@ -37,14 +37,14 @@ class _LoginScreenState extends State<LoginScreen> {
           Expanded(
             flex: 2,
             child: Container(
-              color: AppColors.darkSidebar,
+              color: AppPalette.darkSidebar,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
                     width: 64, height: 64,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [AppColors.primary, AppColors.secondary], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                      gradient: const LinearGradient(colors: [AppPalette.primary, AppPalette.secondary], begin: Alignment.topLeft, end: Alignment.bottomRight),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Center(child: Text('S', style: TextStyle(color: Colors.white, fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 28))),
@@ -54,11 +54,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(fontFamily: 'Syne', fontSize: 32, fontWeight: FontWeight.w800),
                     children: [
                       TextSpan(text: 'Synexia', style: TextStyle(color: Colors.white)),
-                      TextSpan(text: '.Dz', style: TextStyle(color: AppColors.primary)),
+                      TextSpan(text: '.Dz', style: TextStyle(color: AppPalette.primary)),
                     ],
                   )),
                   const SizedBox(height: 12),
-                  Text(AppLocalizations.of(context).appTagline, style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
+                  Text(AppLocalizations.of(context).appTagline, style: TextStyle(fontSize: 13, color: context.colors.textMuted)),
                   const SizedBox(height: 60),
                   _FeatureItem(icon: Icons.inventory_2_outlined, label: AppLocalizations.of(context).featureStockRealtime),
                   _FeatureItem(icon: Icons.receipt_long_outlined, label: AppLocalizations.of(context).featureInvoiceValidation),
@@ -79,7 +79,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   children: [
                     Text(AppLocalizations.of(context).loginTitle, style: Theme.of(context).textTheme.displayMedium),
                     const SizedBox(height: 6),
-                    Text(AppLocalizations.of(context).loginSubtitle, style: TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
+                    Text(AppLocalizations.of(context).loginSubtitle, style: TextStyle(fontSize: 13, color: context.colors.textMuted)),
                     const SizedBox(height: 40),
                     Text(AppLocalizations.of(context).loginUsername, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
@@ -111,11 +111,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.only(bottom: 14),
                           child: Container(
                             padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.danger.withOpacity(0.2))),
+                            decoration: BoxDecoration(color: AppPalette.danger.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppPalette.danger.withOpacity(0.2))),
                             child: Row(children: [
-                              const Icon(Icons.error_outline_rounded, size: 14, color: AppColors.danger),
+                              const Icon(Icons.error_outline_rounded, size: 14, color: AppPalette.danger),
                               const SizedBox(width: 8),
-                              Text(auth.error.value, style: const TextStyle(color: AppColors.danger, fontSize: 12)),
+                              Text(auth.error.value, style: const TextStyle(color: AppPalette.danger, fontSize: 12)),
                             ]),
                           ),
                         );
@@ -132,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () => Get.to(() => const SuperAdminScreen()),
                         child: Text(
                           AppLocalizations.of(context).loginAdminAccess,
-                          style: TextStyle(fontSize: 11, color: AppColors.darkTextMuted),
+                          style: TextStyle(fontSize: 11, color: context.colors.textMuted),
                         ),
                       ),
                     ),
@@ -162,9 +162,9 @@ class _FeatureItem extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 40),
       child: Row(children: [
-        Icon(icon, size: 16, color: AppColors.primary),
+        Icon(icon, size: 16, color: AppPalette.primary),
         const SizedBox(width: 12),
-        Text(label, style: const TextStyle(fontSize: 13, color: AppColors.darkTextMuted)),
+        Text(label, style: const TextStyle(fontSize: 13, color: context.colors.textMuted)),
       ]),
     );
   }

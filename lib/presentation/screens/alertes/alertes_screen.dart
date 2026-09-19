@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
@@ -26,8 +26,8 @@ class AlertesScreen extends StatelessWidget {
               if (ctrl.unreadCount.value > 0) ...[
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(color: AppColors.danger.withOpacity(0.12), borderRadius: BorderRadius.circular(6)),
-                  child: Text('${ctrl.unreadCount.value} ${t.kpiUnread}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppColors.danger)),
+                  decoration: BoxDecoration(color: AppPalette.danger.withOpacity(0.12), borderRadius: BorderRadius.circular(6)),
+                  child: Text('${ctrl.unreadCount.value} ${t.kpiUnread}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: AppPalette.danger)),
                 ),
                 const SizedBox(width: 10),
                 if (Get.find<AuthController>().isAdmin)
@@ -50,9 +50,9 @@ class AlertesScreen extends StatelessWidget {
                       if (ctrl.alerts.isEmpty) {
                         return Center(
                           child: Column(mainAxisSize: MainAxisSize.min, children: [
-                            const Icon(Icons.notifications_none_rounded, size: 40, color: AppColors.darkTextMuted),
+                            Icon(Icons.notifications_none_rounded, size: 40, color: context.colors.textMuted),
                             const SizedBox(height: 10),
-                            Text(t.noAlerts, style: TextStyle(color: AppColors.darkTextMuted)),
+                            Text(t.noAlerts, style: TextStyle(color: context.colors.textMuted)),
                           ]),
                         );
                       }
@@ -98,7 +98,7 @@ class _TH extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(flex: flex, child: Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.darkTextMuted, letterSpacing: 0.1)));
+    return Expanded(flex: flex, child: Text(label, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: context.colors.textMuted, letterSpacing: 0.1)));
   }
 }
 
@@ -109,10 +109,10 @@ class _AlertRow extends StatelessWidget {
 
   Color get _levelColor {
     switch (alert.level) {
-      case AlertLevel.danger: return AppColors.danger;
-      case AlertLevel.warning: return AppColors.warning;
-      case AlertLevel.success: return AppColors.success;
-      case AlertLevel.info: return AppColors.secondary;
+      case AlertLevel.danger: return AppPalette.danger;
+      case AlertLevel.warning: return AppPalette.warning;
+      case AlertLevel.success: return AppPalette.success;
+      case AlertLevel.info: return AppPalette.secondary;
     }
   }
 
@@ -137,25 +137,25 @@ class _AlertRow extends StatelessWidget {
           Container(
             width: 6, height: 6,
             decoration: BoxDecoration(
-              color: alert.isRead ? AppColors.darkTextMuted.withOpacity(0.3) : _levelColor,
+              color: alert.isRead ? context.colors.textMuted.withOpacity(0.3) : _levelColor,
               shape: BoxShape.circle,
             ),
             margin: const EdgeInsets.only(right: 14),
           ),
           Expanded(flex: 3, child: Text(alert.title, style: TextStyle(fontSize: 13, fontWeight: alert.isRead ? FontWeight.w400 : FontWeight.w700))),
-          Expanded(flex: 5, child: Text(alert.message, style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted), overflow: TextOverflow.ellipsis)),
+          Expanded(flex: 5, child: Text(alert.message, style: TextStyle(fontSize: 12, color: context.colors.textMuted), overflow: TextOverflow.ellipsis)),
           Expanded(flex: 1, child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
             decoration: BoxDecoration(color: _levelColor.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
             child: Text(_levelLabel(t), style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: _levelColor)),
           )),
-          Expanded(flex: 2, child: Text(_timeAgo(t, alert.createdAt), style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
+          Expanded(flex: 2, child: Text(_timeAgo(t, alert.createdAt), style: TextStyle(fontSize: 11, color: context.colors.textMuted))),
           Expanded(flex: 1, child: alert.isRead
-              ? Text(t.readLabel, style: const TextStyle(fontSize: 10, color: AppColors.darkTextMuted))
+              ? Text(t.readLabel, style: TextStyle(fontSize: 10, color: context.colors.textMuted))
               : Container(
                   padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-                  decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                  child: Text(t.newLabel, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                  decoration: BoxDecoration(color: AppPalette.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                  child: Text(t.newLabel, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: AppPalette.primary)),
                 )),
         ]),
       ),

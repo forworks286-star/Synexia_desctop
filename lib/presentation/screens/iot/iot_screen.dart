@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
@@ -51,7 +51,7 @@ class _IoTScreenState extends State<IoTScreen> {
               : toutes.where((z) => z.zoneId == _zoneSelectionnee).toList();
           if (affichees.isEmpty) {
             return Center(child: Text(t.iotNoData,
-              style: TextStyle(color: AppColors.darkTextMuted)));
+              style: TextStyle(color: context.colors.textMuted)));
           }
           return ListView.separated(
             itemCount: affichees.length,
@@ -70,10 +70,10 @@ class _ZoneCard extends StatelessWidget {
 
   Color get _couleur {
     switch (zone.niveau) {
-      case 'critique': return AppColors.danger;
-      case 'alerte': return AppColors.warning;
+      case 'critique': return AppPalette.danger;
+      case 'alerte': return AppPalette.warning;
       case 'manuel': return Colors.blueGrey;
-      default: return AppColors.success;
+      default: return AppPalette.success;
     }
   }
 
@@ -91,7 +91,7 @@ class _ZoneCard extends StatelessWidget {
     final t = AppLocalizations.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.darkCard,
+        color: context.colors.card,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: _couleur.withOpacity(0.4), width: zone.niveau == 'critique' ? 1.5 : 1),
       ),
@@ -107,21 +107,21 @@ class _ZoneCard extends StatelessWidget {
           Expanded(child: Text(zone.nom, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14))),
           if (zone.derniereMaj != null)
             Text('${zone.derniereMaj!.hour.toString().padLeft(2, '0')}:${zone.derniereMaj!.minute.toString().padLeft(2, '0')}:${zone.derniereMaj!.second.toString().padLeft(2, '0')}',
-              style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+                            style: TextStyle(fontSize: 11, color: context.colors.textMuted)),
         ]),
         const SizedBox(height: 8),
         Text(zone.libelle, style: TextStyle(fontSize: 13, color: _couleur, fontWeight: FontWeight.w600)),
         if (zone.resoluAuto == true)
           Padding(padding: const EdgeInsets.only(top: 4),
-            child: Text(t.iotAutoResolved, style: TextStyle(fontSize: 12, color: AppColors.success))),
+            child: Text(t.iotAutoResolved, style: TextStyle(fontSize: 12, color: AppPalette.success))),
         if (zone.resoluAuto == false)
           Padding(padding: const EdgeInsets.only(top: 4),
-            child: Text(t.iotNeedsManual, style: TextStyle(fontSize: 12, color: AppColors.danger))),
+            child: Text(t.iotNeedsManual, style: TextStyle(fontSize: 12, color: AppPalette.danger))),
         const Divider(height: 20),
         Wrap(spacing: 16, runSpacing: 6, children: zone.valeurs.entries.map((e) => SizedBox(
           width: 220,
           child: Row(children: [
-            Expanded(child: Text(e.key, style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted), overflow: TextOverflow.ellipsis)),
+            Expanded(child: Text(e.key, style: TextStyle(fontSize: 11, color: context.colors.textMuted)),
             Text(_fmt(e.value), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
           ]),
         )).toList()),

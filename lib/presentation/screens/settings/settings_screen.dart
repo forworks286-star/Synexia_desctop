@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -97,7 +97,7 @@ class _AccountCard extends StatelessWidget {
                   Container(
                     width: 48, height: 48,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(colors: [AppColors.primary, AppColors.secondary]),
+                      gradient: const LinearGradient(colors: [AppPalette.primary, AppPalette.secondary]),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Center(child: Text(user.fullName.isNotEmpty ? user.fullName[0].toUpperCase() : 'U', style: const TextStyle(color: Colors.white, fontFamily: 'Syne', fontWeight: FontWeight.w800, fontSize: 18))),
@@ -105,19 +105,19 @@ class _AccountCard extends StatelessWidget {
                   const SizedBox(width: 14),
                   Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(user.fullName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
-                    Text('@${user.username}', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+                    Text('@${user.username}', style: TextStyle(fontSize: 11, color: context.colors.textMuted)),
                     const SizedBox(height: 4),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(color: AppColors.primary.withOpacity(0.12), borderRadius: BorderRadius.circular(4)),
-                      child: Text(_roleLabel(AppLocalizations.of(context), user.role), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppColors.primary)),
+                      decoration: BoxDecoration(color: AppPalette.primary.withOpacity(0.12), borderRadius: BorderRadius.circular(4)),
+                      child: Text(_roleLabel(AppLocalizations.of(context), user.role), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: AppPalette.primary)),
                     ),
                   ]),
                 ]),
                 const SizedBox(height: 20),
-                const Divider(color: AppColors.darkBorder),
+                Divider(color: context.colors.border),
                 const SizedBox(height: 16),
-                SynButton(label: AppLocalizations.of(context).logout, outline: true, color: AppColors.danger, icon: Icons.logout_rounded, onTap: auth.logout),
+                SynButton(label: AppLocalizations.of(context).logout, outline: true, color: AppPalette.danger, icon: Icons.logout_rounded, onTap: auth.logout),
               ],
             );
           }),
@@ -138,11 +138,11 @@ class _ConnectionCard extends StatelessWidget {
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: AppColors.success.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppColors.success.withOpacity(0.2))),
+            decoration: BoxDecoration(color: AppPalette.success.withOpacity(0.08), borderRadius: BorderRadius.circular(8), border: Border.all(color: AppPalette.success.withOpacity(0.2))),
             child: Row(children: [
-              const Icon(Icons.circle, size: 8, color: AppColors.success),
+              const Icon(Icons.circle, size: 8, color: AppPalette.success),
               const SizedBox(width: 8),
-              Text(AppLocalizations.of(context).settingsConnectedLocal, style: const TextStyle(fontSize: 12, color: AppColors.success, fontWeight: FontWeight.w600)),
+              Text(AppLocalizations.of(context).settingsConnectedLocal, style: const TextStyle(fontSize: 12, color: AppPalette.success, fontWeight: FontWeight.w600)),
             ]),
           ),
         ],
@@ -159,7 +159,7 @@ class _InfoRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: const TextStyle(fontSize: 10, color: AppColors.darkTextMuted, letterSpacing: 0.08, fontWeight: FontWeight.w600)),
+      Text(label, style: TextStyle(fontSize: 10, color: context.colors.textMuted, letterSpacing: 0.08, fontWeight: FontWeight.w600)),
       const SizedBox(height: 4),
       Text(value, style: const TextStyle(fontSize: 12, fontFamily: 'monospace')),
     ]);
@@ -181,14 +181,14 @@ class _ThemeOption extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary.withOpacity(0.15) : Colors.transparent,
+          color: selected ? AppPalette.primary.withOpacity(0.15) : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: selected ? AppColors.primary : AppColors.darkBorder),
+          border: Border.all(color: selected ? AppPalette.primary : context.colors.border),
         ),
         child: Row(mainAxisSize: MainAxisSize.min, children: [
-          Icon(icon, size: 14, color: selected ? AppColors.primary : AppColors.darkTextMuted),
+          Icon(icon, size: 14, color: selected ? AppPalette.primary : context.colors.textMuted),
           const SizedBox(width: 6),
-          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: selected ? AppColors.primary : AppColors.darkTextMuted)),
+          Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: selected ? AppPalette.primary : context.colors.textMuted)),
         ]),
       ),
     );
@@ -210,11 +210,11 @@ class _LangOption extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : Colors.transparent,
+          color: selected ? AppPalette.primary : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: selected ? AppColors.primary : AppColors.darkBorder),
+          border: Border.all(color: selected ? AppPalette.primary : context.colors.border),
         ),
-        child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: selected ? Colors.white : AppColors.darkTextMuted)),
+        child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: selected ? Colors.white : context.colors.textMuted)),
       ),
     );
   }

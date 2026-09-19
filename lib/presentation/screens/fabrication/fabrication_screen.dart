@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../../core/utils/get_safe_back.dart';
 import '../../../core/widgets/app_toast.dart';
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -32,7 +32,7 @@ class _FabricationScreenState extends State<FabricationScreen> with SingleTicker
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: ctrl.loadAll),
         ]),
         TabBar(
-          controller: _tab, isScrollable: true, labelColor: AppColors.primary,
+          controller: _tab, isScrollable: true, labelColor: AppPalette.primary,
           tabs: [Tab(text: t.fabTabRecipes), Tab(text: t.fabTabOrders)],
         ),
         const SizedBox(height: 16),
@@ -61,7 +61,7 @@ class _BomTab extends StatelessWidget {
       const SizedBox(height: 12),
       Expanded(child: Obx(() {
         if (ctrl.boms.isEmpty) {
-          return Center(child: Text(t.fabNoRecipe, style: TextStyle(color: AppColors.darkTextMuted)));
+          return Center(child: Text(t.fabNoRecipe, style: TextStyle(color: context.colors.textMuted)));
         }
         return ListView.separated(
           itemCount: ctrl.boms.length,
@@ -166,7 +166,7 @@ class _BomTab extends StatelessWidget {
               child: Text(
                 '${t.fabMaxRealisablePrefix} $maxRealisable'
                 '${goulot != null ? ' (${t.fabLimitedByPrefix} $goulot)' : ''}',
-                style: const TextStyle(fontSize: 12, color: AppColors.warning, fontWeight: FontWeight.w600),
+                style: const TextStyle(fontSize: 12, color: AppPalette.warning, fontWeight: FontWeight.w600),
               ),
             ),
           TextField(controller: qteCtrl, keyboardType: TextInputType.number,
@@ -243,7 +243,7 @@ class _OrdresTab extends StatelessWidget {
     final t = AppLocalizations.of(context);
     return Obx(() {
       if (ctrl.ordres.isEmpty) {
-        return Center(child: Text(t.fabNoOrders, style: TextStyle(color: AppColors.darkTextMuted)));
+        return Center(child: Text(t.fabNoOrders, style: TextStyle(color: context.colors.textMuted)));
       }
       return ListView.separated(
         itemCount: ctrl.ordres.length,
@@ -254,11 +254,11 @@ class _OrdresTab extends StatelessWidget {
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('${o.numeroOf} — ${o.produitFiniNom ?? ''}', style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
               const SizedBox(height: 4),
-              Text('${t.fabQuantityColon} ${o.quantiteProduite} · ${t.fabLotColon} ${o.numeroLot ?? '—'}', style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+              Text('${t.fabQuantityColon} ${o.quantiteProduite} · ${t.fabLotColon} ${o.numeroLot ?? '—'}', style: TextStyle(fontSize: 12, color: context.colors.textMuted)),
             ])),
             Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
               Text('${o.coutRevientTotal?.toStringAsFixed(2) ?? '—'} DZD', style: const TextStyle(fontWeight: FontWeight.w700)),
-              Text('${o.coutRevientUnitaire?.toStringAsFixed(2) ?? '—'} ${t.fabPerUnitDzdSuffix}', style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted)),
+              Text('${o.coutRevientUnitaire?.toStringAsFixed(2) ?? '—'} ${t.fabPerUnitDzdSuffix}', style: TextStyle(fontSize: 11, color: context.colors.textMuted)),
             ]),
           ]));
         },

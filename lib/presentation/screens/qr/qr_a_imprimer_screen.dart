@@ -6,8 +6,8 @@ import 'package:get/get.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
@@ -33,7 +33,7 @@ class QrAImprimerScreen extends StatelessWidget {
           final items = stock.qrAImprimer;
           if (items.isEmpty) {
             return Center(child: Text(t.qrNonePending,
-              style: TextStyle(color: AppColors.darkTextMuted)));
+              style: TextStyle(color: context.colors.textMuted)));
           }
           return ListView.separated(
             itemCount: items.length,
@@ -45,15 +45,15 @@ class QrAImprimerScreen extends StatelessWidget {
                   Text(item.produitNom, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
                   const SizedBox(height: 4),
                   Text('${t.qrLotLabel} ${item.numeroLot ?? '—'}  ·  ${t.qrLocationLabel} ${item.emplacement ?? '—'}',
-                    style: const TextStyle(fontSize: 12, color: AppColors.darkTextMuted)),
+                    style: TextStyle(fontSize: 12, color: context.colors.textMuted)),
                 ])),
                 IconButton(
-                  icon: const Icon(Icons.qr_code_2_rounded, color: AppColors.primary),
+                  icon: const Icon(Icons.qr_code_2_rounded, color: AppPalette.primary),
                   tooltip: t.printTooltip,
                   onPressed: () => showLotQrDialog(item.lotId, item.numeroLot ?? '#${item.lotId}'),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close_rounded, color: AppColors.danger),
+                  icon: const Icon(Icons.close_rounded, color: AppPalette.danger),
                   tooltip: t.removeFromListTooltip,
                   onPressed: () => stock.supprimerQrAImprimer(item.id),
                 ),
@@ -78,7 +78,7 @@ Future<void> _telechargerQr(Uint8List bytes, String numeroLot) async {
   final file = File(path.endsWith('.png') ? path : '$path.png');
   await file.writeAsBytes(bytes);
   Get.snackbar(t.downloadedTitle, '${t.downloadedMsgPrefix} ${file.path}',
-    backgroundColor: AppColors.success.withOpacity(0.1), colorText: AppColors.success);
+    backgroundColor: AppPalette.success.withOpacity(0.1), colorText: AppPalette.success);
 }
 
 Future<void> _imprimerQr(Uint8List bytes, String numeroLot) async {

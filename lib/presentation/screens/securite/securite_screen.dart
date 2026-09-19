@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-
-import '../../../core/theme/app_theme.dart';
+import '../../../core/design/colors.dart';
+import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
@@ -31,9 +31,9 @@ class SecuriteScreen extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(flex: 3, child: _buildFaceEvents(t, stock)),
+                Expanded(flex: 3, child: _buildFaceEvents(context, t, stock)),
                 const SizedBox(width: 16),
-                Expanded(flex: 2, child: _buildSecurityAlerts(t, alerts)),
+                Expanded(flex: 2, child: _buildSecurityAlerts(context, t, alerts)),
               ],
             ),
           ),
@@ -42,7 +42,7 @@ class SecuriteScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildFaceEvents(AppLocalizations t, StockController stock) {
+  Widget _buildFaceEvents(BuildContext context, AppLocalizations t, StockController stock) {
     return SynCard(
       padding: EdgeInsets.zero,
       child: Column(
@@ -52,7 +52,7 @@ class SecuriteScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
             child: SectionTitle(title: t.secAccessControlTitle),
           ),
-          const Divider(height: 1, color: AppColors.darkBorder),
+          Divider(height: 1, color: context.colors.border),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
             child: Row(children: [
@@ -63,17 +63,17 @@ class SecuriteScreen extends StatelessWidget {
               Expanded(flex: 2, child: _TH(label: t.thTime)),
             ]),
           ),
-          const Divider(height: 1, color: AppColors.darkBorder),
+          Divider(height: 1, color: context.colors.border),
           Expanded(
             child: Obx(() {
               final events = stock.faceEvents;
               if (events.isEmpty) {
                 return Center(child: Text(t.secNoFaceEvent,
-                  style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)));
+                  style: TextStyle(color: context.colors.textMuted, fontSize: 12)));
               }
               return ListView.separated(
                 itemCount: events.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.darkBorder),
+                separatorBuilder: (_, __) => Divider(height: 1, color: context.colors.border),
                 itemBuilder: (_, i) => _FaceRow(event: events[i]),
               );
             }),
@@ -83,7 +83,7 @@ class SecuriteScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildSecurityAlerts(AppLocalizations t, AlertController alerts) {
+  Widget _buildSecurityAlerts(BuildContext context, AppLocalizations t, AlertController alerts) {
     return SynCard(
       padding: EdgeInsets.zero,
       child: Column(
@@ -93,7 +93,7 @@ class SecuriteScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
             child: SectionTitle(title: t.secAlertsTitle),
           ),
-          const Divider(height: 1, color: AppColors.darkBorder),
+          Divider(height: 1, color: context.colors.border),
           Expanded(
             child: Obx(() {
               final secAlerts = alerts.alerts
@@ -104,17 +104,17 @@ class SecuriteScreen extends StatelessWidget {
                   .toList();
               if (secAlerts.isEmpty) {
                 return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Icons.verified_user_rounded, size: 36, color: AppColors.success),
+                  const Icon(Icons.verified_user_rounded, size: 36, color: AppPalette.success),
                   const SizedBox(height: 10),
-                  Text(t.secNoSecurityAlert, style: TextStyle(color: AppColors.darkTextMuted, fontSize: 12)),
+                  Text(t.secNoSecurityAlert, style: TextStyle(color: context.colors.textMuted, fontSize: 12)),
                 ]));
               }
               return ListView.separated(
                 itemCount: secAlerts.length,
-                separatorBuilder: (_, __) => const Divider(height: 1, color: AppColors.darkBorder),
+                separatorBuilder: (_, __) => Divider(height: 1, color: context.colors.border),
                 itemBuilder: (_, i) {
                   final a = secAlerts[i];
-                  final color = a.level == AlertLevel.danger ? AppColors.danger : AppColors.warning;
+                  final color = a.level == AlertLevel.danger ? AppPalette.danger : AppPalette.warning;
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                     color: a.isRead ? Colors.transparent : color.withOpacity(0.04),
@@ -123,10 +123,10 @@ class SecuriteScreen extends StatelessWidget {
                       const SizedBox(width: 10),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                         Text(a.title, style: TextStyle(fontSize: 12, fontWeight: a.isRead ? FontWeight.w400 : FontWeight.w700)),
-                        Text(a.message, style: const TextStyle(fontSize: 10, color: AppColors.darkTextMuted), maxLines: 2, overflow: TextOverflow.ellipsis),
+                        Text(a.message, style: TextStyle(fontSize: 10, color: context.colors.textMuted), maxLines: 2, overflow: TextOverflow.ellipsis),
                       ])),
                       const SizedBox(width: 8),
-                      Text(_timeAgo(a.createdAt), style: const TextStyle(fontSize: 9, color: AppColors.darkTextMuted)),
+                      Text(_timeAgo(a.createdAt), style: TextStyle(fontSize: 9, color: context.colors.textMuted)),
                     ]),
                   );
                 },
@@ -161,13 +161,13 @@ class _FaceRow extends StatelessWidget {
           Container(
             width: 28, height: 28,
             decoration: BoxDecoration(
-              color: (autorise ? AppColors.success : AppColors.danger).withOpacity(0.12),
+              color: (autorise ? AppPalette.success : AppPalette.danger).withOpacity(0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Center(child: Text(
               event.nom?.isNotEmpty == true ? event.nom![0].toUpperCase() : '?',
               style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
-                color: autorise ? AppColors.success : AppColors.danger),
+                color: autorise ? AppPalette.success : AppPalette.danger),
             )),
           ),
           const SizedBox(width: 10),
@@ -175,23 +175,23 @@ class _FaceRow extends StatelessWidget {
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
         ])),
         Expanded(flex: 2, child: Text(event.zone ?? '—',
-          style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
+          style: TextStyle(fontSize: 11, color: context.colors.textMuted))),
         Expanded(flex: 1, child: Text(
           event.confiance != null ? '${(double.tryParse(event.confiance!) ?? 0 * 100).toStringAsFixed(0)}%' : '—',
           style: const TextStyle(fontSize: 11))),
         Expanded(flex: 1, child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
           decoration: BoxDecoration(
-            color: (autorise ? AppColors.success : AppColors.danger).withOpacity(0.1),
+            color: (autorise ? AppPalette.success : AppPalette.danger).withOpacity(0.1),
             borderRadius: BorderRadius.circular(4),
           ),
           child: Text(autorise ? AppLocalizations.of(context).secAccessOk : AppLocalizations.of(context).secAccessDenied,
             style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700,
-              color: autorise ? AppColors.success : AppColors.danger)),
+              color: autorise ? AppPalette.success : AppPalette.danger)),
         )),
         Expanded(flex: 2, child: Text(
           '${event.timestamp.hour.toString().padLeft(2,'0')}:${event.timestamp.minute.toString().padLeft(2,'0')}',
-          style: const TextStyle(fontSize: 11, color: AppColors.darkTextMuted))),
+          style: TextStyle(fontSize: 11, color: context.colors.textMuted))),
       ]),
     );
   }
@@ -202,7 +202,7 @@ class _TH extends StatelessWidget {
   const _TH({required this.label});
   @override
   Widget build(BuildContext context) {
-    return Text(label, style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w700,
-      color: AppColors.darkTextMuted, letterSpacing: 0.1));
+    return Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700,
+      color: context.colors.textMuted, letterSpacing: 0.1));
   }
 }
