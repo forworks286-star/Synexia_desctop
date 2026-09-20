@@ -164,7 +164,7 @@ class _FeatureItem extends StatelessWidget {
       child: Row(children: [
         Icon(icon, size: 16, color: AppPalette.primary),
         const SizedBox(width: 12),
-        Text(label, style: const TextStyle(fontSize: 13, color: context.colors.textMuted)),
+        Text(label, style: TextStyle(fontSize: 13, color: context.colors.textMuted)),
       ]),
     );
   }

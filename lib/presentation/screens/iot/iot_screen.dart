@@ -121,7 +121,7 @@ class _ZoneCard extends StatelessWidget {
         Wrap(spacing: 16, runSpacing: 6, children: zone.valeurs.entries.map((e) => SizedBox(
           width: 220,
           child: Row(children: [
-            Expanded(child: Text(e.key, style: TextStyle(fontSize: 11, color: context.colors.textMuted)),
+            Expanded(child: Text(e.key, style: TextStyle(fontSize: 11, color: context.colors.textMuted), overflow: TextOverflow.ellipsis)),
             Text(_fmt(e.value), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
           ]),
         )).toList()),
