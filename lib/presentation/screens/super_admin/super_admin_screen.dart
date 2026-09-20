@@ -47,8 +47,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
 
   Widget _buildLoginView() {
     final t = AppLocalizations.of(context);
-    return Scaffold(
-      body: Center(
+    return Center(
         child: SizedBox(
           width: 380,
           child: Column(
@@ -127,8 +126,7 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }
 
@@ -287,8 +285,7 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    return Scaffold(
-      body: Padding(
+    return Padding(
         padding: const EdgeInsets.all(28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -395,7 +392,6 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
               ),
           ],
         ),
-      ),
-    );
+      );
   }
 }

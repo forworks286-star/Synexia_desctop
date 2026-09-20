@@ -7,6 +7,7 @@ import '../../../core/design/theme_extension.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
 import '../super_admin/super_admin_screen.dart';
+import '../../widgets/decor/glow_lines.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,14 +31,32 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final auth = Get.find<AuthController>();
+    final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.gradientTop, colors.gradientBottom],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: GlowFlowLines(color: colors.primary, secondaryColor: colors.secondary, isDark: isDark),
+            ),
+          ),
+          Scaffold(
+      backgroundColor: Colors.transparent,
       body: Row(
         children: [
           Expanded(
             flex: 2,
             child: Container(
-              color: AppPalette.darkSidebar,
+              color: Colors.transparent,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -140,6 +159,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
             ),
+          ),
+        ],
+      ),
           ),
         ],
       ),

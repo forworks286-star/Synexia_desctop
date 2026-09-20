@@ -38,7 +38,7 @@ class _GlowRibbonsPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
-    final glowBoost = isDark ? 1.0 : 1.6;
+    final glowBoost = isDark ? 1.3 : 1.8;
 
     void ribbon({
       required double startX,
@@ -53,14 +53,14 @@ class _GlowRibbonsPainter extends CustomPainter {
     }) {
       final path = Path()..moveTo(startX, h * baseY);
       path.cubicTo(
-        startX + w * 0.20, h * (baseY - amp),
-        startX + w * 0.42, h * (baseY + amp * 0.8),
-        startX + w * 0.62, h * (baseY - amp * 0.5),
+        startX + w * 0.22, h * (baseY - amp),
+        startX + w * 0.46, h * (baseY + amp * 0.8),
+        startX + w * 0.66, h * (baseY - amp * 0.5),
       );
       path.cubicTo(
-        startX + w * 0.80, h * (baseY - amp * 1.4),
-        startX + w * 0.94, h * (baseY + amp * 0.5),
-        startX + w * 1.05, h * (baseY - amp * 0.15),
+        startX + w * 0.84, h * (baseY - amp * 1.4),
+        startX + w * 0.96, h * (baseY + amp * 0.5),
+        w + 40, h * (baseY - amp * 0.15),
       );
 
       final glowPaint = Paint()
@@ -79,12 +79,12 @@ class _GlowRibbonsPainter extends CustomPainter {
       canvas.drawPath(path, corePaint);
     }
 
-    ribbon(startX: -w * 0.15, baseY: 0.14, amp: 0.10, c: color, coreOpacity: 0.30, glowOpacity: 0.10, coreWidth: 1.4, glowWidth: 10, glowBlur: 12);
-    ribbon(startX: -w * 0.25, baseY: 0.30, amp: 0.13, c: color, coreOpacity: 0.24, glowOpacity: 0.09, coreWidth: 1.2, glowWidth: 12, glowBlur: 14);
-    ribbon(startX: -w * 0.05, baseY: 0.50, amp: 0.11, c: secondaryColor, coreOpacity: 0.20, glowOpacity: 0.08, coreWidth: 1.2, glowWidth: 10, glowBlur: 12);
-    ribbon(startX: -w * 0.30, baseY: 0.68, amp: 0.15, c: color, coreOpacity: 0.26, glowOpacity: 0.10, coreWidth: 1.3, glowWidth: 13, glowBlur: 15);
-    ribbon(startX: -w * 0.10, baseY: 0.85, amp: 0.12, c: color, coreOpacity: 0.22, glowOpacity: 0.09, coreWidth: 1.2, glowWidth: 11, glowBlur: 13);
-    ribbon(startX: -w * 0.20, baseY: 0.98, amp: 0.09, c: secondaryColor, coreOpacity: 0.18, glowOpacity: 0.07, coreWidth: 1.0, glowWidth: 9, glowBlur: 11);
+    ribbon(startX: -30,        baseY: 0.10, amp: 0.09, c: color,          coreOpacity: 0.34, glowOpacity: 0.14, coreWidth: 1.6, glowWidth: 11, glowBlur: 13);
+    ribbon(startX: -10,        baseY: 0.24, amp: 0.11, c: color,          coreOpacity: 0.28, glowOpacity: 0.12, coreWidth: 1.4, glowWidth: 13, glowBlur: 15);
+    ribbon(startX: -40,        baseY: 0.40, amp: 0.10, c: secondaryColor, coreOpacity: 0.26, glowOpacity: 0.11, coreWidth: 1.4, glowWidth: 12, glowBlur: 14);
+    ribbon(startX: -15,        baseY: 0.56, amp: 0.12, c: color,          coreOpacity: 0.30, glowOpacity: 0.13, coreWidth: 1.5, glowWidth: 14, glowBlur: 16);
+    ribbon(startX: -35,        baseY: 0.72, amp: 0.11, c: color,          coreOpacity: 0.26, glowOpacity: 0.11, coreWidth: 1.3, glowWidth: 12, glowBlur: 14);
+    ribbon(startX: -5,         baseY: 0.88, amp: 0.09, c: secondaryColor, coreOpacity: 0.22, glowOpacity: 0.09, coreWidth: 1.2, glowWidth: 11, glowBlur: 13);
   }
 
   @override
