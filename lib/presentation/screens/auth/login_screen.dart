@@ -56,8 +56,15 @@ class _LoginScreenState extends State<LoginScreen> {
           Expanded(
             flex: 2,
             child: Container(
-              color: Colors.transparent,
-              child: Column(
+              color: AppPalette.darkSidebar,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: GlowFlowLines(color: colors.primary, secondaryColor: colors.secondary, isDark: true),
+                    ),
+                  ),
+                  Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
@@ -83,6 +90,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   _FeatureItem(icon: Icons.receipt_long_outlined, label: AppLocalizations.of(context).featureInvoiceValidation),
                   _FeatureItem(icon: Icons.notifications_outlined, label: AppLocalizations.of(context).featureAlertsInstant),
                   _FeatureItem(icon: Icons.bar_chart_rounded, label: AppLocalizations.of(context).featureReportsAnalytics),
+                ],
+                  ),
                 ],
               ),
             ),
