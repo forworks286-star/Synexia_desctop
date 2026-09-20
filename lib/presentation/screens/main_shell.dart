@@ -78,7 +78,7 @@ class MainShell extends StatelessWidget {
                             screens[10] = const ApprobationsScreen();
                           }
                           if (role == UserRole.admin) {
-                            screens[6] = const SuperAdminScreen();
+                            screens[6] = const SuperAdminScreen(standalone: false);
                           }
 
                           return AnimatedSwitcher(

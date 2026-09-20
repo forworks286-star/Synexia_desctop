@@ -6,11 +6,13 @@ import '../../../core/design/colors.dart';
 import '../../../core/design/theme_extension.dart';
 import '../../../core/l10n/app_localizations.dart';
 import '../../../data/services/api_client.dart';
+import '../../widgets/decor/glow_lines.dart';
 
 
 
 class SuperAdminScreen extends StatefulWidget {
-  const SuperAdminScreen({super.key});
+  final bool standalone;
+  const SuperAdminScreen({super.key, this.standalone = true});
   @override
   State<SuperAdminScreen> createState() => _SuperAdminScreenState();
 }
@@ -42,12 +44,15 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
   @override
   Widget build(BuildContext context) {
     if (!_verified) return _buildLoginView();
-    return SuperAdminPanelScreen(adminToken: _adminToken!);
+    return SuperAdminPanelScreen(adminToken: _adminToken!, standalone: widget.standalone);
   }
 
   Widget _buildLoginView() {
     final t = AppLocalizations.of(context);
-    return Center(
+
+    final content = Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Center(
         child: SizedBox(
           width: 380,
           child: Column(
@@ -126,14 +131,40 @@ class _SuperAdminScreenState extends State<SuperAdminScreen> {
             ],
           ),
         ),
-      );
+      ),
+    );
+
+    if (!widget.standalone) return content;
+
+    final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.gradientTop, colors.gradientBottom],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: GlowFlowLines(color: colors.primary, secondaryColor: colors.secondary, isDark: isDark),
+            ),
+          ),
+          content,
+        ],
+      ),
+    );
   }
 }
 
 
 class SuperAdminPanelScreen extends StatefulWidget {
   final String adminToken;
-  const SuperAdminPanelScreen({super.key, required this.adminToken});
+  final bool standalone;
+  const SuperAdminPanelScreen({super.key, required this.adminToken, this.standalone = true});
   @override
   State<SuperAdminPanelScreen> createState() => _SuperAdminPanelScreenState();
 }
@@ -285,7 +316,10 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
-    return Padding(
+
+    final content = Scaffold(
+      backgroundColor: Colors.transparent,
+      body: Padding(
         padding: const EdgeInsets.all(28),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,6 +426,31 @@ class _SuperAdminPanelScreenState extends State<SuperAdminPanelScreen> {
               ),
           ],
         ),
-      );
+      ),
+    );
+
+    if (!widget.standalone) return content;
+
+    final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.gradientTop, colors.gradientBottom],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: GlowFlowLines(color: colors.primary, secondaryColor: colors.secondary, isDark: isDark),
+            ),
+          ),
+          content,
+        ],
+      ),
+    );
   }
 }
