@@ -4,8 +4,7 @@ import '../design/typography.dart';
 import '../design/radii.dart';
 import '../design/theme_extension.dart';
 
-// Palette statique conservée pour compatibilité arrière avec les écrans
-// non encore migrés. Pour tout nouveau code, utiliser context.colors.
+
 class AppColors {
   AppColors._();
 

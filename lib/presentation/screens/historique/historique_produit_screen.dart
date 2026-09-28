@@ -203,9 +203,6 @@ class _PriceChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // بس Achat/Ajustement مؤكدة (validated) — نفس منطق المتوسطات بالسيرفر.
-    // historique يوصل من السيرفر مرتب: الأحدث أول (بالتاريخ ثم بالـid) — نعكسو
-    // بالكامل هنا مرة وحدة، فيولي ترتيب زمني تصاعدي حقيقي (الأقدم أول).
     final achats = historique
         .where((l) => l.typeFacture != 'vente' && l.factureStatus == 'validated')
         .toList()
@@ -237,7 +234,7 @@ class _PriceChart extends StatelessWidget {
           final i = v.toInt();
           if (i < 0 || i >= achats.length) return const SizedBox.shrink();
           final d = achats[i].factureDate;
-          // نتفادى تكرار نفس التاريخ جنب بعضو مباشرة (يصير فعليًا لو عدة فواتير بنفس اليوم)
+    
           if (i > 0) {
             final prev = achats[i - 1].factureDate;
             if (prev.day == d.day && prev.month == d.month && prev.year == d.year) {

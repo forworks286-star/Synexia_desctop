@@ -76,7 +76,6 @@ class ApiClient {
 
   Dio get dio => _dio;
 
-  /// يفحص وقت انتهاء access token المخزّن، ويجدد قبل الانتهاء بـ 5 دقائق
   Future<void> _refreshIfExpiringSoon() async {
     final token = await storage.read(key: AppConfig.tokenKey);
     if (token == null) return;
@@ -103,7 +102,6 @@ class ApiClient {
     }
   }
 
-  /// نقطة الدخول الوحيدة للتجديد. لو تجديد شغال حاليًا، ننتظر نتيجته بدل ما نبدأ وحدة جديدة.
   Future<_RefreshResult> _refreshToken() async {
     if (_refreshCompleter != null) {
       return _refreshCompleter!.future;

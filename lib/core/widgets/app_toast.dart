@@ -12,10 +12,6 @@ class _ToastData {
   _ToastData(this.id, this.title, this.message, this.type);
 }
 
-/// Système de notifications totalement indépendant de GetX.
-/// Ne partage aucun mécanisme avec Get.dialog / Navigator / Overlay —
-/// ne peut donc jamais bloquer, retarder, ou entrer en conflit avec
-/// la fermeture d'un écran ou d'un dialogue.
 class AppToastHost extends StatefulWidget {
   final Widget child;
   const AppToastHost({super.key, required this.child});

@@ -9,9 +9,6 @@ import 'server_setup_screen.dart';
 import 'admin_setup_screen.dart';
 import '../auth/login_screen.dart';
 
-/// Point d'entrée unique de l'application.
-/// Vérifie à CHAQUE démarrage si le serveur configuré répond réellement,
-/// indépendamment du fait qu'une adresse soit déjà enregistrée localement.
 class ConnectionGateScreen extends StatefulWidget {
   const ConnectionGateScreen({super.key});
 

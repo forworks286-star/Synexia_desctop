@@ -427,7 +427,7 @@ class DemandeModification extends Equatable {
   final int demandeurId;
   final String? demandeurNom;
   final String compteRendu;
-  final String statut; // pending | approuvee | refusee
+  final String statut; 
   final int? traiteParId;
   final String? motifRefus;
   final DateTime dateCreation;
