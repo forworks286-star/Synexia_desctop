@@ -9,6 +9,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
+import '../../widgets/decor/glow_lines.dart';
 import '../../../data/repositories/invoice_repository_impl.dart';
 import '../factures/facture_detail_screen.dart';
 
@@ -53,47 +54,70 @@ class _HistoriqueProduitScreenState extends State<HistoriqueProduitScreen> {
   Widget build(BuildContext context) {
     final stock = Get.find<StockController>();
     final t = AppLocalizations.of(context);
+    final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.all(28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.gradientTop, colors.gradientBottom],
+        ),
+      ),
+      child: Stack(
         children: [
-          Row(children: [
-            IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => Get.back()),
-            Expanded(child: PageHeader(title: t.histPageTitle)),
-          ]),
-          const SizedBox(height: 20),
-          SynCard(
-            child: Autocomplete<Product>(
-              displayStringForOption: (p) => p.name,
-              optionsBuilder: (value) {
-                if (value.text.isEmpty) return const Iterable<Product>.empty();
-                return stock.products.where((p) =>
-                    p.name.toLowerCase().contains(value.text.toLowerCase()) ||
-                    p.sku.toLowerCase().contains(value.text.toLowerCase()));
-              },
-              onSelected: (p) => _load(p.id),
-              fieldViewBuilder: (context, controller, focusNode, onSubmit) {
-                controller.text = _searchCtrl.text;
-                return TextField(
-                  controller: controller,
-                  focusNode: focusNode,
-                  decoration: InputDecoration(
-                    hintText: t.histSearchHint,
-                    prefixIcon: const Icon(Icons.search_rounded),
-                  ),
-                );
-              },
+          Positioned.fill(
+            child: IgnorePointer(
+              child: GlowFlowLines(color: colors.primary, secondaryColor: colors.secondary, isDark: isDark),
             ),
           ),
-          const SizedBox(height: 20),
-          if (_loading) const Expanded(child: Center(child: CircularProgressIndicator(color: AppPalette.primary))),
-          if (_error != null) Expanded(child: Center(child: Text(_error!, style: const TextStyle(color: AppPalette.danger)))),
-          if (!_loading && _error == null && _data != null) Expanded(child: _buildContent(t, _data!)),
-          if (!_loading && _error == null && _data == null)
-            Expanded(child: Center(child: Text(t.histSearchEmpty,
-              style: TextStyle(color: context.colors.textMuted)))),
+          Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(children: [
+                    IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => Get.back()),
+                    Expanded(child: PageHeader(title: t.histPageTitle)),
+                  ]),
+                  const SizedBox(height: 20),
+                  SynCard(
+                    child: Autocomplete<Product>(
+                      displayStringForOption: (p) => p.name,
+                      optionsBuilder: (value) {
+                        if (value.text.isEmpty) return const Iterable<Product>.empty();
+                        return stock.products.where((p) =>
+                            p.name.toLowerCase().contains(value.text.toLowerCase()) ||
+                            p.sku.toLowerCase().contains(value.text.toLowerCase()));
+                      },
+                      onSelected: (p) => _load(p.id),
+                      fieldViewBuilder: (context, controller, focusNode, onSubmit) {
+                        controller.text = _searchCtrl.text;
+                        return TextField(
+                          controller: controller,
+                          focusNode: focusNode,
+                          decoration: InputDecoration(
+                            hintText: t.histSearchHint,
+                            prefixIcon: const Icon(Icons.search_rounded),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  if (_loading) const Expanded(child: Center(child: CircularProgressIndicator(color: AppPalette.primary))),
+                  if (_error != null) Expanded(child: Center(child: Text(_error!, style: const TextStyle(color: AppPalette.danger)))),
+                  if (!_loading && _error == null && _data != null) Expanded(child: _buildContent(t, _data!)),
+                  if (!_loading && _error == null && _data == null)
+                    Expanded(child: Center(child: Text(t.histSearchEmpty,
+                      style: TextStyle(color: context.colors.textMuted)))),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

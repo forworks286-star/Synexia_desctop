@@ -10,6 +10,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../domain/models/models.dart';
 import '../../controllers/controllers.dart';
 import '../../widgets/widgets.dart';
+import '../../widgets/decor/glow_lines.dart';
 import '../../../data/repositories/invoice_repository_impl.dart';
 import '../historique/historique_produit_screen.dart';
 
@@ -57,46 +58,71 @@ class _FactureDetailScreenState extends State<FactureDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator(color: AppPalette.primary));
-    }
-    final t = AppLocalizations.of(context);
-    if (_error != null || _invoice == null) {
-      return Center(child: Text(_error ?? t.errorTitle, style: const TextStyle(color: AppPalette.danger)));
-    }
-    final invoice = _invoice!;
+    final colors = context.colors;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Padding(
-      padding: const EdgeInsets.all(28),
-      child: SingleChildScrollView(
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(children: [
-            IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => safeBack()),
-            Expanded(child: PageHeader(title: '${t.histInvoiceWord} ${invoice.numeroFacture ?? '#${invoice.id}'}')),
-            InvoiceChip(status: invoice.status, label: _statusLabel(t, invoice.status)),
-          ]),
-          const SizedBox(height: 20),
-          _buildHeaderCard(t, invoice),
-          const SizedBox(height: 16),
-          _buildFinancialCard(t, invoice),
-          const SizedBox(height: 16),
-          _buildLinesCard(t, invoice),
-          if (invoice.motifRejet != null) ...[
-            const SizedBox(height: 16),
-            SynCard(
-              borderLeft: AppPalette.danger,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                SectionTitle(title: t.rejectionReasonTitle),
-                const SizedBox(height: 8),
-                Text(invoice.motifRejet!, style: const TextStyle(fontSize: 13)),
+    Widget body;
+    if (_loading) {
+      body = const Center(child: CircularProgressIndicator(color: AppPalette.primary));
+    } else {
+      final t = AppLocalizations.of(context);
+      if (_error != null || _invoice == null) {
+        body = Center(child: Text(_error ?? t.errorTitle, style: const TextStyle(color: AppPalette.danger)));
+      } else {
+        final invoice = _invoice!;
+        body = Padding(
+          padding: const EdgeInsets.all(28),
+          child: SingleChildScrollView(
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                IconButton(icon: const Icon(Icons.arrow_back_rounded), onPressed: () => safeBack()),
+                Expanded(child: PageHeader(title: '${t.histInvoiceWord} ${invoice.numeroFacture ?? '#${invoice.id}'}')),
+                InvoiceChip(status: invoice.status, label: _statusLabel(t, invoice.status)),
               ]),
+              const SizedBox(height: 20),
+              _buildHeaderCard(t, invoice),
+              const SizedBox(height: 16),
+              _buildFinancialCard(t, invoice),
+              const SizedBox(height: 16),
+              _buildLinesCard(t, invoice),
+              if (invoice.motifRejet != null) ...[
+                const SizedBox(height: 16),
+                SynCard(
+                  borderLeft: AppPalette.danger,
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    SectionTitle(title: t.rejectionReasonTitle),
+                    const SizedBox(height: 8),
+                    Text(invoice.motifRejet!, style: const TextStyle(fontSize: 13)),
+                  ]),
+                ),
+              ],
+              if (_isPending && Get.find<AuthController>().isManager) ...[
+                const SizedBox(height: 20),
+                _buildActionButtons(t, invoice),
+              ],
+            ]),
+          ),
+        );
+      }
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [colors.gradientTop, colors.gradientBottom],
+        ),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: GlowFlowLines(color: colors.primary, secondaryColor: colors.secondary, isDark: isDark),
             ),
-          ],
-          if (_isPending && Get.find<AuthController>().isManager) ...[
-            const SizedBox(height: 20),
-            _buildActionButtons(t, invoice),
-          ],
-        ]),
+          ),
+          Scaffold(backgroundColor: Colors.transparent, body: body),
+        ],
       ),
     );
   }
