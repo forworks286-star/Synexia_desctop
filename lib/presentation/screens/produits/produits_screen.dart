@@ -268,10 +268,15 @@ void _showDetail(Product product) {
     final colors = Get.context!.colors;
     Get.dialog(
       Dialog(
-        child: Container(
-          width: 520,
-          padding: const EdgeInsets.all(28),
-          child: Column(
+        clipBehavior: Clip.antiAlias,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 520,
+            maxHeight: MediaQuery.of(Get.context!).size.height * 0.85,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(28),
+            child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -304,8 +309,7 @@ void _showDetail(Product product) {
                 Text(t.lotsTitle, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
                   color: colors.textMuted, letterSpacing: 0.12)),
                 const SizedBox(height: 8),
-                ConstrainedBox(
-                  constraints: const BoxConstraints(maxHeight: 220),
+                Flexible(
                   child: Scrollbar(
                     thumbVisibility: true,
                     child: SingleChildScrollView(
@@ -361,6 +365,7 @@ void _showDetail(Product product) {
                 )).toList(),
               ],
             ],
+          ),
           ),
         ),
       ),
