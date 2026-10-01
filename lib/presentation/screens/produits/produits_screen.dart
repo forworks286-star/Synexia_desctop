@@ -304,37 +304,47 @@ void _showDetail(Product product) {
                 Text(t.lotsTitle, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
                   color: colors.textMuted, letterSpacing: 0.12)),
                 const SizedBox(height: 8),
-                ...product.lots.map((l) => Container(
-                  margin: const EdgeInsets.only(bottom: 6),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: colors.surface,
-                    borderRadius: BorderRadius.circular(7),
-                    border: Border.all(color: colors.border),
-                  ),
-                  child: Row(children: [
-                    Expanded(child: Text(l.numeroLot ?? 'N/A', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
-                    Text('${l.quantiteDisponible} ${t.lotAvailable}', style: const TextStyle(fontSize: 12)),
-                    const SizedBox(width: 16),
-                    if (l.emplacement != null)
-                      Text('📍 ${l.emplacement}', style: TextStyle(fontSize: 11, color: colors.textMuted)),
-                    if (l.dateExpiration != null) ...[
-                      const SizedBox(width: 16),
-                      Text('${t.lotExpiry} ${_fmtDate(l.dateExpiration!)}',
-                        style: TextStyle(fontSize: 11,
-                          color: l.dateExpiration!.isBefore(DateTime.now().add(const Duration(days: 30)))
-                            ? AppPalette.danger : colors.textMuted)),
-                    ] else ...[
-                      const SizedBox(width: 16),
-                      const Icon(Icons.event_busy_rounded, size: 13, color: AppPalette.warning),
-                    ],
-                    IconButton(
-                      icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppPalette.primary),
-                      tooltip: t.printLotQrTooltip,
-                      onPressed: () => showLotQrDialog(l.id, l.numeroLot ?? '#${l.id}'),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxHeight: 220),
+                  child: Scrollbar(
+                    thumbVisibility: true,
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: product.lots.map((l) => Container(
+                          margin: const EdgeInsets.only(bottom: 6, right: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: colors.surface,
+                            borderRadius: BorderRadius.circular(7),
+                            border: Border.all(color: colors.border),
+                          ),
+                          child: Row(children: [
+                            Expanded(child: Text(l.numeroLot ?? 'N/A', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600))),
+                            Text('${l.quantiteDisponible} ${t.lotAvailable}', style: const TextStyle(fontSize: 12)),
+                            const SizedBox(width: 16),
+                            if (l.emplacement != null)
+                              Text('📍 ${l.emplacement}', style: TextStyle(fontSize: 11, color: colors.textMuted)),
+                            if (l.dateExpiration != null) ...[
+                              const SizedBox(width: 16),
+                              Text('${t.lotExpiry} ${_fmtDate(l.dateExpiration!)}',
+                                style: TextStyle(fontSize: 11,
+                                  color: l.dateExpiration!.isBefore(DateTime.now().add(const Duration(days: 30)))
+                                    ? AppPalette.danger : colors.textMuted)),
+                            ] else ...[
+                              const SizedBox(width: 16),
+                              const Icon(Icons.event_busy_rounded, size: 13, color: AppPalette.warning),
+                            ],
+                            IconButton(
+                              icon: const Icon(Icons.qr_code_2_rounded, size: 18, color: AppPalette.primary),
+                              tooltip: t.printLotQrTooltip,
+                              onPressed: () => showLotQrDialog(l.id, l.numeroLot ?? '#${l.id}'),
+                            ),
+                          ]),
+                        )).toList(),
+                      ),
                     ),
-                  ]),
-                )).toList(),
+                  ),
+                ),
               ],
               if (product.champsExtra.isNotEmpty) ...[
                 const SizedBox(height: 16),
